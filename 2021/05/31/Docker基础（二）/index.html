@@ -1,0 +1,833 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Docker基础（二） | Qing's Blog</title><meta name="description" content="Docker基础（二） 在之前的笔记中，我们已经简单介绍了Docker，以及Docker三个基本概念：镜像（Image），容器（Container）以及仓库（Repository））的相关知识了，这里我们继续深入学习Docker。  Docker镜像深入 在之前的使用镜像笔记中，我们简单介绍了：  管理本地主机上的镜像 从仓库获取镜像 运行镜像  接下来我们深入学习一下：  镜像实现的基本原理"><meta name="keywords" content="Docker基础（二）笔记"><meta name="author" content="qingbo,qingbo1011@163.com"><meta name="copyright" content="qingbo"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="dns-prefetch" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="dns-prefetch" href="https://fonts.googleapis.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="dns-prefetch" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Docker基础（二）"><meta name="twitter:description" content="Docker基础（二） 在之前的笔记中，我们已经简单介绍了Docker，以及Docker三个基本概念：镜像（Image），容器（Container）以及仓库（Repository））的相关知识了，这里我们继续深入学习Docker。  Docker镜像深入 在之前的使用镜像笔记中，我们简单介绍了：  管理本地主机上的镜像 从仓库获取镜像 运行镜像  接下来我们深入学习一下：  镜像实现的基本原理"><meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png"><meta property="og:type" content="article"><meta property="og:title" content="Docker基础（二）"><meta property="og:url" content="http://www.qingbo1011.top/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/"><meta property="og:site_name" content="Qing's Blog"><meta property="og:description" content="Docker基础（二） 在之前的笔记中，我们已经简单介绍了Docker，以及Docker三个基本概念：镜像（Image），容器（Container）以及仓库（Repository））的相关知识了，这里我们继续深入学习Docker。  Docker镜像深入 在之前的使用镜像笔记中，我们简单介绍了：  管理本地主机上的镜像 从仓库获取镜像 运行镜像  接下来我们深入学习一下：  镜像实现的基本原理"><meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png"><meta property="article:published_time" content="2021-05-31T10:47:03.000Z"><meta property="article:modified_time" content="2023-10-03T08:16:11.745Z"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="http://www.qingbo1011.top/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/"><link rel="prev" title="Docker安装常用软件" href="http://www.qingbo1011.top/2021/05/31/Docker%E5%AE%89%E8%A3%85%E5%B8%B8%E7%94%A8%E8%BD%AF%E4%BB%B6/"><link rel="next" title="Docker基础（一）" href="http://www.qingbo1011.top/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://xxx/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: true,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'false',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: true
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.0"></head><body><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230440.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">87</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">81</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">15</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#docker基础二"><span class="toc-number">1.</span> <span class="toc-text"> Docker基础（二）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#docker镜像深入"><span class="toc-number">2.</span> <span class="toc-text"> Docker镜像深入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#镜像实现的基本原理"><span class="toc-number">2.1.</span> <span class="toc-text"> 镜像实现的基本原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#unionfs"><span class="toc-number">2.1.1.</span> <span class="toc-text"> UnionFS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#docker镜像commit操作"><span class="toc-number">2.2.</span> <span class="toc-text"> Docker镜像Commit操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#案例commit一个删除了docs的tomcat镜像"><span class="toc-number">2.2.1.</span> <span class="toc-text"> 案例：commit一个删除了docs的tomcat镜像</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#docker容器数据卷"><span class="toc-number">3.</span> <span class="toc-text"> Docker容器数据卷</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#数据卷volumes"><span class="toc-number">3.1.</span> <span class="toc-text"> 数据卷（Volumes）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据卷概念介绍"><span class="toc-number">3.1.1.</span> <span class="toc-text"> 数据卷概念介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#容器内添加数据卷"><span class="toc-number">3.1.2.</span> <span class="toc-text"> 容器内添加数据卷</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#直接命令添加数据卷"><span class="toc-number">3.1.2.1.</span> <span class="toc-text"> 直接命令添加数据卷</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dockerfile添加数据卷"><span class="toc-number">3.1.2.2.</span> <span class="toc-text"> DockerFile添加数据卷</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据卷容器"><span class="toc-number">3.2.</span> <span class="toc-text"> 数据卷容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#利用数据卷容器来备份-恢复-迁移数据卷"><span class="toc-number">3.2.1.</span> <span class="toc-text"> 利用数据卷容器来备份、恢复、迁移数据卷</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#dockerfile"><span class="toc-number">4.</span> <span class="toc-text"> DockerFile</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#dockerfile基础知识构建过程解析"><span class="toc-number">4.1.</span> <span class="toc-text"> DockerFile基础知识&amp;构建过程解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dockerfile指令"><span class="toc-number">4.2.</span> <span class="toc-text"> Dockerfile指令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#from"><span class="toc-number">4.2.1.</span> <span class="toc-text"> FROM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#maintainer"><span class="toc-number">4.2.2.</span> <span class="toc-text"> MAINTAINER</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#run"><span class="toc-number">4.2.3.</span> <span class="toc-text"> RUN</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cmd"><span class="toc-number">4.2.4.</span> <span class="toc-text"> CMD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#expose"><span class="toc-number">4.2.5.</span> <span class="toc-text"> EXPOSE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#env"><span class="toc-number">4.2.6.</span> <span class="toc-text"> ENV</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#copy"><span class="toc-number">4.2.7.</span> <span class="toc-text"> COPY</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#add"><span class="toc-number">4.2.8.</span> <span class="toc-text"> ADD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#entrypoint"><span class="toc-number">4.2.9.</span> <span class="toc-text"> ENTRYPOINT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#volume"><span class="toc-number">4.2.10.</span> <span class="toc-text"> VOLUME</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#user"><span class="toc-number">4.2.11.</span> <span class="toc-text"> USER</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#workdir"><span class="toc-number">4.2.12.</span> <span class="toc-text"> WORKDIR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#onbuild"><span class="toc-number">4.2.13.</span> <span class="toc-text"> ONBUILD</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dockerfile案例"><span class="toc-number">4.3.</span> <span class="toc-text"> DockerFile案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#自定义镜像mycentos"><span class="toc-number">4.3.1.</span> <span class="toc-text"> 自定义镜像mycentos</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cmdentrypoint指令案例"><span class="toc-number">4.3.2.</span> <span class="toc-text"> CMD&amp;ENTRYPOINT指令案例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#onbuild指令案例"><span class="toc-number">4.3.3.</span> <span class="toc-text"> ONBUILD指令案例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#自定义镜像tomcat9"><span class="toc-number">4.3.4.</span> <span class="toc-text"> 自定义镜像tomcat9</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#自定义tomcat9部署"><span class="toc-number">4.3.4.1.</span> <span class="toc-text"> 自定义tomcat9部署</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#本地镜像推送到阿里云"><span class="toc-number">5.</span> <span class="toc-text"> 本地镜像推送到阿里云</span></a></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">Qing's Blog</a></span><span class="pull_right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">Docker基础（二）</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2021-05-31 18:47:03"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2021-05-31</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2023-10-03 16:16:11"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2023-10-03</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/%E4%BA%91%E8%AE%A1%E7%AE%97/">云计算</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="post-meta__icon fa fa-file-word-o" aria-hidden="true"></i><span>字数总计:</span><span class="word-count">12.6k</span><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-clock-o" aria-hidden="true"></i><span>阅读时长: 43 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-comment-o" aria-hidden="true"></i><span>评论数:</span><a href="/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/" itemprop="commentCount"></span></a></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="docker基础二"><a class="markdownIt-Anchor" href="#docker基础二"></a> Docker基础（二）</h1>
+<p>在之前的<a href="https://www.qingbo1011.top/2021/05/20/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/">笔记</a>中，我们已经简单介绍了Docker，以及Docker三个基本概念：镜像（<code>Image</code>），容器（<code>Container</code>）以及仓库（<code>Repository</code>））的相关知识了，这里我们继续深入学习Docker。</p>
+<h1 id="docker镜像深入"><a class="markdownIt-Anchor" href="#docker镜像深入"></a> Docker镜像深入</h1>
+<p>在之前的<a href="https://www.qingbo1011.top/2021/05/20/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/#%E4%BD%BF%E7%94%A8%E9%95%9C%E5%83%8F">使用镜像</a>笔记中，我们简单介绍了：</p>
+<ul>
+<li>管理本地主机上的镜像</li>
+<li>从仓库获取镜像</li>
+<li>运行镜像</li>
+</ul>
+<p>接下来我们深入学习一下：</p>
+<ul>
+<li>镜像实现的基本原理</li>
+<li>Docker镜像Commit操作</li>
+</ul>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/commit" target="_blank" rel="noopener"><strong>Docker深入</strong></a></p>
+<h2 id="镜像实现的基本原理"><a class="markdownIt-Anchor" href="#镜像实现的基本原理"></a> 镜像实现的基本原理</h2>
+<blockquote>
+<p>Docker 镜像是怎么实现增量的修改和维护的？</p>
+<p><strong>每个镜像都由很多层次构成，Docker 使用 Union FS 将这些不同的层结合到一个镜像中去。</strong></p>
+<p>通常 Union FS 有两个用途： 一方面<strong>可以实现不借助 LVM、RAID 将多个 disk 挂到同一个目录下</strong>,另一个更常用的就是<strong>将一个只读的分支和一个可写的分支联合在一起</strong>，Live CD 正是基于此方法可以允许在镜像不变的基础上允许用户在其上进行一些写操作。</p>
+<p>Docker 在 OverlayFS 上构建的容器也是利用了类似的原理。</p>
+</blockquote>
+<p><strong><a href="https://cloud.tencent.com/developer/article/1560316" target="_blank" rel="noopener">Docker镜像超详细介绍</a></strong></p>
+<p>前面的<a href="https://www.qingbo1011.top/2021/05/20/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/#%E9%95%9C%E5%83%8Fimage">笔记</a>中也已经提到过了： <strong>镜像是一种轻量级、可执行的独立软件包，用来打包软件运行环境和基于运行环境开发的软件，它包含运行某个软件所需的所有内容，包括代码、运行时、库、环境变量和配置文件。</strong></p>
+<h3 id="unionfs"><a class="markdownIt-Anchor" href="#unionfs"></a> UnionFS</h3>
+<p><strong><a href="https://zhuanlan.zhihu.com/p/52938416" target="_blank" rel="noopener">Docker技术三大要点：cgroup, namespace和unionFS的理解</a></strong>（<strong><mark>强烈推荐</mark></strong>）</p>
+<blockquote>
+<p>Union文件系统（UnionFS）是一种<code>分层</code>、<code>轻量级</code>并且<code>高性能</code>的<code>文件系统</code>，它支持对文件系统的修改作为一次提交来一层层的叠加，同时可以将不同目录挂载到同一个虚拟文件系统下(unite several directories into a single virtual filesystem)。Union 文件系统是 Docker 镜像的基础。镜像可以通过分层来进行继承，基于基础镜像（没有父镜像），可以制作各种具体的应用镜像。</p>
+</blockquote>
+<p><strong>UnionFS可以把文件系统上多个目录(也叫分支)内容联合挂载到同一个目录下，而目录的物理位置是分开的。</strong></p>
+<blockquote>
+<p><mark>特性</mark>：一次同时加载多个文件系统，但从外面看起来，只能看到一个文件系统，联合加载会把各层文件系统叠加起来，这样最终的文件系统会包含所有底层的文件和目录</p>
+</blockquote>
+<p>关于镜像加载原理，在上面的推荐文章中已经说的很详细了，这里就不再多说。</p>
+<blockquote>
+<p>当<strong>用<code>docker run</code>启动这个容器时，实际上在镜像的顶部添加了一个新的可写层</strong>。<strong>这个可写层也叫容器层</strong>。<strong>容器启动后，其内的应用所有对容器的改动，文件的增删改操作都只会发生在容器层中，对容器层下面的所有只读镜像层没有影响。</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163156.png" alt="" /></p>
+</blockquote>
+<p>（<a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=16" target="_blank" rel="noopener">视频讲解</a>）</p>
+<h2 id="docker镜像commit操作"><a class="markdownIt-Anchor" href="#docker镜像commit操作"></a> Docker镜像Commit操作</h2>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/commit" target="_blank" rel="noopener">利用 commit 理解镜像构成</a></p>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=17" target="_blank" rel="noopener">视频讲解</a></p>
+<blockquote>
+<p>注意： <code>docker commit</code> 命令除了学习之外，还有一些特殊的应用场合，比如被入侵后保存现场等。但是，<strong>不要使用 <code>docker commit</code> 定制镜像，定制镜像应该使用 <code>Dockerfile</code> 来完成</strong>（<a href="#DockerFile">DockerFile</a>）</p>
+</blockquote>
+<p><strong>镜像是容器的基础</strong>，每次执行 <code>docker run</code> 的时候都会指定哪个镜像作为容器运行的基础。在之前的例子中，我们所使用的都是来自于 Docker Hub 的镜像（即<code>docker pull</code>第三方的镜像）。直接使用这些镜像是可以满足一定的需求，而当这些镜像无法直接满足需求时，<strong>我们就需要定制这些镜像</strong>。</p>
+<p>之前我们已经说到过了，<strong>镜像是多层存储，每一层是在前一层的基础上进行的修改</strong>；<strong>而容器同样也是多层存储，是在以镜像为基础层，在其基础上加一层作为容器运行时的存储层。</strong></p>
+<h3 id="案例commit一个删除了docs的tomcat镜像"><a class="markdownIt-Anchor" href="#案例commit一个删除了docs的tomcat镜像"></a> 案例：commit一个删除了docs的tomcat镜像</h3>
+<p><a href="https://www.runoob.com/docker/docker-commit-command.html" target="_blank" rel="noopener">Docker commit 命令</a></p>
+<p><a href="https://www.cnblogs.com/kevingrace/p/9599988.html" target="_blank" rel="noopener">通过容器提交镜像（docker commit）以及推送镜像（docker push）笔记</a></p>
+<p><strong>docker commit：<mark>根据容器</mark>创建一个新的镜像</strong></p>
+<p>语法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]</span><br></pre></td></tr></table></figure>
+<p>OPTIONS说明：</p>
+<ul>
+<li><code>-a</code>：提交的镜像作者</li>
+<li><code>-c</code>：使用Dockerfile指令来创建镜像</li>
+<li><code>-m</code>：提交时的说明文字</li>
+<li><code>-p</code>：在commit时，将容器暂停</li>
+</ul>
+<p>我们常用的方式如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit -m="要提交的描述信息" -a="作者" 容器ID 要创建的目标镜像名:[标签名]</span><br></pre></td></tr></table></figure>
+<p>例子：首先我们<code>docker run</code>一下我们之前<code>docker pull</code>的tomcat镜像，输入：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -p 8888:8080 --name tomcat9 -d tomcat</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数说明：</p>
+<ul>
+<li><strong><code>-p</code>：指定端口映射</strong>，这里的格式为：<strong>hostPort:containerPort</strong>，即<strong>主机端口:docker容器端口</strong></li>
+<li><strong><code>-P</code>：随机端口映射</strong></li>
+<li><code>-i</code>：以交互模式运行容器，通常与<code>-t</code>同时使用</li>
+<li><code>-t</code>：为容器重新分配一个伪输入终端，通常与<code>-i</code>同时使用</li>
+<li><strong><code>-d</code>：后台运行容器，并返回容器ID， 也即启动守护式容器</strong></li>
+</ul>
+</blockquote>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163213.png" alt="docker启动tomcat并指定主机端口为8888" /></p>
+<blockquote>
+<p>注意，这里可能是由于使用了tomcat9的缘故，直接访问<code>http://192.168.219.101:8888/</code>是这样的：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163228.png" alt="当然192.168.219.101为自己centos系统的ip地址" /></p>
+<p>可以参考这边文章解决相关问题：<a href="https://blog.csdn.net/qq_40891009/article/details/103898876" target="_blank" rel="noopener">Docker方式启动tomcat,访问首页出现404错误</a></p>
+</blockquote>
+<p>根据参考文章解决相关问题后，我们访问<code>http://192.168.219.101:8888</code>，结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163252.png" alt="成功访问到tomcat" /></p>
+<p>这个时候我们点击Documentation，即访问<code>http://192.168.219.101:8888/docs/</code>，可以看到以下页面：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163304.png" alt="" /></p>
+<p>而为了演示本地commit的镜像效果，我们需要commit一个删除了docs的tomcat</p>
+<p>而上面我们已经提到过了，<strong><code>docker commit</code>是<mark>根据容器</mark>创建一个新的镜像</strong>，所以我们就要根据我们现在这个容器，<code>commit</code>一个新的镜像。</p>
+<p>首先先进入tomcat中，删除docs文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it tomcat9 bash</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163325.png" alt="删除docs" /></p>
+<p>这是我们再访问<code>http://192.168.219.101:8888/docs/</code>就没有页面了：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163343.png" alt="成功删除docs文件" /></p>
+<p><strong>这个时候就可以根据当前的这个tomcat9容器，来<code>commit</code>一个新的镜像到本地了</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit -a&#x3D;&quot;qingbo&quot; -m&#x3D;&quot;a new tomcat without docs and webapps.dist&quot; tomcat9 qingbo&#x2F;tomcat9:9.0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：</p>
+<ul>
+<li>qingbo/tomcat9这个仓库名是采用的<strong>两段式路径</strong>，而关于<strong>两段式路径</strong>在之前的<a href="https://www.qingbo1011.top/2021/05/20/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/#%E4%BB%93%E5%BA%93repository">笔记</a>中也已经提过了</li>
+<li><strong><code>commit</code>操作只是将镜像生成在本地，并没有<code>push</code>到远程仓库</strong></li>
+</ul>
+</blockquote>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163404.png" alt="成功在本地生成镜像" /></p>
+<p>这时我们再<code>docker run</code>一下我们通过<code>docker commit</code>生成的镜像qingbo/tomcat9:9.0</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -p 8899:8080 --name mytomcat9 -d qingbo/tomcat9:9.0</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163419.png" alt="" /></p>
+<p>这时我们直接访问：<code>http://192.168.219.101:8899/</code>就有以下效果：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163433.png" alt="" /></p>
+<p>而访问<code>http://192.168.219.101:8899/docs/</code>当然也是找不到：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220713180859.png" alt="" /></p>
+<p>这就说明我们本地的镜像成功通过<code>docker commit</code>生成出来了</p>
+<hr />
+<h1 id="docker容器数据卷"><a class="markdownIt-Anchor" href="#docker容器数据卷"></a> Docker容器数据卷</h1>
+<p><a href="http://www.dockerinfo.net/%e6%95%b0%e6%8d%ae%e5%8d%b7volumes" target="_blank" rel="noopener"><strong>数据卷volumes</strong></a></p>
+<p><strong><a href="https://yeasy.gitbook.io/docker_practice/data_management" target="_blank" rel="noopener">数据管理</a></strong></p>
+<p><a href="https://www.cnblogs.com/sparkdev/p/8504050.html" target="_blank" rel="noopener">Docker 数据卷之进阶篇</a></p>
+<p><a href="https://www.cnblogs.com/wade-luffy/p/6542539.html" target="_blank" rel="noopener">Docker数据管理(数据卷&amp;数据卷容器)</a></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163453.png" alt="" /></p>
+<h2 id="数据卷volumes"><a class="markdownIt-Anchor" href="#数据卷volumes"></a> 数据卷（Volumes）</h2>
+<p><a href="http://www.dockerinfo.net/%e6%95%b0%e6%8d%ae%e5%8d%b7volumes" target="_blank" rel="noopener"><strong>数据卷volumes</strong></a></p>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=18" target="_blank" rel="noopener">视频讲解</a></p>
+<blockquote>
+<p><strong>数据卷</strong>是一个可供一个或多个容器使用的特殊目录，它绕过 UFS，可以提供很多有用的特性：</p>
+<ul>
+<li><strong>数据卷可以在容器之间共享和重用</strong></li>
+<li><strong>对数据卷的修改会立马生效</strong></li>
+<li><strong>对数据卷的更新，不会影响镜像</strong></li>
+<li><strong>数据卷默认会一直存在，即使容器被删除</strong></li>
+</ul>
+<p><strong><mark>注意</mark></strong>：数据卷的使用，类似于 Linux 下对目录或文件进行 mount（<a href="https://www.runoob.com/linux/linux-comm-mount.html" target="_blank" rel="noopener">Linux mount命令</a>），<strong><mark>镜像中的被指定为挂载点的目录中的文件会复制到数据卷中（仅数据卷为空时会复制）</mark>。</strong>（关于mount在上面的推荐文章**<a href="https://zhuanlan.zhihu.com/p/52938416" target="_blank" rel="noopener">Docker技术三大要点：cgroup, namespace和unionFS的理解</a>**中也有提到过）</p>
+</blockquote>
+<h3 id="数据卷概念介绍"><a class="markdownIt-Anchor" href="#数据卷概念介绍"></a> 数据卷概念介绍</h3>
+<p>数据卷是什么：先来看看<strong>Docker</strong>的理念：将运用与运行的环境打包形成容器运行，运行可以伴随着容器，但是我们对数据的要求是：持久化的容器之间可以共享数据 各个<strong>Docker</strong>容器产生的数据，<strong>如果不通过<code>docker commit</code>生成新的镜像，使得数据做为镜像的一部分保存下来， 那么当容器删除后，数据自然也就没有了</strong>。 <strong><mark>为了能数据的持久化存储，在docker中我们使用数据卷（Volumes）</mark>。</strong>（有点类似我们Redis里面的rdb和aof文件，<a href="https://www.qingbo1011.top/2021/04/08/Redis%E5%85%A5%E9%97%A8/">Redis笔记</a>）</p>
+<p>数据卷能干嘛：<strong>数据卷就是目录或文件</strong>，存在于一个或多个容器中，由<strong>docker</strong>挂载到容器，但不属于联合文件系统，因此<strong>能够绕过Union FileSystem提供一些用于持续存储或共享数据的特性</strong>：<strong>卷的设计目的就是数据的持久化，完全<mark>独立于容器的生存周期</mark>，因此<mark>Docker不会在容器删除时删除其挂载的数据卷</mark></strong></p>
+<p>特点:</p>
+<ul>
+<li><strong>数据卷可在容器之间共享或重用数据</strong></li>
+<li><strong>卷中的更改可以直接生效</strong></li>
+<li><strong>数据卷中的更改不会包含在镜像的更新中</strong></li>
+<li><strong>数据卷的生命周期一直持续到没有容器使用它为止</strong></li>
+</ul>
+<p>（容器的持久化，容器间继承+共享数据）</p>
+<h3 id="容器内添加数据卷"><a class="markdownIt-Anchor" href="#容器内添加数据卷"></a> 容器内添加数据卷</h3>
+<ul>
+<li>直接命令添加</li>
+<li>DockerFile添加</li>
+</ul>
+<h4 id="直接命令添加数据卷"><a class="markdownIt-Anchor" href="#直接命令添加数据卷"></a> 直接命令添加数据卷</h4>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=19" target="_blank" rel="noopener">视频讲解</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -d -v /宿主机绝对路径目录:/容器内目录 镜像名</span><br></pre></td></tr></table></figure>
+<blockquote>
+<ul>
+<li>
+<p><strong>本地目录的路径必须是绝对路径</strong>，如果目录不存在，Docker会自动为你创建它（<strong>注意</strong>：Dockerfile 中不支持这种用法，这是因为 Dockerfile 是为了移植和分享用的。然而，不同操作系统的路径格式不一样，所以目前还不能支持（<strong>在Dockerfile中使用VOLUME指令来给镜像添加一个或多个数据卷</strong>））</p>
+</li>
+<li>
+<p>Docker 挂载数据卷的默认权限是读写，用户也可以<strong>通过 <code>:ro</code> 指定为只读</strong>，如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo docker run -d -P --name web -v /src/webapp:/opt/webapp:ro</span><br><span class="line">training/webapp python app.py</span><br></pre></td></tr></table></figure>
+<p>加了 <code>:ro</code> 之后，就挂载为只读了（挂载为只读后宿主机中可以写，但容器内只能读）</p>
+</li>
+</ul>
+</blockquote>
+<p>之前也已经介绍了<code>docker run</code>的相关参数了：</p>
+<ul>
+<li><strong>-<code>v /宿主机绝对路径目录:/容器内目录</code>：绑定一个卷</strong>，注意<strong>前面是宿主机的绝对路径，<code>:</code>后面才是容器内目录</strong></li>
+</ul>
+<p>例子：我们以之前<code>commit</code>的qingbo/tomcat9:9.0镜像为例，先将刚刚运行的mytomcat9这个容器删除掉：<code>docker rm mytomcat9</code>（之前也已经提到过，Docker的容器实在太轻量级了，很多时候用户都是随时删除和新创建容器）</p>
+<p>在挂载数据卷之前，我们来看一下宿主机相应目录：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163514.png" alt="/home/root目录下目前还没有dockerVolumes文件夹" /></p>
+<p>然后根据qingbo/tomcat9:9.0镜像run一个mytomcat9容器，将tomcat中的<code>/usr/local/tomcat/logs</code>文件夹挂载在<code>/home/root/dockerVolumes/mytomcat9</code>这个文件夹中，以完成对日志文件的持久化存储（注意数据卷要为空，因为仅数据卷为空时才会复制，我们这里都没有文件夹所以就会新建一个，当然会为空）</p>
+<p>输入命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name mytomcat9 \</span><br><span class="line"> -v /home/root/dockerVolumes/mytomcat9:/usr/local/tomcat/logs \</span><br><span class="line"> -p 8899:8080 \</span><br><span class="line"> qingbo/tomcat9:9.0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong><mark>注意</mark></strong>：如果直接挂载一个文件，很多文件编辑工具，包括 <code>vi</code> 或者 <code>sed --in-place</code>，可能会造成文件 inode 的改变，从 Docker 1.1 .0起，这会导致报错误信息。所以最简单的办法就<strong>直接挂载文件的父目录</strong>。</p>
+</blockquote>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163525.png" alt="" /></p>
+<p>可以发现这时宿主机已经生成了相应目录并存储了我们指定的容器内文件夹的内容（即日志信息）</p>
+<blockquote>
+<p>宿主机和容器内的相应的目录文件是<mark>共享的</mark>，即可以<mark>相互影响</mark></p>
+<p>比如说我们在宿主机内的<code>/home/root/dockerVolumes/mytomcat9</code>路径下新建一个centosTest.txt 文件</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163537.png" alt="" /></p>
+<p>这时我们进入mytomcat9容器内的<code>/usr/local/tomcat/logs</code>路径下，可以发现容器内也新增了centosTest.txt 文件：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163550.png" alt="" /></p>
+<p>同理，我们在mytomcat9容器内的<code>/usr/local/tomcat/logs</code>路径下新建dockerTest.txt 文件，在宿主机的<code>/home/root/dockerVolumes/mytomcat9</code>路径下也会新增dockerTest.txt 文件：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163603.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163614.png" alt="" /></p>
+</blockquote>
+<h4 id="dockerfile添加数据卷"><a class="markdownIt-Anchor" href="#dockerfile添加数据卷"></a> DockerFile添加数据卷</h4>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=20" target="_blank" rel="noopener">视频讲解</a></p>
+<p>关于DockerFile的学习后面我们会具体提到，这里我们可以先用一下DockerFile。</p>
+<blockquote>
+<p>DockerFile可以理解为是对镜像（image）的一种源码级的解释</p>
+</blockquote>
+<p>首先创建DockerFile文件，我们在宿主机的<code>/home/root/myDockerFile</code>路径下创建一个testDockerFile文件，编辑内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># volume test</span></span><br><span class="line"><span class="keyword">FROM</span> centos</span><br><span class="line"><span class="keyword">VOLUME</span><span class="bash"> [<span class="string">"/dataVolumeContainer1"</span>,<span class="string">"/dataVolumeContainer2"</span>]</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> <span class="built_in">echo</span> <span class="string">"finished,--------success1"</span></span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> /bin/bash</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>使用DockerFile时，不需要指定宿主机的路径，Docker会自动关联，可以使用<code>docker inspect</code>来查看详细信息</strong></p>
+</blockquote>
+<p>然后我们使用<code>docker build</code>来根据testDockerFile这个DockerFile文件来创建镜像，输入命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker build -f /home/root/myDockerFile/testDockerFile \</span><br><span class="line">	-t qingbo/centos:1.0 .</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里后面的点**<code>.</code>是表示当前路径**（<code>docker build [OPTIONS] PATH | URL | -</code>，其中PATH代表含有Dockfile的目录，当然也可以是URL中含有Dockerfile）， <strong><mark><code>.</code>号，其实是在指定镜像构建过程中的上下文环境的目录</mark>。</strong></p>
+<p>（如果在 Dockerfile 中使用了一些 COPY 等指令来操作文件，如何让 Docker引擎 获取到这些文件呢？这里就有了一个<strong>镜像构建上下文</strong>的概念，当构建的时候，由用户指定构建镜像的上下文路径，而 docker build 会将这个路径下所有的文件都打包上传给 Docker 引擎，引擎内将这些内容展开后，就能获取到所有指定上下文中的文件了。）</p>
+<p><a href="https://blog.csdn.net/whatday/article/details/105135763" target="_blank" rel="noopener">docker build 命令后点的意思 . 号的意思</a></p>
+</blockquote>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163627.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163643.png" alt="" /></p>
+<p>这个时候我们来<code>docker run</code>一下刚刚创建的镜像，输入命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --name testCentos qingbo/centos:1.0</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163657.png" alt="通过DockerFile添加数据卷" /></p>
+<p>现在这两个文件夹还是空的，我们在dataVolumeContainer1文件夹中创建文件test01.txt：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163721.png" alt="" /></p>
+<p>这时我们可以通过**<code>docker inspect</code>命令**来查看宿主机路径，输入命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker inspect testCentos</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong><mark>注意</mark></strong>：这里不要犯糊涂，将容器名<code>testCentos</code>写成镜像名<code>qingbo/centos:1.0</code>！不然会找不到Mounts相关信息的（想想当然是这样）（千万注意这里是容器名）</p>
+</blockquote>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163746.png" alt="" /></p>
+<blockquote>
+<p>其实以后我们可以通过输入<code>docker inspect testCentos |grep Mounts -A 25</code>命令来查看Mounts后的25行，这样方便查看：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163808.png" alt="" /></p>
+</blockquote>
+<p>我们去宿主机中的<code>/var/lib/docker/volumes/62d0da6c688a9058a0fd128643471708e213c640fc3050e944dfb6ad525d1ae8/_data</code>路径下，可以发现我们刚刚在容器中创建文件也存在与宿主机中了：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163820.png" alt="" /></p>
+<h2 id="数据卷容器"><a class="markdownIt-Anchor" href="#数据卷容器"></a> 数据卷容器</h2>
+<p><a href="http://www.dockerinfo.net/%e6%95%b0%e6%8d%ae%e5%8d%b7volumes" target="_blank" rel="noopener"><strong>数据卷volumes</strong></a></p>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=21" target="_blank" rel="noopener">视频讲解</a></p>
+<blockquote>
+<ul>
+<li>如果你<strong>有一些持续更新的数据需要<mark>在容器之间共享</mark>，最好创建<mark>数据卷容器</mark></strong></li>
+<li><strong>数据卷容器，其实就是一个正常的容器，专门用来提供数据卷供其它容器挂载的</strong></li>
+</ul>
+</blockquote>
+<p>命名的容器挂载数据卷，其它容器通过挂载这个(父容器)实现数据共享，挂载数据卷的容器，称之为数据卷容器。</p>
+<p>容器间传递共享：<code>--volumes-from</code></p>
+<p>例子：首先我们创建一个命名的<strong>数据卷容器</strong>qing00：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --name qing00 qingbo/centos:1.0</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163845.png" alt="因为qingbo/centos:1.0这个镜像是我们刚刚根据DockerFile创建的，所以当然会有这两个数据卷" /></p>
+<p>接下来在其他容器中使用 <code>--volumes-from</code> 参数来挂载qing00容器中的数据卷：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --name qing01 --volumes-from qing00 qingbo/centos:1.0 </span><br><span class="line">docker run -it --name qing02 --volumes-from qing00 qingbo/centos:1.0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<ul>
+<li>还可以使用多个 <code>--volumes-from</code> 参数来从多个容器挂载多个数据卷，也可以从其他已经挂载了数据卷的容器来挂载数据卷</li>
+<li>使用 <code>--volumes-from</code> 参数所挂载数据卷的容器自己并<strong>不需要保持在运行状态</strong></li>
+</ul>
+</blockquote>
+<p>这时我们在数据卷容器qing00中的dataVolumeContainer1数据卷下创建text00.txt文件：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163857.png" alt="" /></p>
+<p>在qing01和qing02容器中查看：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163913.png" alt="qing01和qing02这两个容器中都有text00.txt文件" /></p>
+<p>在qing01容器的dataVolumeContainer2数据卷下创建text02.txt文件：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163928.png" alt="" /></p>
+<p>在数据卷容器qing00和另一个容器qing02中：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503163946.png" alt="在数据卷容器qing00和另一个容器qing02中同样有text02.txt文件" /></p>
+<blockquote>
+<p><strong>这样就实现了这三个容器之间的数据共享</strong></p>
+<p><strong><mark>注意</mark>：</strong></p>
+<ul>
+<li>如果删除了挂载的容器（包括 qing00、qing01和 qing02），<strong>数据卷并不会被自动删除</strong>，比如说<strong>如果我们删除了qing00容器，但qing01和qing02这两个容器之间依然可以共享数据</strong></li>
+<li>如果要删除一个数据卷，必须在删除最后一个还挂载着它的容器时使用 <code>docker rm -v</code> 命令来指定同时删除关联的容器</li>
+</ul>
+<p>这样的设定，可以让用户<strong>在容器之间升级和移动数据卷</strong></p>
+</blockquote>
+<h3 id="利用数据卷容器来备份-恢复-迁移数据卷"><a class="markdownIt-Anchor" href="#利用数据卷容器来备份-恢复-迁移数据卷"></a> 利用数据卷容器来备份、恢复、迁移数据卷</h3>
+<p><strong>可以利用数据卷对其中的数据进行进行备份、恢复和迁移。</strong></p>
+<blockquote>
+<p><strong><mark>备份</mark></strong>：</p>
+<p>首先使用 <code>--volumes-from</code> 标记来创建一个加载 dbdata 容器卷的容器，并从本地主机挂载当前到容器的 /backup 目录。命令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run --volumes-from dbdata -v $(pwd):&#x2F;backup ubuntu tar cvf &#x2F;backup&#x2F;backup.tar &#x2F;dbdata</span><br></pre></td></tr></table></figure>
+<p>容器启动后，使用了 <code>tar</code> 命令来将 dbdata 卷备份为本地的 <code>/backup/backup.tar</code>。</p>
+<p><strong><mark>恢复</mark></strong>：</p>
+<p>如果要恢复数据到一个容器，首先创建一个带有数据卷的容器 dbdata2。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run -v &#x2F;dbdata --name dbdata2 ubuntu &#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+<p>然后创建另一个容器，挂载 dbdata2 的容器，并使用 <code>untar</code> 解压备份文件到挂载的容器卷中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run --volumes-from dbdata2 -v $(pwd):&#x2F;backup busybox tar xvf</span><br><span class="line">&#x2F;backup&#x2F;backup.tar</span><br></pre></td></tr></table></figure>
+</blockquote>
+<hr />
+<h1 id="dockerfile"><a class="markdownIt-Anchor" href="#dockerfile"></a> DockerFile</h1>
+<p><a href="http://www.dockerinfo.net/dockerfile%e4%bb%8b%e7%bb%8d" target="_blank" rel="noopener"><strong>Dockerfile介绍</strong></a></p>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/build" target="_blank" rel="noopener"><strong>使用 Dockerfile 定制镜像</strong></a></p>
+<p><a href="https://www.runoob.com/docker/docker-dockerfile.html" target="_blank" rel="noopener">菜鸟教程Dockerfile</a></p>
+<p><strong><a href="https://maichong.io/help/docker/dockerfile.html" target="_blank" rel="noopener">Dockerfile简明教程</a></strong></p>
+<blockquote>
+<p>简言之，Dockerfile是生成镜像的配置文件，例如：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定tomcat版本</span></span><br><span class="line"><span class="keyword">FROM</span> tomcat:<span class="number">8.5</span>.<span class="number">32</span>-jre8</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定工作目录</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /app</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 将打包后的 server.jar 拷贝到镜像中</span></span><br><span class="line"><span class="comment"># 可以使用脉冲云的编译构建服务，在线将源码打包成 jar</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> server.jar /app/server.jar</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置镜像的启动命令</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> java -jar /app/server.jar</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 声明需要监听的端口</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
+<p>该文件中首先声明了镜像的基础镜像，一般情况下，你构建的镜像需要依赖一个基础镜像，就像你在一个电脑上安装软件的前提是这个电脑已经有了一个操作系统。</p>
+<p>然后Dockerfile中记录着生成新镜像的一个个步骤，包括拷贝文件、执行命令等。</p>
+<p>Dockerfile中还包含着一些其他信息的声明，比如环境变量、标注需要开放的端口等。</p>
+<p>使用**<code>docker build</code>** 命令，可以依照Dockerfile中记录的步骤，一步步生成新的镜像。</p>
+<p><strong><mark>注意</mark></strong>：在<strong>正在运行的容器</strong>内执行一个个命令，安装一个个软件，然后运行**<code>docker commit</code><strong>也能生成一个新的镜像，但是请不要这样操作。因为，使</strong>用Dockerfile可以记录下来镜像的生成过程，并且能够随时调整其中的步骤，重新生成镜像。这就是传说中的基础设施即代码，将基础环境的配置当做软件编程来进行。**</p>
+</blockquote>
+<p><strong>Dockerfile是用来构建Docker镜像的构建文件</strong>，由一系列命令和参数构成的脚本。</p>
+<p><strong>构建步骤</strong>：</p>
+<ol>
+<li><strong>编写Dockerfile文件</strong></li>
+<li><strong><code>docker build</code>在本地生成镜像</strong></li>
+<li><strong><code>docker run</code>根据镜像生成容器</strong></li>
+</ol>
+<blockquote>
+<p>从刚才的 <a href="#Docker%E9%95%9C%E5%83%8FCommit%E6%93%8D%E4%BD%9C">docker commit</a> 的学习中，我们可以了解到，镜像的定制实际上就是定制每一层所添加的配置、文件。如果我们可以<strong>把每一层修改、安装、构建、操作的命令都写入一个脚本，用这个脚本来构建、定制镜像</strong>，那么之前提及的无法重复的问题、镜像构建透明性的问题、体积的问题就都会解决。<strong>这个脚本就是 Dockerfile。</strong></p>
+<p><strong>Dockerfile 是一个文本文件，其内包含了一条条的 指令(Instruction)，每一条指令构建一层，因此每一条指令的内容，就是描述该层应当如何构建。</strong></p>
+</blockquote>
+<h2 id="dockerfile基础知识构建过程解析"><a class="markdownIt-Anchor" href="#dockerfile基础知识构建过程解析"></a> DockerFile基础知识&amp;构建过程解析</h2>
+<p><strong>Dockerfile基础知识</strong>：</p>
+<ol>
+<li><strong>每条保留字指令都必须为<mark>大写字母</mark>且后面要跟随至少一个参数</strong></li>
+<li><strong>指令按照从上到下，顺序执行</strong></li>
+<li><strong>注释用<code>#</code></strong></li>
+<li><strong>每条指令都会创建一个新的镜像层，并对镜像进行提交</strong></li>
+</ol>
+<p><strong>Docker执行Dockerfile的大致流程：</strong></p>
+<ol>
+<li><strong>docker根据基础镜像运行一个容器</strong></li>
+<li><strong>执行一条指令并对容器作出修改</strong></li>
+<li><strong>执行类似<code>docker commit</code>的操作向本地提交一个新的镜像层</strong></li>
+<li><strong>docker再基于刚提交的镜像运行一个新容器</strong></li>
+<li><strong>执行dockerfile中的下一条指令直到所有指令都执行完成</strong></li>
+</ol>
+<h2 id="dockerfile指令"><a class="markdownIt-Anchor" href="#dockerfile指令"></a> Dockerfile指令</h2>
+<p><strong><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile" target="_blank" rel="noopener">Dockerfile 指令详解</a></strong></p>
+<p><a href="https://maichong.io/help/docker/dockerfile.html" target="_blank" rel="noopener">Dockerfile简明教程</a></p>
+<p><a href="http://www.dockerinfo.net/dockerfile%e4%bb%8b%e7%bb%8d" target="_blank" rel="noopener">Dockerfile介绍</a></p>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=24" target="_blank" rel="noopener">视频讲解</a></p>
+<p>DockerFile的指令有如下：</p>
+<ul>
+<li><code>FROM</code></li>
+<li><code>MAINTAINER</code></li>
+<li><code>RUN</code></li>
+<li><code>CMD</code></li>
+<li><code>EXPOSE</code></li>
+<li><code>ENV</code></li>
+<li><code>COPY</code></li>
+<li><code>ADD</code></li>
+<li><code>ENTRYPOINT</code></li>
+<li><code>VOLUME</code></li>
+<li><code>USER</code></li>
+<li><code>WORKDIR</code></li>
+<li><code>ONBUILD</code></li>
+</ul>
+<h3 id="from"><a class="markdownIt-Anchor" href="#from"></a> FROM</h3>
+<p><strong><code>FROM</code>：指定基础镜像</strong></p>
+<p>格式： <code>FROM image</code>或<code>FROM image:tag</code></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> debian:buster-slim</span><br></pre></td></tr></table></figure>
+<p>所谓定制镜像，那一定是以一个镜像为基础，在其上进行定制。就像我们之前运行了一个 <code>nginx</code> 镜像的容器，再进行修改一样，基础镜像是必须指定的。而 <strong><code>FROM</code> 就是指定 基础镜像</strong>，因此<strong>一个 <code>Dockerfile</code> 中 <code>FROM</code> 是必备的指令，并且必须是第一条指令。</strong></p>
+<blockquote>
+<p>在 <a href="https://hub.docker.com/search?q=&amp;type=image&amp;image_filter=official" target="_blank" rel="noopener">Docker Hub</a> 上有非常多的高质量的官方镜像，有可以直接拿来使用的服务类的镜像，如 <a href="https://hub.docker.com/_/nginx/" target="_blank" rel="noopener"><code>nginx</code></a>、<a href="https://hub.docker.com/_/redis/" target="_blank" rel="noopener"><code>redis</code></a>、<a href="https://hub.docker.com/_/mongo/" target="_blank" rel="noopener"><code>mongo</code></a>、<a href="https://hub.docker.com/_/mysql/" target="_blank" rel="noopener"><code>mysql</code></a>、<a href="https://hub.docker.com/_/httpd/" target="_blank" rel="noopener"><code>httpd</code></a>、<a href="https://hub.docker.com/_/php/" target="_blank" rel="noopener"><code>php</code></a>、<a href="https://hub.docker.com/_/tomcat/" target="_blank" rel="noopener"><code>tomcat</code></a> 等；也有一些方便开发、构建、运行各种语言应用的镜像，如 <a href="https://hub.docker.com/_/node" target="_blank" rel="noopener"><code>node</code></a>、<a href="https://hub.docker.com/_/openjdk/" target="_blank" rel="noopener"><code>openjdk</code></a>、<a href="https://hub.docker.com/_/python/" target="_blank" rel="noopener"><code>python</code></a>、<a href="https://hub.docker.com/_/ruby/" target="_blank" rel="noopener"><code>ruby</code></a>、<a href="https://hub.docker.com/_/golang/" target="_blank" rel="noopener"><code>golang</code></a> 等。可以在其中寻找一个最符合我们最终目标的镜像为基础镜像进行定制。</p>
+<p>如果没有找到对应服务的镜像，官方镜像中还提供了一些更为基础的操作系统镜像，如 <a href="https://hub.docker.com/_/ubuntu/" target="_blank" rel="noopener"><code>ubuntu</code></a>、<a href="https://hub.docker.com/_/debian/" target="_blank" rel="noopener"><code>debian</code></a>、<a href="https://hub.docker.com/_/centos/" target="_blank" rel="noopener"><code>centos</code></a>、<a href="https://hub.docker.com/_/fedora/" target="_blank" rel="noopener"><code>fedora</code></a>、<a href="https://hub.docker.com/_/alpine/" target="_blank" rel="noopener"><code>alpine</code></a> 等，这些操作系统的软件库为我们提供了更广阔的扩展空间。</p>
+</blockquote>
+<p>除了选择现有镜像为基础镜像外，Docker 还存在一个特殊的镜像，名为 <strong><code>scratch</code></strong>。这个镜像是虚拟的概念，并不实际存在，它<strong>表示一个空白的镜像</strong>。</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> scratch</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p><strong>如果以 <code>scratch</code> 为基础镜像的话，意味着不以任何镜像为基础，接下来所写的指令将作为镜像第一层开始存在。</strong></p>
+<blockquote>
+<p>不以任何系统为基础，直接将可执行文件复制进镜像的做法并不罕见，对于 Linux 下静态编译的程序来说，并不需要有操作系统提供运行时支持，所需的一切库都已经在可执行文件里了，因此直接 <code>FROM scratch</code> 会让镜像体积更加小巧。<strong>使用 <a href="https://golang.google.cn/" target="_blank" rel="noopener">Go 语言</a> 开发的应用很多会使用这种方式来制作镜像，这也是为什么有人认为 Go 是特别适合容器微服务架构的语言的原因之一。</strong></p>
+</blockquote>
+<h3 id="maintainer"><a class="markdownIt-Anchor" href="#maintainer"></a> MAINTAINER</h3>
+<p><strong><code>MAINTAINER</code>：指定维护者信息</strong></p>
+<p>格式为 <code>MAINTAINER name</code></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Maintainer: docker_user &lt;docker_user at email.com&gt; (@docker_user)</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> docker_user docker_user@email.com</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>MAINTAINER</code>不是必须的指令</p>
+</blockquote>
+<h3 id="run"><a class="markdownIt-Anchor" href="#run"></a> RUN</h3>
+<p><strong><code>RUN</code>：在镜像内运行命令</strong>（注意，这是在镜像打包过程中运行的命令，不是启动容器后的命令。RUN指令常常用来在镜像打包过程中安装软件）</p>
+<p>格式为：<code>RUN command</code> 或 <code>RUN [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot;]</code></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">set</span> -eux; \</span></span><br><span class="line"><span class="bash">	savedAptMark=<span class="string">"<span class="variable">$(apt-mark showmanual)</span>"</span>; \</span></span><br><span class="line"><span class="bash">	apt-get update; \</span></span><br><span class="line"><span class="bash">	apt-get install -y --no-install-recommends ca-certificates wget;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir /docker-entrypoint-initdb.d</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>RUN command</code> 将在 shell 终端中运行命令，即 <code>/bin/sh -c</code>；<code>RUN [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot;]</code>则使用 <code>exec</code> 执行。指定使用其它终端可以通过第二种方式实现，例如 <code>RUN [&quot;/bin/bash&quot;, &quot;-c&quot;, &quot;echo hello&quot;]</code>。</p>
+</blockquote>
+<p><code>RUN</code> 指令是用来执行命令行命令的。由于命令行的强大能力，<code>RUN</code> 指令在定制镜像时是最常用的指令之一。其格式有两种：</p>
+<ul>
+<li>
+<p>shell格式：<code>RUN &lt;命令&gt;</code>，就像直接在命令行中输入的命令一样</p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">echo</span> <span class="string">'&lt;h1&gt;Hello, Docker!&lt;/h1&gt;'</span> &gt; /usr/share/nginx/html/index.html</span></span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>exec格式：<code>RUN [&quot;可执行文件&quot;, &quot;参数1&quot;, &quot;参数2&quot;]</code>，这更像是函数调用中的格式</p>
+</li>
+</ul>
+<p>既然 <code>RUN</code> 就像 Shell 脚本一样可以执行命令，那么我们是否就可以像 Shell 脚本一样把每个命令对应一个 RUN 呢？比如这样：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> debian:stretch</span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install -y gcc libc6-dev make wget</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> wget -O redis.tar.gz <span class="string">"http://download.redis.io/releases/redis-5.0.3.tar.gz"</span></span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir -p /usr/src/redis</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> make -C /usr/src/redis</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> make -C /usr/src/redis install</span></span><br></pre></td></tr></table></figure>
+<p>之前说过，<strong>Dockerfile 中每一个指令都会建立一层</strong>，<code>RUN</code> 也不例外。<strong>每一个 <code>RUN</code> 的行为</strong>，就和刚才我们手工建立镜像的过程一样：<strong>新建立一层，在其上执行这些命令，执行结束后，<code>commit</code> 这一层的修改，构成新的镜像。</strong></p>
+<blockquote>
+<p>而上面的这种写法，创建了 7 层镜像。<strong>这是完全没有意义的</strong>，而且很多运行时不需要的东西，都被装进了镜像里，比如编译环境、更新的软件包等等。结果就是<strong>产生非常臃肿、非常多层的镜像</strong>，不仅仅增加了构建部署的时间，也很容易出错。 这是很多初学 Docker 的人常犯的一个错误。</p>
+<p>Union FS 是有最大层数限制的，比如 AUFS，曾经是最大不得超过 42 层，现在是不得超过 127 层。</p>
+</blockquote>
+<p>上面的 <code>Dockerfile</code> 正确的写法应该是这样：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> debian:stretch</span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">set</span> -x; buildDeps=<span class="string">'gcc libc6-dev make wget'</span> \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get update \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get install -y <span class="variable">$buildDeps</span> \</span></span><br><span class="line"><span class="bash">    &amp;&amp; wget -O redis.tar.gz <span class="string">"http://download.redis.io/releases/redis-5.0.3.tar.gz"</span> \</span></span><br><span class="line"><span class="bash">    &amp;&amp; mkdir -p /usr/src/redis \</span></span><br><span class="line"><span class="bash">    &amp;&amp; tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1 \</span></span><br><span class="line"><span class="bash">    &amp;&amp; make -C /usr/src/redis \</span></span><br><span class="line"><span class="bash">    &amp;&amp; make -C /usr/src/redis install \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm -rf /var/lib/apt/lists/* \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm redis.tar.gz \</span></span><br><span class="line"><span class="bash">    &amp;&amp; rm -r /usr/src/redis \</span></span><br><span class="line"><span class="bash">    &amp;&amp; apt-get purge -y --auto-remove <span class="variable">$buildDeps</span></span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<ul>
+<li><strong>可以使用转移符 <code>\</code> 书写多行指令</strong></li>
+<li><strong><code>RUN</code>其实调用的是标准的shell，所以可以通过<code>&amp;&amp;</code>连接执行多个命令</strong></li>
+</ul>
+</blockquote>
+<p>分析：之前所有的命令只有一个目的，就是编译、安装 redis 可执行文件。因此没有必要建立很多层，这只是一层的事情。因此，这里没有使用很多个 <code>RUN</code> 去对应不同的命令，而是<strong>仅仅使用一个 <code>RUN</code> 指令，并使用 <code>&amp;&amp;</code> 将各个所需命令串联起来</strong>。将之前的 7 层，简化为了 1 层。*在撰写 Dockerfile 的时候，要经常提醒自己，这并不是在写 Shell 脚本，而是在定义每一层该如何构建。*并且，这里为了格式化还进行了换行。<strong>Dockerfile 支持 Shell 类的行尾添加 <code>\</code> 的命令换行方式，以及行首 <code>#</code> 进行注释的格式</strong>。良好的格式，比如换行、缩进、注释等，会让维护、排障更为容易，这是一个比较好的习惯。</p>
+<p>此外，还可以看到这一组命令的**<mark>最后添加了清理工作的命令</mark>**，删除了为了编译构建所需要的软件，清理了所有下载、展开的文件，并且还清理了 <code>apt</code> 缓存文件。<strong>这是很重要的一步</strong>，我们之前说过，<strong>镜像是多层存储，每一层的东西并不会在下一层被删除，会一直跟随着镜像</strong>。**因此镜像构建时，一定要确保每一层只添加真正需要添加的东西，任何无关的东西都应该清理掉。**很多人初学 Docker 制作出了很臃肿的镜像的原因之一，就是忘记了每一层构建的最后一定要清理掉无关文件。</p>
+<h3 id="cmd"><a class="markdownIt-Anchor" href="#cmd"></a> CMD</h3>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/cmd" target="_blank" rel="noopener">CMD 容器启动命令</a></p>
+<p><strong><code>CMD</code>：指定容器启动时执行的命令</strong>（注意，和<code>RUN</code>的区别是：<strong><code>RUN</code>是在打包过程中执行的命令，而<code>CMD</code>是容器启动时执行的命令</strong>。<strong>镜像中只能有一条<code>CMD</code>指令，如果有多个CMD指令，则以最后一条为准，所以我们可以覆盖基础镜像中定义的CMD指令</strong>）</p>
+<p>支持三种格式：</p>
+<ul>
+<li><strong><code>CMD [&quot;executable&quot;,&quot;param1&quot;,&quot;param2&quot;]</code> ：使用 <code>exec</code> 执行（推荐方式）</strong></li>
+<li><code>CMD command param1 param2</code> ：在 <code>/bin/sh</code> 中执行，提供给需要交互的应用</li>
+<li><code>CMD [&quot;param1&quot;,&quot;param2&quot;]</code> ：提供给 <code>ENTRYPOINT</code> 的默认参数</li>
+</ul>
+<blockquote>
+<ul>
+<li>shell 格式：<code>CMD &lt;命令&gt;</code></li>
+<li>exec 格式：<code>CMD [&quot;可执行文件&quot;, &quot;参数1&quot;, &quot;参数2&quot;...]</code></li>
+<li>参数列表格式：<code>CMD [&quot;参数1&quot;, &quot;参数2&quot;...]</code>，在指定了 ENTRYPOINT 指令后，用 CMD 指定具体的参数</li>
+</ul>
+</blockquote>
+<p><strong>DockerFile文件里的<code>CMD</code>会被<code>docker run</code>之后的COMMAND替换</strong>（如<code>docker run -it -P tomcat ls -l</code>，其中的<code>ls -l</code>就会替换掉原来的 <code>CMD [&quot;catalina.sh&quot;, &quot;run&quot;]</code>）</p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"mysqld"</span>]</span></span><br></pre></td></tr></table></figure>
+<p>在运行时可以指定新的命令来替代镜像设置中的这个默认命令，比如**，<code>ubuntu</code> 镜像默认的 <code>CMD</code> 是 <code>/bin/bash</code>，如果我们直接 <code>docker run -it ubuntu</code> 的话，会直接进入 <code>bash</code>。<strong>我们也可</strong>以在运行时指定运行别的命令，如 <code>docker run -it ubuntu cat /etc/os-release</code>。这就是用 <code>cat /etc/os-release</code> 命令替换了默认的 <code>/bin/bash</code> 命令了，输出了系统版本信息。**</p>
+<p>在指令格式上，一般推荐使用 <code>CMD [&quot;executable&quot;,&quot;param1&quot;,&quot;param2&quot;]</code>格式，这类格式在解析时会被解析为 JSON 数组，因此一定要<strong>使用双引号 <code>&quot;</code></strong>，而不要使用单引号。</p>
+<blockquote>
+<p>到 <code>CMD</code> 就不得不提容器中应用在前台执行和后台执行的问题。这是初学者常出现的一个混淆。</p>
+<p>Docker 不是虚拟机，容器中的应用都应该以前台执行，而不是像虚拟机、物理机里面那样，用 <code>systemd</code> 去启动后台服务，容器内没有后台服务的概念。</p>
+<p>一些初学者将 <code>CMD</code> 写为：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CMD</span><span class="bash"> service nginx start</span></span><br></pre></td></tr></table></figure>
+<p>然后发现<strong>容器执行后就立即退出了</strong>。甚至在容器内去使用 <code>systemctl</code> 命令结果却发现根本执行不了。这就是因为没有搞明白前台、后台的概念，没有区分容器和虚拟机的差异，依旧在以传统虚拟机的角度去理解容器。</p>
+<p><strong>对于容器而言，其启动程序就是容器应用进程，容器就是为了主进程而存在的，主进程退出，容器就失去了存在的意义，从而退出</strong>，其它辅助进程不是它需要关心的东西。</p>
+<p>而使用 <code>service nginx start</code> 命令，则是希望 upstart 来以后台守护进程形式启动 <code>nginx</code> 服务。而刚才说了 <code>CMD service nginx start</code> 会被理解为 <code>CMD [ &quot;sh&quot;, &quot;-c&quot;, &quot;service nginx start&quot;]</code>，因此主进程实际上是 <code>sh</code>。那么<strong>当 <code>service nginx start</code> 命令结束后，<code>sh</code> 也就结束了，<code>sh</code> 作为主进程退出了，自然就会令容器退出。</strong></p>
+<p><strong>正确的做法是直接执行 <code>nginx</code> 可执行文件，并且要求以前台形式运行</strong>。如：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"nginx"</span>, <span class="string">"-g"</span>, <span class="string">"daemon off;"</span>]</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="expose"><a class="markdownIt-Anchor" href="#expose"></a> EXPOSE</h3>
+<p><strong><code>EXPOSE</code>：声明容器需要暴露的端口号</strong></p>
+<p>格式： <code>EXPOSE &lt;端口1&gt; [&lt;端口2&gt;...]</code></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">EXPOSE</span> <span class="number">3306</span> <span class="number">33060</span></span><br></pre></td></tr></table></figure>
+<p><strong><code>EXPOSE</code> 指令是声明容器运行时提供服务的端口，这只是一个声明，在容器运行时并不会因为这个声明应用就会开启这个端口的服务</strong>。在 Dockerfile 中写入这样的声明有两个好处，一个是<strong>帮助镜像使用者理解这个镜像服务的守护端口，以方便配置映射</strong>；另一个用处则是在运行时使用随机端口映射时，也就是 <code>docker run -P</code> 时，会自动随机映射 <code>EXPOSE</code> 的端口。</p>
+<blockquote>
+<p>要将 <code>EXPOSE</code> 和在运行时使用 <code>-p &lt;宿主端口&gt;:&lt;容器端口&gt;</code> 区分开来。<strong><code>-p</code>，是映射宿主端口和容器端口，换句话说，就是将容器的对应端口服务公开给外界访问</strong>，而 <strong><code>EXPOSE</code> 仅仅是声明容器打算使用什么端口而已，并不会自动在宿主进行端口映射。</strong></p>
+</blockquote>
+<h3 id="env"><a class="markdownIt-Anchor" href="#env"></a> ENV</h3>
+<p><strong><code>ENV</code>：声明一个环境变量，可为后续的RUN、CMD、ENTRYPOINT程序所使用，并在容器运行时保持</strong></p>
+<p>格式有两种：</p>
+<ul>
+<li><code>ENV &lt;key&gt; &lt;value&gt;</code></li>
+<li><code>ENV &lt;key1&gt;=&lt;value1&gt; &lt;key2&gt;=&lt;value2&gt;...</code></li>
+</ul>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ENV</span> PG_MAJOR <span class="number">9.3</span></span><br><span class="line"><span class="keyword">ENV</span> PG_VERSION <span class="number">9.3</span>.<span class="number">4</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> curl -SL http://example.com/postgres-<span class="variable">$PG_VERSION</span>.tar.xz | tar -xJC /usr/src/postgress &amp;&amp; …</span></span><br><span class="line"><span class="keyword">ENV</span> PATH /usr/local/postgres-$PG_MAJOR/bin:$PATH</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里的例子采用的是<code>ENV key value</code>格式</p>
+</blockquote>
+<p>这个指令很简单，就是<strong>设置环境变量</strong>而已，无论是后面的其它指令，如 <code>RUN</code>，还是运行时的应用，都可以直接使用这里定义的环境变量。</p>
+<p>DockerFile中<strong>换行使用<code>\</code></strong>，<strong>对含有空格的值用双引号括起来</strong>，这和 Shell 下的行为是一致的，如：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ENV</span> VERSION=<span class="number">1.0</span> DEBUG=on \</span><br><span class="line">    NAME=<span class="string">"Happy Feet"</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>定义了环境变量，那么在后续的指令中，就可以使用这个环境变量。比如在官方 <code>node</code> 镜像 <code>Dockerfile</code> 中，就有类似这样的代码：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ENV</span> NODE_VERSION <span class="number">7.2</span>.<span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> curl -SLO <span class="string">"https://nodejs.org/dist/v<span class="variable">$NODE_VERSION</span>/node-v<span class="variable">$NODE_VERSION</span>-linux-x64.tar.xz"</span> \</span></span><br><span class="line"><span class="bash">  &amp;&amp; curl -SLO <span class="string">"https://nodejs.org/dist/v<span class="variable">$NODE_VERSION</span>/SHASUMS256.txt.asc"</span> \</span></span><br><span class="line"><span class="bash">  &amp;&amp; gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \</span></span><br><span class="line"><span class="bash">  &amp;&amp; grep <span class="string">" node-v<span class="variable">$NODE_VERSION</span>-linux-x64.tar.xz\$"</span> SHASUMS256.txt | sha256sum -c - \</span></span><br><span class="line"><span class="bash">  &amp;&amp; tar -xJf <span class="string">"node-v<span class="variable">$NODE_VERSION</span>-linux-x64.tar.xz"</span> -C /usr/<span class="built_in">local</span> --strip-components=1 \</span></span><br><span class="line"><span class="bash">  &amp;&amp; rm <span class="string">"node-v<span class="variable">$NODE_VERSION</span>-linux-x64.tar.xz"</span> SHASUMS256.txt.asc SHASUMS256.txt \</span></span><br><span class="line"><span class="bash">  &amp;&amp; ln -s /usr/<span class="built_in">local</span>/bin/node /usr/<span class="built_in">local</span>/bin/nodejs</span></span><br></pre></td></tr></table></figure>
+<p>在这里<strong>先定义了环境变量 <code>NODE_VERSION</code></strong>，其后的 <code>RUN</code> 这层里，<strong>多次使用 <code>$NODE_VERSION</code> 来进行操作定制</strong>。可以看到，将来升级镜像构建版本的时候，只需要更新 <code>7.2.0</code> 即可，<code>Dockerfile</code> 构建维护变得更轻松了。</p>
+<p>可以支持环境变量展开的指令： <code>ADD</code>、<code>COPY</code>、<code>ENV</code>、<code>EXPOSE</code>、<code>FROM</code>、<code>LABEL</code>、<code>USER</code>、<code>WORKDIR</code>、<code>VOLUME</code>、<code>STOPSIGNAL</code>、<code>ONBUILD</code>、<code>RUN</code>（环境变量可以使用的地方很多，很强大。<strong>通过环境变量，我们可以让一份 <code>Dockerfile</code> 制作更多的镜像，只需使用不同的环境变量即可</strong>。）</p>
+</blockquote>
+<h3 id="copy"><a class="markdownIt-Anchor" href="#copy"></a> COPY</h3>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/copy" target="_blank" rel="noopener">COPY 复制文件</a></p>
+<p><strong><code>COPY</code>：复制本地文件到容器中</strong>（和<code>ADD</code>区别是，不会自动解压tar包）</p>
+<p>格式： <code>COPY &lt;src&gt; &lt;dest&gt;</code></p>
+<p><strong>作用：复制本地主机的 <code>&lt;src&gt;</code>（为 Dockerfile 所在目录的相对路径）到容器中的 <code>&lt;dest&gt;</code></strong></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">COPY</span><span class="bash"> server.jar /app/server.jar</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> . /app</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> dist/* /app/</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>和<code>ADD</code>类似，区别在于：<code>COPY</code>不会自动解压tra包</p>
+</blockquote>
+<p><strong><mark>注意</mark></strong>：<strong>如果源路径为文件夹，复制的时候不是直接复制该文件夹，而是将文件夹中的内容复制到目标路径</strong></p>
+<h3 id="add"><a class="markdownIt-Anchor" href="#add"></a> ADD</h3>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/add" target="_blank" rel="noopener">ADD 更高级的复制文件</a></p>
+<p><strong><code>ADD</code>：将Dockerfile所在目录中的文件拷贝到镜像中</strong>（如果 <code>src</code> 是一个tar包，那么会自动解压，并且<code>src</code>支持网络路径）</p>
+<p>格式： <code>ADD &lt;src&gt; &lt;dest&gt;</code></p>
+<p><strong>作用：复制指定的 <code>&lt;src&gt;</code> 到容器中的 <code>&lt;dest&gt;</code>。 其中 <code>&lt;src&gt;</code> 可以是Dockerfile所在目录的一个相对路径；也可以是一个 URL；还可以是一个 tar 文件（自动解压为目录）</strong></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ADD</span><span class="bash"> server.jar /app/server.jar</span></span><br></pre></td></tr></table></figure>
+<h3 id="entrypoint"><a class="markdownIt-Anchor" href="#entrypoint"></a> ENTRYPOINT</h3>
+<p><strong><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/entrypoint" target="_blank" rel="noopener">ENTRYPOINT 入口点</a></strong></p>
+<p><strong><code>ENTRYPOINT</code>：容器启动入口，即容器启动后执行的命令</strong>（不会被CMD指令覆盖，如果存在<code>ENTRYPOINT</code>，那么<code>CMD</code>指令会充当ENTRYPOINT的参数）</p>
+<blockquote>
+<p>当指定了 <code>ENTRYPOINT</code> 后，<code>CMD</code> 的含义就发生了改变，不再是直接的运行其命令，而是将 <code>CMD</code> 的内容作为参数传给 <code>ENTRYPOINT</code> 指令，换句话说实际执行时，将变为：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ENTRYPOINT</span><span class="bash"> <span class="string">"&lt;CMD&gt;"</span></span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>有两种格式：</p>
+<ul>
+<li><code>ENTRYPOINT [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot;]</code>（<code>exec</code> 格式）</li>
+<li><code>ENTRYPOINT command param1 param2</code>（<code>shell</code> 格式）</li>
+</ul>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ENTRYPOINT</span><span class="bash"> /app/entrypoint.sh	<span class="comment"># shell格式</span></span></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="bash"> [ <span class="string">"curl"</span>, <span class="string">"-s"</span>, <span class="string">"http://myip.ipip.net"</span> ]	<span class="comment"># exec格式</span></span></span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<ul>
+<li><code>ENTRYPOINT</code>：配置容器启动后执行的命令，并且不可被 <code>docker run</code> 提供的参数覆盖</li>
+<li><strong>每个 Dockerfile 中只能有一个 <code>ENTRYPOINT</code></strong>，当指定多个时，只有最后一个起效</li>
+</ul>
+<h3 id="volume"><a class="markdownIt-Anchor" href="#volume"></a> VOLUME</h3>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/volume" target="_blank" rel="noopener">VOLUME 定义匿名卷</a></p>
+<p>关于<code>VOLUME</code>指令在上面的<a href="#DockerFile%E6%B7%BB%E5%8A%A0%E6%95%B0%E6%8D%AE%E5%8D%B7">笔记</a>中已经使用过了，这里简单记录一下</p>
+<p><strong><code>VOLUME</code>：声明容器运行时的数据卷挂载点，将主机目录挂载到容器中，用来持久化保存容器生成的数据</strong></p>
+<p>格式有两种：</p>
+<ul>
+<li><code>VOLUME [&quot;&lt;路径1&gt;&quot;, &quot;&lt;路径2&gt;&quot;...]</code></li>
+<li><code>VOLUME &lt;路径&gt;</code></li>
+</ul>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">VOLUME</span><span class="bash"> [<span class="string">"/dataVolumeContainer1"</span>,<span class="string">"/dataVolumeContainer2"</span>]	<span class="comment"># 第一种</span></span></span><br><span class="line"><span class="keyword">VOLUME</span><span class="bash"> /app/data	<span class="comment"># 第二种</span></span></span><br></pre></td></tr></table></figure>
+<p><strong>在 <code>Dockerfile</code> 中，我们可以事先指定某些目录挂载为匿名卷，这样在运行时如果用户不指定挂载，其应用也可以正常运行，不会向容器存储层写入大量数据。</strong></p>
+<blockquote>
+<p>例如：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">VOLUME</span><span class="bash"> /data</span></span><br></pre></td></tr></table></figure>
+<p>这里的 <strong><code>/data</code> 目录就会在容器运行时自动挂载为匿名卷</strong>，任何向 <code>/data</code> 中写入的信息都不会记录进容器存储层，从而保证了<strong>容器存储层的无状态化</strong>。当然，<strong>运行容器时可以覆盖这个挂载设置</strong>，如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -v mydata:/data xxxx</span><br></pre></td></tr></table></figure>
+<p>在这行命令中，就使用了 <code>mydata</code> 这个命名卷挂载到了 <code>/data</code> 这个位置，替代了 <code>Dockerfile</code> 中定义的匿名卷的挂载配置。</p>
+</blockquote>
+<h3 id="user"><a class="markdownIt-Anchor" href="#user"></a> USER</h3>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/user" target="_blank" rel="noopener">USER 指定当前用户</a></p>
+<p><strong><code>USER</code>：指定运行容器时的用户名或 UID，后续的 <code>RUN</code> 也会使用指定用户</strong></p>
+<p>格式：<code>USER &lt;用户名&gt;[:&lt;用户组&gt;]</code></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">USER</span> nginx</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>USER</code> 指令和 <code>WORKDIR</code> 相似，都是改变环境状态并影响以后的层。<strong><code>WORKDIR</code> 是改变工作目录</strong>，<strong><code>USER</code> 则是改变之后层的执行 <code>RUN</code>, <code>CMD</code> 以及 <code>ENTRYPOINT</code> 这类命令的身份</strong>。</p>
+</blockquote>
+<p><strong><mark>注意</mark></strong>：<strong><code>USER</code> 只是帮助你切换到指定用户而已，这个用户必须是事先建立好的，否则无法切换</strong></p>
+<p>示例：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> groupadd -r redis &amp;&amp; useradd -r -g redis redis</span></span><br><span class="line"><span class="keyword">USER</span> redis</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> [ <span class="string">"redis-server"</span> ]</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果以 <code>root</code> 执行的脚本，在执行期间希望改变身份，比如希望以某个已经建立好的用户来运行某个服务进程，不要使用 <code>su</code> 或者 <code>sudo</code>，这些都需要比较麻烦的配置，而且在 TTY 缺失的环境下经常出错。建议使用 <strong><code>gosu</code></strong>。</p>
+</blockquote>
+<h3 id="workdir"><a class="markdownIt-Anchor" href="#workdir"></a> WORKDIR</h3>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/workdir" target="_blank" rel="noopener">WORKDIR 指定工作目录</a></p>
+<p><strong><code>WORKDIR</code>：指定后续<code>RUN</code>、<code>CMD</code>、<code>ENTRYPOINT</code>程序的工作目录，可以多次执行，就像Linux的 <code>cd</code> 命令</strong></p>
+<p>格式：<code>WORKDIR &lt;工作目录路径&gt;</code></p>
+<blockquote>
+<p>可以使用多个 <code>WORKDIR</code> 指令，后续命令<strong>如果参数是相对路径，则会基于之前命令指定的路径</strong></p>
+</blockquote>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /a</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> b</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> c</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">pwd</span>		<span class="comment"># 最终路径为 /a/b/c</span></span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>使用 <code>WORKDIR</code> 指令可以来指定工作目录（或者称为当前目录），以后各层的当前目录就被改为指定的目录，如该目录不存在，<code>WORKDIR</code> 会帮你建立目录。</strong></p>
+</blockquote>
+<p>一些初学者常犯的错误是把 <code>Dockerfile</code> 等同于 Shell 脚本来书写，如：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">cd</span> /app</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">echo</span> <span class="string">"hello"</span> &gt; world.txt</span></span><br></pre></td></tr></table></figure>
+<p>如果将这个 <code>Dockerfile</code> 进行构建镜像运行后，会发现找不到 <code>/app/world.txt</code> 文件，或者其内容不是 <code>hello</code>。原因其实很简单，在 Shell 中，连续两行是同一个进程执行环境，因此前一个命令修改的内存状态，会直接影响后一个命令；而<strong>在 <code>Dockerfile</code> 中，这两行 <code>RUN</code> 命令的执行环境根本不同，是两个完全不同的容器</strong>。这就是对 <code>Dockerfile</code> 构建分层存储的概念不了解所导致的错误。</p>
+<blockquote>
+<p>之前说过<strong>每一个 <code>RUN</code> 都是启动一个容器、执行命令、然后提交存储层文件变更</strong>。第一层 <code>RUN cd /app</code> 的执行仅仅是当前进程的工作目录变更，一个内存上的变化而已，其结果不会造成任何文件变更。而<strong>到第二层的时候，启动的是一个全新的容器，跟第一层的容器更完全没关系</strong>，自然不可能继承前一层构建过程中的内存变化。</p>
+</blockquote>
+<p>因此如果需要改变以后各层的工作目录的位置，那么应该使用 <code>WORKDIR</code> 指令：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /app</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">echo</span> <span class="string">"hello"</span> &gt; world.txt</span></span><br></pre></td></tr></table></figure>
+<h3 id="onbuild"><a class="markdownIt-Anchor" href="#onbuild"></a> ONBUILD</h3>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/onbuild" target="_blank" rel="noopener">ONBUILD 为他人作嫁衣裳</a></p>
+<p><strong><code>ONBUILD</code>：配置当所创建的镜像作为其它新创建镜像的基础镜像时，所执行的操作指令</strong></p>
+<p>格式：<code>ONBUILD &lt;其它指令&gt;</code></p>
+<p>例子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ONBUILD</span> <span class="keyword">ADD</span><span class="bash"> . /app/src</span></span><br><span class="line"><span class="keyword">ONBUILD</span> <span class="keyword">RUN</span><span class="bash"> /usr/<span class="built_in">local</span>/bin/python-build --dir /app/src</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong><code>ONBUILD</code> 是一个特殊的指令，它后面跟的是其它指令</strong>，比如 <code>RUN</code>, <code>COPY</code> 等，而这些指令，<strong>在当前镜像构建时并不会被执行。只有当以当前镜像为基础镜像，去构建下一级镜像的时候才会被执行。</strong></p>
+<p><code>Dockerfile</code> 中的其它指令都是为了定制当前镜像而准备的，唯有 <code>ONBUILD</code> 是为了帮助别人定制自己而准备的。</p>
+</blockquote>
+<p>例如，Dockerfile 使用如下的内容创建了镜像 <code>image-A</code>：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[...]</span><br><span class="line"><span class="keyword">ONBUILD</span> <span class="keyword">ADD</span><span class="bash"> . /app/src</span></span><br><span class="line"><span class="keyword">ONBUILD</span> <span class="keyword">RUN</span><span class="bash"> /usr/<span class="built_in">local</span>/bin/python-build --dir /app/src</span></span><br><span class="line">[...]</span><br></pre></td></tr></table></figure>
+<p>如果<strong>基于镜像<code>image-A</code> 创建新的镜像时</strong>，新的Dockerfile中使用 <code>FROM image-A</code>指定基础镜像时，会自动执行<code>ONBUILD</code> 指令内容，等价于在后面添加了两条指令，即：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> image-A</span><br><span class="line"></span><br><span class="line"><span class="comment"># Automatically run the following</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> . /app/src</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> /usr/<span class="built_in">local</span>/bin/python-build --dir /app/src</span></span><br></pre></td></tr></table></figure>
+<p><strong>使用 <code>ONBUILD</code> 指令的镜像，推荐在标签中注明，例如 <code>ruby:1.9-onbuild</code></strong></p>
+<h2 id="dockerfile案例"><a class="markdownIt-Anchor" href="#dockerfile案例"></a> DockerFile案例</h2>
+<h3 id="自定义镜像mycentos"><a class="markdownIt-Anchor" href="#自定义镜像mycentos"></a> 自定义镜像mycentos</h3>
+<p>之前我们也已经运行过精简版的centos容器了，可以发现有以下问题：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164000.png" alt="" /></p>
+<p>于是我们要通过DockerFile来定制一个mycentos镜像，要求：</p>
+<ol>
+<li>登录后的默认路径为：<code>/home</code></li>
+<li>可以使用<code>vim</code></li>
+<li>可以通过<code>ifconfig</code>查看网络配置</li>
+</ol>
+<p><strong>构建步骤</strong>：</p>
+<ol>
+<li><strong>编写Dockerfile文件</strong></li>
+<li><strong><code>docker build</code>在本地生成镜像</strong></li>
+<li><strong><code>docker run</code>根据镜像生成容器</strong></li>
+</ol>
+<p>首先编写DockerFile文件如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定基础镜像</span></span><br><span class="line"><span class="keyword">FROM</span> centos	</span><br><span class="line"></span><br><span class="line"><span class="keyword">MAINTAINER</span> qingbo qingbo1011@<span class="number">163</span>.com</span><br><span class="line"><span class="comment"># 配置环境变量</span></span><br><span class="line"><span class="keyword">ENV</span> MyPath /home	</span><br><span class="line"><span class="comment"># 设置工作目录，根据配置的环境变量，$MyPath即为/home</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> <span class="variable">$MyPath</span>		</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> yum -y install vim \</span></span><br><span class="line"><span class="bash">	&amp;&amp; yum -y install net-tools</span></span><br><span class="line">	</span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">"/bin/bash"</span>]</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164014.png" alt="编写DockerFile文件" /></p>
+<p>接下来我们通过<code>docker build</code>在本地构建镜像：</p>
+<blockquote>
+<p><code>docker build</code>：用于使用 Dockerfile 创建镜像</p>
+<p>语法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build [OPTIONS] PATH | URL | -</span><br></pre></td></tr></table></figure>
+<p>常用：</p>
+<ul>
+<li><strong><code>-f</code>：指定要使用的Dockerfile路径</strong></li>
+<li><code>--quiet</code>, <code>-q</code>：安静模式，成功后只输出镜像 ID</li>
+<li><code>-rm</code>：设置镜像成功后删除中间容器</li>
+<li><strong><code>--tag</code>, <code>-t</code>：镜像的名字及标签，通常 name:tag 或者 name 格式；可以在一次构建中为一个镜像设置多个标签</strong></li>
+</ul>
+<p><strong><a href="https://www.runoob.com/docker/docker-build-command.html" target="_blank" rel="noopener">Docker build 命令</a></strong></p>
+</blockquote>
+<p>输入命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -f /home/root/myDockerFile/mycentosDockerFile -t mycentos:1.1 .</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里后面的点**<code>.</code>是表示当前路径**（<code>docker build [OPTIONS] PATH | URL | -</code>，其中PATH代表含有Dockfile的目录，当然也可以是URL中含有Dockerfile）， <strong><mark><code>.</code>号，其实是在指定镜像构建过程中的上下文环境的目录</mark>。</strong></p>
+<p>官方文档中是这么说的：<strong>The <code>.</code> at the end of the <code>docker build</code> command tells that Docker should look for the <code>Dockerfile</code> in the current directory.</strong></p>
+<p>（如果在 Dockerfile 中使用了一些 COPY 等指令来操作文件，如何让 Docker引擎 获取到这些文件呢？这里就有了一个<strong>镜像构建上下文</strong>的概念，当构建的时候，由用户指定构建镜像的上下文路径，而 docker build 会将这个路径下所有的文件都打包上传给 Docker 引擎，引擎内将这些内容展开后，就能获取到所有指定上下文中的文件了。）</p>
+<p><a href="https://blog.csdn.net/whatday/article/details/105135763" target="_blank" rel="noopener">docker build 命令后点的意思 . 号的意思</a></p>
+<p><strong><a href="https://blog.csdn.net/qianghaohao/article/details/87554255" target="_blank" rel="noopener">深入理解 Docker 构建上下文</a></strong></p>
+<p><strong><a href="https://yeasy.gitbook.io/docker_practice/image/build#jing-xiang-gou-jian-shang-xia-wen-context" target="_blank" rel="noopener">镜像构建上下文（Context）</a></strong></p>
+</blockquote>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164025.png" alt="docker build在本地生成镜像" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164037.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164056.png" alt="" /></p>
+<p>最后我们通过<code>docker run</code>来生成容器，输入命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --name mycentos mycentos:1.1</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164113.png" alt="" /></p>
+<p>可以看到上面提到的3个需求都实现了。</p>
+<h3 id="cmdentrypoint指令案例"><a class="markdownIt-Anchor" href="#cmdentrypoint指令案例"></a> CMD&amp;ENTRYPOINT指令案例</h3>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=26" target="_blank" rel="noopener">视频讲解</a></p>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/entrypoint" target="_blank" rel="noopener">ENTRYPOINT 入口点</a></p>
+<ul>
+<li><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/entrypoint#chang-jing-yi-rang-jing-xiang-bian-cheng-xiang-ming-ling-yi-yang-shi-yong" target="_blank" rel="noopener"><strong>场景一：让镜像变成像命令一样使用</strong></a></li>
+<li><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/entrypoint#chang-jing-er-ying-yong-yun-hang-qian-de-zhun-bei-gong-zuo" target="_blank" rel="noopener"><strong>场景二：应用运行前的准备工作</strong></a></li>
+</ul>
+<h3 id="onbuild指令案例"><a class="markdownIt-Anchor" href="#onbuild指令案例"></a> ONBUILD指令案例</h3>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=27" target="_blank" rel="noopener">视频讲解</a></p>
+<p><a href="https://yeasy.gitbook.io/docker_practice/image/dockerfile/onbuild" target="_blank" rel="noopener">ONBUILD 为他人作嫁衣裳</a></p>
+<h3 id="自定义镜像tomcat9"><a class="markdownIt-Anchor" href="#自定义镜像tomcat9"></a> 自定义镜像tomcat9</h3>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=28" target="_blank" rel="noopener">视频讲解</a></p>
+<p>环境准备：</p>
+<p>首先在宿主机<code>/home/root/myDockerFile/mytomcat9</code>路径下准备好：</p>
+<ul>
+<li>一个copy.txt文件（用于测试COPY指令）</li>
+<li><code>jdk-8u171-linux-x64.tar.gz</code>和<code>apache-tomcat-9.0.45.tar.gz</code>文件</li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164130.png" alt="" /></p>
+<p>然后就可以编写DockerFile了，在当前目录下创建DockerFile文件（<strong>注意文件命名就为DockerFile</strong>），内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定基础镜像</span></span><br><span class="line"><span class="keyword">FROM</span> centos</span><br><span class="line"><span class="comment"># 指定维护者信息</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> qingbo1011&lt;qingbo1011@<span class="number">163</span>.com&gt;</span><br><span class="line"><span class="comment"># 把宿主机当前上下文(即/home/root/myDockerFile/mytomcat9)的c.txt拷贝到容器 /usr/local/路径下</span></span><br><span class="line"><span class="comment"># (重命名为cincontainer.txt了)</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> copy.txt /usr/<span class="built_in">local</span>/cincontainer.txt</span></span><br><span class="line"><span class="comment"># 把jdk与tomcat添加到容器中的/usr/local/下(ADD指令会自动解压)</span></span><br><span class="line"><span class="comment"># 当然在相对路径中./表示当前路径，可以省略不写，./jdk-8u171-linux-x64.tar.gz可以直接写成jdk-8u171-linux-x64.tar.gz</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> ./jdk-8u171-linux-x64.tar.gz /usr/<span class="built_in">local</span>/</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> ./apache-tomcat-9.0.45.tar.gz /usr/<span class="built_in">local</span>/</span></span><br><span class="line"><span class="comment"># 安装vim编辑器</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> yum -y install vim</span></span><br><span class="line"><span class="comment"># 设置工具变量</span></span><br><span class="line"><span class="keyword">ENV</span> MYPATH /usr/local</span><br><span class="line"><span class="comment"># 设置工作路径(因为配置了环境变量，这里的$MYPATH即为/usr/local)</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> <span class="variable">$MYPATH</span></span></span><br><span class="line"><span class="comment"># 配置jdk与tomcat环境变量</span></span><br><span class="line"><span class="comment">#  -------------------------------</span></span><br><span class="line"><span class="keyword">ENV</span> JAVA_HOME /usr/local/jdk1.<span class="number">8.0</span>_171</span><br><span class="line"><span class="keyword">ENV</span> CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar</span><br><span class="line"><span class="keyword">ENV</span> CATALINA_HOME /usr/local/apache-tomcat-<span class="number">9.0</span>.<span class="number">45</span></span><br><span class="line"><span class="keyword">ENV</span> CATALINA_BASE /usr/local/apache-tomcat-<span class="number">9.0</span>.<span class="number">45</span></span><br><span class="line"><span class="keyword">ENV</span> PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/ib:$CATALINA_HOME/bin</span><br><span class="line"><span class="comment"># 容器运行时监听的端口</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span></span><br><span class="line"><span class="comment"># 启动时运行tomcat</span></span><br><span class="line"><span class="comment"># ENTRYPOINT ["/usrl/local/apache-tomcat-9.0.45/bin/startup.sh" ]</span></span><br><span class="line"><span class="comment"># CMD ["/usr/local/apache-tomcat-9.0.45/bin/catalina.sh","run"]</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> /usr/<span class="built_in">local</span>/apache-tomcat-9.0.45/bin/startup.sh &amp;&amp; tail -F /usr/<span class="built_in">local</span>/apache-tomcat-9.0.45/logs/catalina.out</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164146.png" alt="" /></p>
+<p>接着我们通过<code>docker build</code>来构建镜像：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t mytomcat9:1.0 .</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里因为我们当前所在路径就在DockerFile文件（<strong>注意文件命名就为Dockerfile</strong>）所在路径，所以没有用<code>-f /home/root/myDockerFile/mytomcat9/tomcat9DockerFile</code>这一参数来指定Dockerfile文件所在路径</p>
+<p><strong>在以后的大多数情况，我们构建一个Docker镜像往往是以下步骤：</strong></p>
+<ol>
+<li>
+<p><strong>跳到Dockerfile文件所在目录</strong></p>
+</li>
+<li>
+<p><strong>执行 <code>docker build</code> 构建命令</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t &lt;imageName:imageTag&gt; .</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>关于<code>docker build</code>指令的几点重要的说明：</p>
+<ul>
+<li>如果构建镜像时没有明确指定 Dockerfile，那么Docker客户端<strong>默认在构建镜像时指定的上下文路径下找名字为 Dockerfile 的构建文件</strong></li>
+<li><strong>Dockerfile 可以不在构建上下文路径下，此时需要构建时通过 -f 参数明确指定使用哪个构建文件</strong>，并且名称可以自己任意命名</li>
+</ul>
+</blockquote>
+<p>理解构建上下文对于镜像构建是很重要的，避免犯一些不应该的错误。比如有些初学者在发现 <code>COPY /opt/xxxx /app</code> 不工作后，于是干脆将 <code>Dockerfile</code> 放到了硬盘根目录去构建，结果发现 <code>docker build</code> 执行后，在发送一个几十 GB 的东西，极为缓慢而且很容易构建失败。那是因为这种做法是在让 <code>docker build</code> 打包整个硬盘，这显然是使用错误。</p>
+<p>一般来说，应该会<strong>将 <code>Dockerfile</code> 置于一个空目录下，或者项目根目录下。如果该目录下没有所需文件，那么应该把所需文件复制一份过来。<strong>如果目录下有些东西确实不希望构建时传给 Docker 引擎，那么</strong>可以用 <code>.gitignore</code> 一样的语法写一个 <code>.dockerignore</code>，该文件是用于剔除不需要作为上下文传递给 Docker 引擎的。</strong></p>
+<p>在默认情况下，<strong>如果不额外指定 <code>Dockerfile</code> 的话，会将<mark>上下文目录下</mark>的名为 <code>Dockerfile</code> 的文件作为 Dockerfile</strong>。（这就是为什么上面强调了命名为Dockerfile）</p>
+<p>这只是默认行为，<strong>实际上 <code>Dockerfile</code> 的文件名并不要求必须为 <code>Dockerfile</code>，而且并不要求必须位于上下文目录中，比如可以用 <code>-f ../Dockerfile</code> 参数指定某个文件作为 <code>Dockerfile</code>。</strong></p>
+<p>当然，一般大家<strong>习惯性的会使用默认的文件名 <code>Dockerfile</code>，以及会将其置于镜像构建上下文目录中。</strong></p>
+<p>我们输入<code>docker build -t mytomcat9:1.0 .</code>后的结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164200.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164212.png" alt="" /></p>
+<p>最后我们docker run来生成一个tomcat9镜像来验证一下，输入命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name mytomcat9 \</span><br><span class="line">		-p 8888:8080 \</span><br><span class="line">		-v /home/root/dockerVolumes/mytomcat/test:/usr/local/apache-tomcat-9.0.45/webapps/test \</span><br><span class="line">		-v /home/root/dockerVolumes/mytomcat/logs:/usr/local/apache-tomcat-9.0.45/logs \</span><br><span class="line">mytomcat9:1.0</span><br></pre></td></tr></table></figure>
+<p>可以发现成功运行：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164224.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164236.png" alt="" /></p>
+<p>可以发现<code>ADD</code>和<code>COPY</code>指令是生效的：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164245.png" alt="" /></p>
+<p>且我们在<code>docker run</code>命令中指定的数据卷也生效了：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164312.png" alt="" /></p>
+<h4 id="自定义tomcat9部署"><a class="markdownIt-Anchor" href="#自定义tomcat9部署"></a> 自定义tomcat9部署</h4>
+<p>在上面的<code>docker run</code>时我们已经配置了数据卷：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164329.png" alt="" /></p>
+<p>所以我们可以直接在宿主机的<code>/home/root/dockerVolumes/mytomcat/test</code>路径下放我们需要发布的内容即可：</p>
+<p>创建hello.html，代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span>hello,world<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">h1</span>&gt;</span>test<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">p</span>&gt;</span>你好，世界！<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后我们访问：<code>http://192.168.219.101:8888/test/hello.html</code>，结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164344.png" alt="部署成功" /></p>
+<hr />
+<h1 id="本地镜像推送到阿里云"><a class="markdownIt-Anchor" href="#本地镜像推送到阿里云"></a> 本地镜像推送到阿里云</h1>
+<p><a href="https://www.runoob.com/docker/docker-push-command.html" target="_blank" rel="noopener">Docker push 命令</a></p>
+<p><a href="https://yeasy.gitbook.io/docker_practice/repository" target="_blank" rel="noopener"><strong>访问仓库</strong></a></p>
+<p><a href="https://www.bilibili.com/video/BV1Ls411n7mx?p=33" target="_blank" rel="noopener"><strong>视频讲解</strong></a></p>
+<p><a href="https://cr.console.aliyun.com/cn-zhangjiakou/instance/credentials" target="_blank" rel="noopener">阿里云镜像仓库个人实例</a></p>
+<p><strong><a href="https://help.aliyun.com/document_detail/60743.html?spm=a2c4g.11186623.2.10.76967627O25YOB#title-xgi-cyp-2yb" target="_blank" rel="noopener">阿里云 Docker 镜像基本操作</a></strong></p>
+<p><strong><code>docker push</code>：将本地的镜像上传到镜像仓库</strong>（但是要先登陆到镜像仓库**<code>docker login</code>**）</p>
+<p>语法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker push [OPTIONS] NAME[:TAG]</span><br></pre></td></tr></table></figure>
+<p>OPTIONS说明：</p>
+<ul>
+<li><code>--disable-content-trust</code>：忽略镜像的校验（默认开启）</li>
+</ul>
+<p><strong>步骤：</strong></p>
+<ol>
+<li><strong><code>docker login</code>：登录到镜像仓库</strong></li>
+<li><strong><code>docker commit</code>：根据正在运行的容器推送到本地</strong>（这一步可以省略，因为也有其他方法生成镜像如DockerFile）</li>
+<li><strong><code>docker push</code>：将镜像推送到远程仓库</strong></li>
+</ol>
+<p><strong>我们在这里点击管理即可看到相关命令</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164410.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164420.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503164432.png" alt="成功推动到阿里云" /></p>
+<p>要拉取镜像的话只需要：<code>docker pull registry.cn-zhangjiakou.aliyuncs.com/qingbo1011/node1:[镜像版本号]</code>即可。</p>
+<blockquote>
+<p>通常，<strong>一个仓库会包含同一个软件不同版本的镜像，而标签就常用于对应该软件的各个版本。我们可以通过  <code>&lt;仓库名&gt;:&lt;标签&gt;</code> 的格式来指定具体是这个软件哪个版本的镜像</strong>。<strong>如果不给出标签，将以 <code>latest</code> 作为默认标签。</strong></p>
+<p>以 Ubuntu 镜像 为例，<code>ubuntu</code> 是仓库的名字，其内包含有不同的版本标签，如，<code>16.04</code>, <code>18.04</code>。我们可以通过 <code>ubuntu:16.04</code>，或者 <code>ubuntu:18.04</code> 来具体指定所需哪个版本的镜像。如果忽略了标签，比如 <code>ubuntu</code>，那将视为 <code>ubuntu:latest</code>。</p>
+</blockquote>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:qingbo1011@163.com">qingbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.qingbo1011.top/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/">http://www.qingbo1011.top/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.qingbo1011.top" target="_blank">Qing's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Docker/">Docker</a><a class="post-meta__tags" href="/tags/%E4%BA%91%E8%AE%A1%E7%AE%97/">云计算</a></div><div class="post_share"><div class="social-share" data-image="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20231003161115.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2021/05/31/Docker%E5%AE%89%E8%A3%85%E5%B8%B8%E7%94%A8%E8%BD%AF%E4%BB%B6/"><img class="prev_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Docker安装常用软件</div></div></a></div><div class="next-post pull_right"><a href="/2021/05/31/Docker%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/"><img class="next_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Docker基础（一）</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2021/05/31/Docker基础（一）/" title="Docker基础（一）"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2021-05-31</div><div class="relatedPosts_title">Docker基础（一）</div></div></a></div><div class="relatedPosts_item"><a href="/2021/05/31/Docker安装常用软件/" title="Docker安装常用软件"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2021-05-31</div><div class="relatedPosts_title">Docker安装常用软件</div></div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail','link'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'oNS5Emx1qUL3wN5yvPLKol0W-gzGzoHsz',
+  appKey: 'ytbw0ho3DMX0FeoAOWa37lf9',
+  notify: false,
+  verify: false,
+  placeholder: 'Stay hungry,stay foolish~',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: 'https://',
+  emojiMaps: {"欢呼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100836.gif","笑眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100849.gif","花心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100907.gif","吐舌":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100937.gif","疑问":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100951.gif","滑稽":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101004.gif","太开心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101017.gif","酷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101029.gif","怒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101044.gif","阴险":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101100.gif","委屈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101116.gif","乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101129.gif","你懂的":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101204.gif","小乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101215.gif","突然兴奋":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101228.gif","喷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101241.gif","哈哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101255.gif","喝酒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101305.gif","汗":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101323.gif","笑尿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102004.gif","嘿嘿嘿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102018.gif","真棒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102047.gif","托腮":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102108.gif","微笑":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/e3/2018new_weixioa02_org.png","礼貌":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/09/2018new_keai_org.png","笑哭":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/4a/2018new_xiaoku_thumb.png","无奈":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/83/2018new_kuxiao_org.png","爱你":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f6/2018new_aini_org.png","吃瓜":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/01/2018new_chigua_thumb.png","doge":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_doge02_org.png","dog":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/22/2018new_erha_org.png","cat":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7b/2018new_miaomiao_thumb.png","星星眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102225.png","酸了":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102240.png","大哭":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102254.png","傲娇":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102314.png","给心心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102328.png","嘿哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102345.png","custom0":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101410.gif","custom1":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101424.webp","狗头":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101710.png","搬砖中":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101744.png","忙到飞起":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102411.png","裂开":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102426.png","叹气":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102439.png","让我看看":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102456.png","panda0":"https://bbs.res.meizu.com/static/image/smiley/panda/_000.png","panda1":"https://bbs.res.meizu.com/static/image/smiley/panda/_001.png","panda2":"https://bbs.res.meizu.com/static/image/smiley/panda/_002.png","panda3":"https://bbs.res.meizu.com/static/image/smiley/panda/_003.png","panda4":"https://bbs.res.meizu.com/static/image/smiley/panda/_004.png","panda5":"https://bbs.res.meizu.com/static/image/smiley/panda/_005.png","panda6":"https://bbs.res.meizu.com/static/image/smiley/panda/_006.png","panda7":"https://bbs.res.meizu.com/static/image/smiley/panda/_007.png","panda8":"https://bbs.res.meizu.com/static/image/smiley/panda/_008.png","panda9":"https://bbs.res.meizu.com/static/image/smiley/panda/_009.png","panda10":"https://bbs.res.meizu.com/static/image/smiley/panda/_010.png","panda11":"https://bbs.res.meizu.com/static/image/smiley/panda/_011.png","panda12":"https://bbs.res.meizu.com/static/image/smiley/panda/_012.png","panda13":"https://bbs.res.meizu.com/static/image/smiley/panda/_013.png","panda14":"https://bbs.res.meizu.com/static/image/smiley/panda/_014.png","panda15":"https://bbs.res.meizu.com/static/image/smiley/panda/_015.png","panda16":"https://bbs.res.meizu.com/static/image/smiley/panda/_016.png","panda17":"https://bbs.res.meizu.com/static/image/smiley/panda/_017.png","panda18":"https://bbs.res.meizu.com/static/image/smiley/panda/_018.png","panda19":"https://bbs.res.meizu.com/static/image/smiley/panda/_019.png","panda20":"https://bbs.res.meizu.com/static/image/smiley/panda/_020.png","panda21":"https://bbs.res.meizu.com/static/image/smiley/panda/_021.png","panda22":"https://bbs.res.meizu.com/static/image/smiley/panda/_022.png","panda23":"https://bbs.res.meizu.com/static/image/smiley/panda/_023.png","panda24":"https://bbs.res.meizu.com/static/image/smiley/panda/_024.png","panda25":"https://bbs.res.meizu.com/static/image/smiley/panda/_025.png","panda26":"https://bbs.res.meizu.com/static/image/smiley/panda/_026.png","panda27":"https://bbs.res.meizu.com/static/image/smiley/panda/_027.png","panda28":"https://bbs.res.meizu.com/static/image/smiley/panda/_028.png","panda29":"https://bbs.res.meizu.com/static/image/smiley/panda/_029.png"},
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503161842.png)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By qingbo</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div><div class="footer_custom_text">宇宙很大，生活更大</div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script></body></html>

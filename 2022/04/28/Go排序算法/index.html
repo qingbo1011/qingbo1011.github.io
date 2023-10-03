@@ -1,0 +1,724 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Go排序 | Qing's Blog</title><meta name="description" content="Go排序  八大排序算法的Golang实现 十个动图带你搞懂排序算法（go实现版本） Sorting Algorithms in Go 常见排序算法知识体系详解 go-algorithms   术语说明：  n: 数据规模 k: “桶”的个数 In-place: 占用常数内存，不占用额外内存 Out-place: 占用额外内存 稳定：如果a原本在b前面，而a&#x3D;b，排序之后a仍然在b的前面 不稳定"><meta name="keywords" content="Go排序"><meta name="author" content="qingbo,qingbo1011@163.com"><meta name="copyright" content="qingbo"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="dns-prefetch" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="dns-prefetch" href="https://fonts.googleapis.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="dns-prefetch" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Go排序"><meta name="twitter:description" content="Go排序  八大排序算法的Golang实现 十个动图带你搞懂排序算法（go实现版本） Sorting Algorithms in Go 常见排序算法知识体系详解 go-algorithms   术语说明：  n: 数据规模 k: “桶”的个数 In-place: 占用常数内存，不占用额外内存 Out-place: 占用额外内存 稳定：如果a原本在b前面，而a&#x3D;b，排序之后a仍然在b的前面 不稳定"><meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220707172953.png"><meta property="og:type" content="article"><meta property="og:title" content="Go排序"><meta property="og:url" content="http://www.qingbo1011.top/2022/04/28/Go%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/"><meta property="og:site_name" content="Qing's Blog"><meta property="og:description" content="Go排序  八大排序算法的Golang实现 十个动图带你搞懂排序算法（go实现版本） Sorting Algorithms in Go 常见排序算法知识体系详解 go-algorithms   术语说明：  n: 数据规模 k: “桶”的个数 In-place: 占用常数内存，不占用额外内存 Out-place: 占用额外内存 稳定：如果a原本在b前面，而a&#x3D;b，排序之后a仍然在b的前面 不稳定"><meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220707172953.png"><meta property="article:published_time" content="2022-04-28T00:47:03.000Z"><meta property="article:modified_time" content="2023-10-03T08:16:11.761Z"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="http://www.qingbo1011.top/2022/04/28/Go%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/"><link rel="prev" title="Gin+JWT+Air热部署的简单实践" href="http://www.qingbo1011.top/2022/05/01/Gin+JWT+Air%E7%83%AD%E9%83%A8%E7%BD%B2%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5/"><link rel="next" title="Go常用标准库" href="http://www.qingbo1011.top/2022/04/27/Go%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://xxx/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: true,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'false',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: true
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.0"></head><body><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230440.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">87</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">81</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">15</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#go排序"><span class="toc-number">1.</span> <span class="toc-text"> Go排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#冒泡排序"><span class="toc-number">2.</span> <span class="toc-text"> 冒泡排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#选择排序"><span class="toc-number">3.</span> <span class="toc-text"> 选择排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#插入排序"><span class="toc-number">4.</span> <span class="toc-text"> 插入排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#希尔排序"><span class="toc-number">5.</span> <span class="toc-text"> 希尔排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#归并排序"><span class="toc-number">6.</span> <span class="toc-text"> 归并排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#快速排序"><span class="toc-number">7.</span> <span class="toc-text"> 快速排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#堆排序"><span class="toc-number">8.</span> <span class="toc-text"> 堆排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#计数排序"><span class="toc-number">9.</span> <span class="toc-text"> 计数排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#桶排序"><span class="toc-number">10.</span> <span class="toc-text"> 桶排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#基数排序"><span class="toc-number">11.</span> <span class="toc-text"> 基数排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#不同情况下排序选择"><span class="toc-number">12.</span> <span class="toc-text"> 不同情况下排序选择</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#go-sort包"><span class="toc-number">13.</span> <span class="toc-text"> Go sort包</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#对切片进行排序"><span class="toc-number">13.1.</span> <span class="toc-text"> 对切片进行排序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#int排序和查找"><span class="toc-number">13.1.1.</span> <span class="toc-text"> []int排序和查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#float64排序和查找"><span class="toc-number">13.1.2.</span> <span class="toc-text"> []float64排序和查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#string排序和查找"><span class="toc-number">13.1.3.</span> <span class="toc-text"> []string排序和查找</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据集合排序"><span class="toc-number">13.2.</span> <span class="toc-text"> 数据集合排序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#interface排序和查找"><span class="toc-number">13.3.</span> <span class="toc-text"> []interface排序和查找</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sortslice"><span class="toc-number">13.3.1.</span> <span class="toc-text"> sort.Slice</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sortslicestable"><span class="toc-number">13.3.2.</span> <span class="toc-text"> sort.SliceStable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sortsliceissorted"><span class="toc-number">13.3.3.</span> <span class="toc-text"> sort.SliceIsSorted</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sortsearch"><span class="toc-number">13.3.4.</span> <span class="toc-text"> sort.Search</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#进阶pdqsort"><span class="toc-number">14.</span> <span class="toc-text"> 进阶：pdqsort</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#pdqsort-version1"><span class="toc-number">14.1.</span> <span class="toc-text"> pdqsort - version1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pdqsort-version2"><span class="toc-number">14.2.</span> <span class="toc-text"> pdqsort - version2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pdqsort-final-version"><span class="toc-number">14.3.</span> <span class="toc-text"> pdqsort - final version</span></a></li></ol></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220707172953.png)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">Qing's Blog</a></span><span class="pull_right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">Go排序</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2022-04-28 08:47:03"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2022-04-28</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2023-10-03 16:16:11"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2023-10-03</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Go/">Go</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="post-meta__icon fa fa-file-word-o" aria-hidden="true"></i><span>字数总计:</span><span class="word-count">8.1k</span><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-clock-o" aria-hidden="true"></i><span>阅读时长: 34 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-comment-o" aria-hidden="true"></i><span>评论数:</span><a href="/2022/04/28/Go%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/2022/04/28/Go%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/" itemprop="commentCount"></span></a></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="go排序"><a class="markdownIt-Anchor" href="#go排序"></a> Go排序</h1>
+<ul>
+<li><a href="https://juejin.cn/post/7066728890575618078#heading-0" target="_blank" rel="noopener">八大排序算法的Golang实现</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/320419705" target="_blank" rel="noopener">十个动图带你搞懂排序算法（go实现版本）</a></li>
+<li><a href="https://dev.to/adnanbabakan/sorting-algorithms-in-go-725" target="_blank" rel="noopener">Sorting Algorithms in Go</a></li>
+<li><a href="https://pdai.tech/md/algorithm/alg-sort-overview.html" target="_blank" rel="noopener">常见排序算法知识体系详解</a></li>
+<li><strong><a href="https://github.com/0xAX/go-algorithms" target="_blank" rel="noopener">go-algorithms</a></strong></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705184830.png" alt="" /></p>
+<p>术语说明：</p>
+<ul>
+<li>n: 数据规模</li>
+<li>k: “桶”的个数</li>
+<li>In-place: 占用常数内存，不占用额外内存</li>
+<li>Out-place: 占用额外内存</li>
+<li>稳定：如果a原本在b前面，而a=b，排序之后a仍然在b的前面</li>
+<li>不稳定：如果a原本在b的前面，而a=b，排序之后a可能会出现在b的后面</li>
+<li>内排序：所有排序操作都在内存中完成</li>
+<li>外排序：由于数据太大，因此把数据放在磁盘中，而排序通过磁盘和内存的数据传输才能进行</li>
+</ul>
+<p>仓库地址：<a href="https://github.com/qingbo1011/go-sort" target="_blank" rel="noopener">https://github.com/qingbo1011/go-sort</a></p>
+<h1 id="冒泡排序"><a class="markdownIt-Anchor" href="#冒泡排序"></a> 冒泡排序</h1>
+<p>冒泡排序（Bubble Sort）：</p>
+<ol>
+<li>比较相邻元素，如果前者比后者大，则进行位置交换</li>
+<li>从第一个开始比较到未确定位置的最后一个，每经过一轮，则代表当前最大的数到达本次最后的位置</li>
+</ol>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705124631.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(bubbleSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">bubbleSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(s); i++ &#123;</span><br><span class="line">      <span class="keyword">for</span> j := <span class="number">0</span>; j &lt; <span class="built_in">len</span>(s)<span class="number">-1</span>-i; j++ &#123;</span><br><span class="line">         <span class="keyword">if</span> s[j] &gt; s[j+<span class="number">1</span>] &#123;</span><br><span class="line">            s[j], s[j+<span class="number">1</span>] = s[j+<span class="number">1</span>], s[j]</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：如果是倒序，则需要比较 n-1 + n-2 + n-3 +…+1=n(n-1)/2次，为O(n^2)</li>
+<li>平均：O(n^2)</li>
+<li>最好：如果数组本来就是有序的，则经过一轮比较即可，共需要比较n-1次，时间复杂度是 O(n)</li>
+</ul>
+<p>空间复杂度：使用常数个辅助单元O(1)</p>
+<p>稳定性：稳定，因为 i&gt;j时，A[i]=A[j]，不会进行交换</p>
+</blockquote>
+<h1 id="选择排序"><a class="markdownIt-Anchor" href="#选择排序"></a> 选择排序</h1>
+<p>选择排序(Selection sort)：每一次选出最小者直接交换到左侧，省出了多余的元素交换。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705144832.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(selectionSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">selectionSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(s); i++ &#123;</span><br><span class="line">      min := i</span><br><span class="line">      <span class="keyword">for</span> j := i + <span class="number">1</span>; j &lt; <span class="built_in">len</span>(s); j++ &#123; <span class="comment">// 找到索引i的右边最小值索引</span></span><br><span class="line">         <span class="keyword">if</span> s[j] &lt; s[min] &#123;</span><br><span class="line">            min = j</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      s[i], s[min] = s[min], s[i] <span class="comment">// 交换i和min</span></span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(n^2)</li>
+<li>平均：O(n^2)</li>
+<li>最好：O(n^2)</li>
+</ul>
+<p>空间复杂度：O(1)</p>
+<p>稳定性：不稳定。当数列包含多个值相等的元素时，选择排序有可能打乱它们的原有顺序。</p>
+</blockquote>
+<h1 id="插入排序"><a class="markdownIt-Anchor" href="#插入排序"></a> 插入排序</h1>
+<p>插入排序（Insertion Sort）：维护一个有序区，把元素一个一个插入到有序区的适当位置，直到所有元素有序为止。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705152320.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(insertionSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">insertionSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">1</span>; i &lt; <span class="built_in">len</span>(s); i++ &#123;</span><br><span class="line">      <span class="keyword">for</span> j := <span class="number">0</span>; j &lt; i; j++ &#123; <span class="comment">// 索引i往i左边的区间插入</span></span><br><span class="line">         <span class="comment">// 最开始的区间，只有索引为0的元素(j)，索引为1(i)的元素往该区间插入</span></span><br><span class="line">         <span class="keyword">if</span> s[i] &lt; s[j] &#123;</span><br><span class="line">            s[j], s[i] = s[i], s[j]</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(n^2)：切片是逆序的</li>
+<li>平均：O(n^2)</li>
+<li>最好：O(n)： 切片本身就已经是有序了</li>
+</ul>
+<p>空间复杂度：O(1)</p>
+<p>稳定性：稳定</p>
+</blockquote>
+<h1 id="希尔排序"><a class="markdownIt-Anchor" href="#希尔排序"></a> 希尔排序</h1>
+<p><a href="https://www.youtube.com/watch?v=ddeLSDsYVp8" target="_blank" rel="noopener">What is Shell Sort</a></p>
+<p><strong><a href="https://www.bilibili.com/video/BV1rE411g7rW?" target="_blank" rel="noopener">[算法]六分钟彻底弄懂希尔排序，简单易懂</a></strong></p>
+<p>希尔排序（Shell Sort）：设置希尔增量每次折半，逐步分组进行粗调，最后进行插入排序。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705171851.gif" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705172053.png" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(shellSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">shellSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> gap := <span class="built_in">len</span>(s) / <span class="number">2</span>; gap &gt; <span class="number">0</span>; gap = gap / <span class="number">2</span> &#123;</span><br><span class="line">      <span class="keyword">for</span> i := gap; i &lt; <span class="built_in">len</span>(s); i++ &#123;</span><br><span class="line">         <span class="keyword">for</span> j := i; j &gt;= gap &amp;&amp; s[j-gap] &gt; s[j]; j = j - gap &#123;</span><br><span class="line">            s[j], s[j-gap] = s[j-gap], s[j]</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(n^2)（最坏就等于插入排序了）</li>
+<li>平均：O(nlogn)</li>
+<li>最好：O(n^1.3)</li>
+</ul>
+<p>空间复杂度：O(1)</p>
+<p>稳定性：不稳定</p>
+</blockquote>
+<h1 id="归并排序"><a class="markdownIt-Anchor" href="#归并排序"></a> 归并排序</h1>
+<p>归并排序（Merge Sort）：最小分组比较，依次合并</p>
+<ol>
+<li>把长度为n的输入序列分成两个长度为n/2的子序列；</li>
+<li>对这两个子序列分别采用归并排序；</li>
+<li>将两个排序好的子序列合并成一个最终的排序序列。</li>
+</ol>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220706103240.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">	fmt.Println(s)</span><br><span class="line">	fmt.Println(mergeSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mergeSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(s) &lt;= <span class="number">1</span> &#123; <span class="comment">// 递归终止条件</span></span><br><span class="line">		<span class="keyword">return</span> s</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	middle := <span class="built_in">len</span>(s) / <span class="number">2</span></span><br><span class="line">	left := mergeSort(s[:middle])</span><br><span class="line">	right := mergeSort(s[middle:])</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> merge(left, right)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">merge</span><span class="params">(left []<span class="keyword">int</span>, right []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">	result := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>, <span class="built_in">len</span>(left)+<span class="built_in">len</span>(right))</span><br><span class="line">	<span class="keyword">for</span> <span class="built_in">len</span>(left) &gt; <span class="number">0</span> || <span class="built_in">len</span>(right) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// 对len(left)=0和len(right)=0情况的处理</span></span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(left) == <span class="number">0</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="built_in">append</span>(result, right...)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(right) == <span class="number">0</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="built_in">append</span>(result, left...)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> left[<span class="number">0</span>] &lt; right[<span class="number">0</span>] &#123;</span><br><span class="line">			result = <span class="built_in">append</span>(result, left[<span class="number">0</span>])</span><br><span class="line">			left = left[<span class="number">1</span>:] <span class="comment">// left切片去掉left[0]元素</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			result = <span class="built_in">append</span>(result, right[<span class="number">0</span>])</span><br><span class="line">			right = right[<span class="number">1</span>:] <span class="comment">// right切片去掉right[0]元素</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(nlogn)</li>
+<li>平均：O(nlogn)</li>
+<li>最好：O(nlogn)</li>
+</ul>
+<p>空间复杂度： O(n)</p>
+<p>稳定性：稳定</p>
+</blockquote>
+<h1 id="快速排序"><a class="markdownIt-Anchor" href="#快速排序"></a> 快速排序</h1>
+<p><strong>快速排序（Quick Sort）</strong>：快排是面试时经常会要写的排序算法。</p>
+<p><strong><a href="https://www.youtube.com/watch?v=7h1s2SojIRw" target="_blank" rel="noopener">QuickSort Algorithm</a></strong></p>
+<p>分治思想：快速排序是从冒泡元素演变而来。在快速排序中，元素的比较和交换是从两端向中间进行的，较大的元素一轮就能交换到后面的位置，而较小的元素一轮就能交换到前面的位置，元素每次移动的距离较远，所以比较次数和移动次数较少，速度较快。</p>
+<ol>
+<li>在待排序的元素任取一个元素作为基准（<strong>通常选第一个元素，但最好的方法是从待排序元素中随机选取一个为基准</strong>），称为基准元素（<strong>pivot</strong>）</li>
+<li>将待排序的元素进行分区，比基准元素大的元素放在它的右边，比基准元素小的放在它的左边</li>
+<li>对左右两个分区重复以上步骤，直到所有的元素都是有序的</li>
+</ol>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220706113857.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(quicksort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">quicksort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   <span class="keyword">if</span> <span class="built_in">len</span>(s) &lt; <span class="number">2</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> s</span><br><span class="line">   &#125;</span><br><span class="line">   left, right := <span class="number">0</span>, <span class="built_in">len</span>(s)<span class="number">-1</span></span><br><span class="line">   pivot := <span class="number">0</span> <span class="comment">// pivot可以在[0,len(s)-1]之间随机取</span></span><br><span class="line">   s[pivot], s[right] = s[right], s[pivot]</span><br><span class="line">   <span class="keyword">for</span> i := <span class="keyword">range</span> s &#123;</span><br><span class="line">      <span class="keyword">if</span> s[i] &lt; s[right] &#123;</span><br><span class="line">         s[left], s[i] = s[i], s[left]</span><br><span class="line">         left++</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   s[left], s[right] = s[right], s[left]</span><br><span class="line"></span><br><span class="line">   quicksort(s[:left])</span><br><span class="line">   quicksort(s[left+<span class="number">1</span>:])</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(n^2) ：选取的pivot，最终只能确定1个元素位置（如<code>s := []int{1,2,3,4,5,6}</code>，每次都选第一个元素作为pivot，那么第一次只能确定1的位置，第二次只能确定2的位置。。。）</li>
+<li>平均：O(nlogn)</li>
+<li>最好：O(nlogn)：每次选择的pivot正好是中位数</li>
+</ul>
+<p>空间复杂度：</p>
+<ul>
+<li>平均：O(logn)</li>
+<li>最坏：O(n)</li>
+</ul>
+<p>稳定性：不稳定，因为基准元素的比较和交换是跳跃进行的</p>
+</blockquote>
+<h1 id="堆排序"><a class="markdownIt-Anchor" href="#堆排序"></a> 堆排序</h1>
+<p><a href="https://www.qingbo1011.top/2021/08/05/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E5%A0%86%E3%80%81%E6%95%A3%E5%88%97%E3%80%81%E5%B9%B6%E6%9F%A5%E9%9B%86/#java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E5%A0%86%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97-%E6%95%A3%E5%88%97%E5%93%88%E5%B8%8C%E8%A1%A8%E5%92%8C%E5%B9%B6%E6%9F%A5%E9%9B%86">数据结构 堆 笔记</a></p>
+<p>堆排序（Heap Sort）：利用堆这种数据结构所设计的一种排序算法。堆积是一个近似完全二叉树的结构，并同时满足堆积的性质：即<strong>子结点的键值或索引总是小于（或者大于）它的父节点</strong>。（本质是完全二叉树，根节点为最大值或者最小值）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220706125228.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(heapSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">heapSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="built_in">len</span>(s)/<span class="number">2</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i-- &#123;</span><br><span class="line">      s = sift(s, i, <span class="built_in">len</span>(s))</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="built_in">len</span>(s) - <span class="number">1</span>; i &gt;= <span class="number">1</span>; i-- &#123;</span><br><span class="line">      s[<span class="number">0</span>], s[i] = s[i], s[<span class="number">0</span>]</span><br><span class="line">      s = sift(s, <span class="number">0</span>, i)</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sift</span><span class="params">(s []<span class="keyword">int</span>, i <span class="keyword">int</span>, length <span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   maxChild := <span class="number">0</span></span><br><span class="line">   <span class="keyword">for</span> i*<span class="number">2</span>+<span class="number">1</span> &lt; length &#123;</span><br><span class="line">      <span class="keyword">if</span> (i*<span class="number">2</span>+<span class="number">1</span> == length<span class="number">-1</span>) || (s[i*<span class="number">2</span>+<span class="number">1</span>] &gt; s[i*<span class="number">2</span>+<span class="number">2</span>]) &#123;</span><br><span class="line">         maxChild = i*<span class="number">2</span> + <span class="number">1</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         maxChild = i*<span class="number">2</span> + <span class="number">2</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> s[i] &lt; s[maxChild] &#123;</span><br><span class="line">         s[i], s[maxChild] = s[maxChild], s[i]</span><br><span class="line">         i = maxChild</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         <span class="keyword">break</span></span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(nlogn)</li>
+<li>平均：O(nlogn)</li>
+<li>最好：O(nlogn)</li>
+</ul>
+<p>空间复杂度：O(1)</p>
+<p>稳定性：不稳定</p>
+</blockquote>
+<h1 id="计数排序"><a class="markdownIt-Anchor" href="#计数排序"></a> 计数排序</h1>
+<p>计数排序（Counting Sort）：计数排序的核心在于将输入的数据值转化为键存储在额外开辟的数组空间中。 作为一种线性时间复杂度的排序，<strong><mark>计数排序要求数据必须是有确定范围的整数</mark></strong>。</p>
+<p>计数排序(Counting sort)是一种稳定的排序算法。计数排序使用一个额外的数组C，其中第i个元素是待排序数组A中值等于i的元素的个数。然后根据数组C来将A中的元素排到正确的位置。它只能对整数进行排序。</p>
+<ol>
+<li>找出待排序的数组中最大和最小的元素；</li>
+<li>统计数组中每个值为i的元素出现的次数，存入数组C的第i项；</li>
+<li>对所有的计数累加（从C中的第一个元素开始，每一项和前一项相加）；</li>
+<li>反向填充目标数组：将每个元素i放在新数组的第C(i)项，每放一个元素就将C(i)减去1。</li>
+</ol>
+<p>说的直白一点，就是把把最小值和最大值范围内的所有可能数列举出来，然后原数组中的数字出现的个数进行计数。（思路非常简单）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220706150829.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">-3</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(countingSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">countingSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   min, max := getMaxAndMin(s)</span><br><span class="line">   bias := <span class="number">0</span> - min <span class="comment">// 引入bias，是为了解决s中最小值为负数的情况</span></span><br><span class="line">   result := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line">   <span class="comment">// arrayOfCounts index-bias为s中的某个数，value为该数在s中的个数</span></span><br><span class="line">   arrayOfCounts := <span class="built_in">make</span>([]<span class="keyword">int</span>, max-min+<span class="number">1</span>)</span><br><span class="line">   <span class="keyword">for</span> i, _ := <span class="keyword">range</span> s &#123; <span class="comment">// 就算s中有负数，处理后s中的min也为0</span></span><br><span class="line">      s[i] = s[i] + bias</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">for</span> _, v := <span class="keyword">range</span> s &#123;</span><br><span class="line">      arrayOfCounts[v]++</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">for</span> i, _ := <span class="keyword">range</span> arrayOfCounts &#123;</span><br><span class="line">      <span class="keyword">for</span> arrayOfCounts[i] &gt; <span class="number">0</span> &#123;</span><br><span class="line">         result = <span class="built_in">append</span>(result, i-bias) <span class="comment">// 这里别忘了要减去bias</span></span><br><span class="line">         arrayOfCounts[i]--</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getMaxAndMin</span><span class="params">(s []<span class="keyword">int</span>)</span> <span class="params">(min <span class="keyword">int</span>, max <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> _, v := <span class="keyword">range</span> s &#123;</span><br><span class="line">      <span class="keyword">if</span> v &lt; min &#123;</span><br><span class="line">         min = v</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> v &gt; max &#123;</span><br><span class="line">         max = v</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(n+k)</li>
+<li>平均：O(n+k)</li>
+<li>最好：O(n+k)</li>
+</ul>
+<p>空间复杂度：O(k)</p>
+<p>稳定性：稳定</p>
+</blockquote>
+<h1 id="桶排序"><a class="markdownIt-Anchor" href="#桶排序"></a> 桶排序</h1>
+<p>桶排序（Bucket Sort）：桶排序就是把数值按照范围进行划分，把数值依次放入一个个划分的范围内，称之为 <code>桶</code>，然后在桶内进行排序，然后依次输出每个桶的值。（桶排序是计数排序的升级版。它利用了函数的映射关系，高效与否的关键就在于这个映射函数的确定。）</p>
+<ol>
+<li>人为设置一个BucketSize，作为每个桶所能放置多少个不同数值（例如当BucketSize==5时，该桶可以存放｛1,2,3,4,5｝这几种数字，但是容量不限，即可以存放100个3）；</li>
+<li>遍历输入数据，并且把数据一个一个放到对应的桶里去；</li>
+<li>对每个不是空的桶进行排序，<strong>可以使用其它排序方法，也可以递归使用桶排序</strong>；（<strong>注意</strong>，如果递归使用桶排序为各个桶排序，则当桶数量为1时要手动减小BucketSize增加下一循环桶的数量，否则会陷入死循环，导致内存溢出。）</li>
+<li>从不是空的桶里把排好序的数据拼接起来。</li>
+</ol>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220706163732.png" alt="" />、</p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"math"</span></span><br><span class="line">   <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(bucketSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">bucketSort</span><span class="params">(s []<span class="keyword">int</span>)</span> []<span class="title">int</span></span> &#123;</span><br><span class="line">   result := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line">   <span class="comment">// 1.找到最小值和最大值</span></span><br><span class="line">   min, max := math.MaxInt, math.MinInt</span><br><span class="line">   <span class="keyword">for</span> _, v := <span class="keyword">range</span> s &#123;</span><br><span class="line">      <span class="keyword">if</span> v &lt; min &#123;</span><br><span class="line">         min = v</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> v &gt; max &#123;</span><br><span class="line">         max = v</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 2.初始化桶</span></span><br><span class="line">   bucketNum := (max-min)/<span class="built_in">len</span>(s) + <span class="number">1</span></span><br><span class="line">   bucketList := <span class="built_in">make</span>([][]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; bucketNum; i++ &#123;</span><br><span class="line">      bucket := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line">      bucketList = <span class="built_in">append</span>(bucketList, bucket)</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 3.把元素放到桶内</span></span><br><span class="line">   <span class="keyword">for</span> _, v := <span class="keyword">range</span> s &#123;</span><br><span class="line">      number := (v - min) / <span class="built_in">len</span>(s)</span><br><span class="line">      bucketList[number] = <span class="built_in">append</span>(bucketList[number], v)</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 4.桶内进行排序</span></span><br><span class="line">   <span class="keyword">for</span> _, bucket := <span class="keyword">range</span> bucketList &#123;</span><br><span class="line">      sort.Ints(bucket) <span class="comment">// 桶内排序，可以使用其它排序方法，也可以递归使用桶排序，这里我直接用go内置的sort包</span></span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// 5.对bucketList进行拼接</span></span><br><span class="line">   <span class="keyword">for</span> _, bucket := <span class="keyword">range</span> bucketList &#123;</span><br><span class="line">      <span class="keyword">for</span> _, v := <span class="keyword">range</span> bucket &#123;</span><br><span class="line">         result = <span class="built_in">append</span>(result, v)</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏： O(n^2)</li>
+<li>平均： O(n+k)</li>
+<li>最好： O(n+k)</li>
+</ul>
+<p>空间复杂度： O(n+k)</p>
+<p>稳定性：稳定</p>
+</blockquote>
+<h1 id="基数排序"><a class="markdownIt-Anchor" href="#基数排序"></a> 基数排序</h1>
+<p>基数排序（Radix Sort）：基数排序是按照低位先排序，然后收集；再按照高位排序，然后再收集；依次类推，直到最高位。有时候有些属性是有优先级顺序的，先按低优先级排序，再按高优先级排序。最后的次序就是高优先级高的在前，高优先级相同的低优先级高的在前。基数排序基于分别排序，分别收集，所以是稳定的。</p>
+<ol>
+<li>取得数组中的最大数，并取得位数；</li>
+<li>arr为原始数组，从最低位开始取每个位组成radix数组；</li>
+<li>对radix进行计数排序（利用计数排序适用于小范围数的特点）；</li>
+</ol>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220706172727.gif" alt="" /></p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"bytes"</span></span><br><span class="line">   <span class="string">"encoding/binary"</span></span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> digit = <span class="number">4</span></span><br><span class="line"><span class="keyword">const</span> maxbit = <span class="number">-1</span> &lt;&lt; <span class="number">31</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int32</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>&#125;</span><br><span class="line">   fmt.Println(s)</span><br><span class="line">   fmt.Println(radixSort(s))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">radixSort</span><span class="params">(data []<span class="keyword">int32</span>)</span> []<span class="title">int32</span></span> &#123;</span><br><span class="line">   buf := bytes.NewBuffer(<span class="literal">nil</span>)</span><br><span class="line">   ds := <span class="built_in">make</span>([][]<span class="keyword">byte</span>, <span class="built_in">len</span>(data))</span><br><span class="line">   <span class="keyword">for</span> i, e := <span class="keyword">range</span> data &#123;</span><br><span class="line">      binary.Write(buf, binary.LittleEndian, e^maxbit)</span><br><span class="line">      b := <span class="built_in">make</span>([]<span class="keyword">byte</span>, digit)</span><br><span class="line">      buf.Read(b)</span><br><span class="line">      ds[i] = b</span><br><span class="line">   &#125;</span><br><span class="line">   countingSort := <span class="built_in">make</span>([][][]<span class="keyword">byte</span>, <span class="number">256</span>)</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; digit; i++ &#123;</span><br><span class="line">      <span class="keyword">for</span> _, b := <span class="keyword">range</span> ds &#123;</span><br><span class="line">         countingSort[b[i]] = <span class="built_in">append</span>(countingSort[b[i]], b)</span><br><span class="line">      &#125;</span><br><span class="line">      j := <span class="number">0</span></span><br><span class="line">      <span class="keyword">for</span> k, bs := <span class="keyword">range</span> countingSort &#123;</span><br><span class="line">         <span class="built_in">copy</span>(ds[j:], bs)</span><br><span class="line">         j += <span class="built_in">len</span>(bs)</span><br><span class="line">         countingSort[k] = bs[:<span class="number">0</span>]</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">var</span> w <span class="keyword">int32</span></span><br><span class="line">   <span class="keyword">for</span> i, b := <span class="keyword">range</span> ds &#123;</span><br><span class="line">      buf.Write(b)</span><br><span class="line">      binary.Read(buf, binary.LittleEndian, &amp;w)</span><br><span class="line">      data[i] = w ^ maxbit</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> data</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间复杂度：</p>
+<ul>
+<li>最坏：O(n*k)</li>
+<li>平均：O(n*k)</li>
+<li>最好：O(n*k)</li>
+</ul>
+<p>空间复杂度：O(n+k)</p>
+<p>稳定性：稳定</p>
+</blockquote>
+<h1 id="不同情况下排序选择"><a class="markdownIt-Anchor" href="#不同情况下排序选择"></a> 不同情况下排序选择</h1>
+<p>总结来看：<strong>快速排序和希尔排序</strong>在排序速度上表现是比较优秀的，而归并排序次之。</p>
+<p>On average, quicksort performs better than shell sort; but shell sort is more efficient than quicksort when the given data is already/almost sorted.</p>
+<p>Shell sort does not require stack calls, whereas quicksort does.</p>
+<blockquote>
+<p>平均而言，快速排序比希尔排序性能更好; 但是，当给定数据已经或几乎排序时，希尔排序比快速排序更有效。希尔排序不需要堆栈调用（递归），而快速排序需要。</p>
+</blockquote>
+<p>我们用Go来实际benchmark一下。（选择插入排序、快速排序和堆排序，因为Go <code>sort</code>包中主要用到了这几种排序）</p>
+<p>根据序列元素排序情况划分：</p>
+<ul>
+<li>完全随机的情况（random）</li>
+<li>有序/逆序的情况（sorted/reverse）</li>
+<li>元素重复度较高的情况（mod8）</li>
+</ul>
+<p>在此基础上，还需要根据序列长度的划分（16/128/1024）</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">序列元素排序情况</th>
+<th style="text-align:center">序列长度</th>
+<th style="text-align:center">排序算法比较结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">random</td>
+<td style="text-align:center">短序列</td>
+<td style="text-align:center">插入&gt;堆排&gt;快排</td>
+</tr>
+<tr>
+<td style="text-align:center">sorted</td>
+<td style="text-align:center">短序列</td>
+<td style="text-align:center">插入&gt;堆排&gt;快排</td>
+</tr>
+<tr>
+<td style="text-align:center">reverse</td>
+<td style="text-align:center">短序列</td>
+<td style="text-align:center">&gt;&gt;</td>
+</tr>
+<tr>
+<td style="text-align:center">mod8</td>
+<td style="text-align:center">短序列</td>
+<td style="text-align:center">&gt;&gt;</td>
+</tr>
+<tr>
+<td style="text-align:center">random</td>
+<td style="text-align:center">中序列</td>
+<td style="text-align:center">快排&gt;堆排&gt;插入</td>
+</tr>
+<tr>
+<td style="text-align:center">sorted</td>
+<td style="text-align:center">中序列</td>
+<td style="text-align:center">插入&gt;堆排&gt;快排</td>
+</tr>
+<tr>
+<td style="text-align:center">reverse</td>
+<td style="text-align:center">中序列</td>
+<td style="text-align:center">&gt;&gt;</td>
+</tr>
+<tr>
+<td style="text-align:center">mod8</td>
+<td style="text-align:center">中序列</td>
+<td style="text-align:center">&gt;&gt;</td>
+</tr>
+<tr>
+<td style="text-align:center">random</td>
+<td style="text-align:center">长序列</td>
+<td style="text-align:center">快排&gt;堆排&gt;插入</td>
+</tr>
+<tr>
+<td style="text-align:center">sorted</td>
+<td style="text-align:center">长序列</td>
+<td style="text-align:center">插入&gt;堆排&gt;快排</td>
+</tr>
+<tr>
+<td style="text-align:center">reverse</td>
+<td style="text-align:center">长序列</td>
+<td style="text-align:center">&gt;&gt;</td>
+</tr>
+<tr>
+<td style="text-align:center">mod8</td>
+<td style="text-align:center">长序列</td>
+<td style="text-align:center">&gt;&gt;</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>总结：</p>
+<ul>
+<li>在random情况下：
+<ul>
+<li>插入排序在短序列中速度最快</li>
+<li>快速排序在其他情况下速度最快</li>
+<li>堆排序相较于快速排序差距不大</li>
+</ul>
+</li>
+<li>在sorted情况下：
+<ul>
+<li>插入排序最快</li>
+</ul>
+</li>
+<li></li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>所有短序列和元素有序情况下，插入排序性能最好</strong></li>
+<li><strong>在大部分情况下，快速排序有较好的综合性能</strong></li>
+<li><strong>几乎在任何情况下，堆排序的表现都比较稳定</strong></li>
+</ul>
+<blockquote>
+<p>形象比喻：</p>
+<ul>
+<li>插入排序 —&gt; 单车</li>
+<li>快速排序 —&gt; 汽车</li>
+<li>堆排序 —&gt; 地铁</li>
+</ul>
+</blockquote>
+<h1 id="go-sort包"><a class="markdownIt-Anchor" href="#go-sort包"></a> Go sort包</h1>
+<p><strong><a href="https://pkg.go.dev/sort" target="_blank" rel="noopener">go sort Documentation（官网）</a></strong></p>
+<p><strong><a href="https://books.studygolang.com/The-Golang-Standard-Library-by-Example/chapter03/03.1.html" target="_blank" rel="noopener">go sort包用法</a></strong></p>
+<p>go <code>sort</code> 包实现了四种基本排序算法：<strong>插入排序</strong>、<strong>归并排序</strong>、<strong>堆排序</strong>和<strong>快速排序</strong>。但是这四种排序方法是不公开的，它们只被用于<code>sort</code>包内部使用。所以在对数据集合排序时不必考虑应当选择哪一种排序方法，只要实现了<code>sort.Interface</code>定义的三个方法：</p>
+<ul>
+<li>获取数据集合长度的<code>Len()</code>方法</li>
+<li>比较两个元素大小的<code>Less()</code>方法</li>
+<li>交换两个元素位置的<code>Swap()</code>方法</li>
+</ul>
+<p>就可以顺利对数据集合进行排序。sort包会根据实际数据自动选择高效的排序算法。 除此之外，为了方便对常用数据类型的操作，sort包提供了对<code>[]int</code>切片、<code>[]float64</code>切片和<code>[]string</code>切片完整支持，主要包括：</p>
+<ul>
+<li><strong>对基本数据类型切片的排序支持</strong></li>
+<li><strong>基本数据元素查找</strong></li>
+<li><strong>判断基本数据类型切片是否已经排好序</strong></li>
+<li><strong>对排好序的数据集合逆序</strong></li>
+</ul>
+<h2 id="对切片进行排序"><a class="markdownIt-Anchor" href="#对切片进行排序"></a> 对切片进行排序</h2>
+<p>这里主要介绍sort包对<code>[]int</code>切片、<code>[]float64</code>切片和<code>[]string</code>切片完整支持。</p>
+<blockquote>
+<p>前面已经提到，sort包原生支持<code>[]int</code>、<code>[]float64</code>和<code>[]string</code>三种内建数据类型切片的排序操作，即不必我们自己实现相关的<code>Len()</code>、<code>Less()</code>和<code>Swap()</code>方法。</p>
+</blockquote>
+<p>对于<code>[]int</code>切片、<code>[]float64</code>切片和<code>[]string</code>切片，直接调sort包排序即可。</p>
+<h3 id="int排序和查找"><a class="markdownIt-Anchor" href="#int排序和查找"></a> []int排序和查找</h3>
+<p>对<code>[]int</code>切片排序常使用<code>sort.Ints()</code>。</p>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">-3</span>&#125;</span><br><span class="line">	sort.Ints(s)</span><br><span class="line">	fmt.Println(s) <span class="comment">// [-3 1 3 3 5 6 8 8 9 15 45 66]</span></span><br><span class="line">	<span class="comment">// 降序排序</span></span><br><span class="line">	s = []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">-3</span>&#125;</span><br><span class="line">	sort.Sort(sort.Reverse(sort.IntSlice(s))) <span class="comment">// [15 6 8 3 5 9 1 45 66 3 8 -3]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查找：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">int</span>&#123;<span class="number">15</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">45</span>, <span class="number">66</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">-3</span>&#125;</span><br><span class="line">   sort.Ints(s)</span><br><span class="line">   fmt.Println(s) <span class="comment">// [-3 1 3 3 5 6 8 8 9 15 45 66]</span></span><br><span class="line">   fmt.Println(sort.SearchInts(s,<span class="number">1</span>))  <span class="comment">// 1</span></span><br><span class="line">   fmt.Println(sort.SearchInts(s,<span class="number">3</span>))  <span class="comment">// 2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong><mark>注意</mark></strong>，<code>SearchInts()</code>的使用条件为：<strong>切片s已经升序排序</strong> 。以下是一个错误使用的例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s := []<span class="keyword">int</span>&#123;<span class="number">5</span>, <span class="number">2</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>&#125; <span class="comment">// 未排序的切片数据</span></span><br><span class="line">fmt.Println(sort.SearchInts(s, <span class="number">2</span>)) <span class="comment">// 会得出错误的结果！</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>sort</code>包定义了一个<code>IntSlice</code>类型，并且实现了<code>sort.Interface</code>接口：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> IntSlice []<span class="keyword">int</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p IntSlice)</span> <span class="title">Len</span><span class="params">()</span> <span class="title">int</span></span>           &#123; <span class="keyword">return</span> <span class="built_in">len</span>(p) &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p IntSlice)</span> <span class="title">Less</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123; <span class="keyword">return</span> p[i] &lt; p[j] &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p IntSlice)</span> <span class="title">Swap</span><span class="params">(i, j <span class="keyword">int</span>)</span></span>      &#123; p[i], p[j] = p[j], p[i] &#125;</span><br><span class="line"><span class="comment">//IntSlice 类型定义了 Sort() 方法，包装了 sort.Sort() 函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p IntSlice)</span> <span class="title">Sort</span><span class="params">()</span></span> &#123; Sort(p) &#125;</span><br><span class="line"><span class="comment">//IntSlice 类型定义了 SearchInts() 方法，包装了 SearchInts() 函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p IntSlice)</span> <span class="title">Search</span><span class="params">(x <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123; <span class="keyword">return</span> SearchInts(p, x) &#125;</span><br></pre></td></tr></table></figure>
+<p>并且提供的<code>sort.Ints()</code>方法使用了该IntSlice类型：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Ints</span><span class="params">(a []<span class="keyword">int</span>)</span></span> &#123; Sort(IntSlice(a)) &#125;</span><br></pre></td></tr></table></figure>
+<p>所以，对[]int切片排序更常使用<code>sort.Ints()</code>，而不是直接使用IntSlice类型。</p>
+<p>如果要查找整数 x 在切片 a 中的位置，相对于前面提到的 Search() 方法，<em>sort</em>包提供了 SearchInts():</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SearchInts</span><span class="params">(a []<span class="keyword">int</span>, x <span class="keyword">int</span>)</span> <span class="title">int</span></span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="float64排序和查找"><a class="markdownIt-Anchor" href="#float64排序和查找"></a> []float64排序和查找</h3>
+<p>排序：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">float64</span>&#123;<span class="number">3.14</span>, <span class="number">5.12</span>, <span class="number">6.99</span>, <span class="number">3.234</span>, <span class="number">23.4762</span>&#125;</span><br><span class="line">   sort.Float64s(s)</span><br><span class="line">   fmt.Println(s) <span class="comment">// [3.14 3.234 5.12 6.99 23.4762]</span></span><br><span class="line">   <span class="comment">// 降序排序</span></span><br><span class="line">   s = []<span class="keyword">float64</span>&#123;<span class="number">3.14</span>, <span class="number">5.12</span>, <span class="number">6.99</span>, <span class="number">3.234</span>, <span class="number">23.4762</span>&#125;</span><br><span class="line">   sort.Sort(sort.Reverse(sort.Float64Slice(s)))</span><br><span class="line">   fmt.Println(s) <span class="comment">// [23.4762 6.99 5.12 3.234 3.14]</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查找：（注意同样是要求已经升序排序的切片）</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">float64</span>&#123;<span class="number">3.14</span>, <span class="number">5.12</span>, <span class="number">6.99</span>, <span class="number">3.234</span>, <span class="number">23.4762</span>&#125;</span><br><span class="line">   sort.Float64s(s)</span><br><span class="line">   fmt.Println(s)                            <span class="comment">// [3.14 3.234 5.12 6.99 23.4762]</span></span><br><span class="line">   fmt.Println(sort.SearchFloat64s(s, <span class="number">5.12</span>)) <span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Float64Slice内部实现：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Float64Slice []<span class="keyword">float64</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Float64Slice)</span> <span class="title">Len</span><span class="params">()</span> <span class="title">int</span></span>           &#123; <span class="keyword">return</span> <span class="built_in">len</span>(p) &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Float64Slice)</span> <span class="title">Less</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123; <span class="keyword">return</span> p[i] &lt; p[j] || isNaN(p[i]) &amp;&amp; !isNaN(p[j]) &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Float64Slice)</span> <span class="title">Swap</span><span class="params">(i, j <span class="keyword">int</span>)</span></span>      &#123; p[i], p[j] = p[j], p[i] &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Float64Slice)</span> <span class="title">Sort</span><span class="params">()</span></span> &#123; Sort(p) &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Float64Slice)</span> <span class="title">Search</span><span class="params">(x <span class="keyword">float64</span>)</span> <span class="title">int</span></span> &#123; <span class="keyword">return</span> SearchFloat64s(p, x) &#125;</span><br></pre></td></tr></table></figure>
+<p>与 Sort()、IsSorted()、Search() 相对应的三个方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Float64s</span><span class="params">(a []<span class="keyword">float64</span>)</span></span>  </span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Float64sAreSorted</span><span class="params">(a []<span class="keyword">float64</span>)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SearchFloat64s</span><span class="params">(a []<span class="keyword">float64</span>, x <span class="keyword">float64</span>)</span> <span class="title">int</span></span></span><br></pre></td></tr></table></figure>
+<p>要说明一下的是，在上面 Float64Slice 类型定义的 Less 方法中，有一个内部函数 <code>isNaN()</code>。 isNaN() 与<em>math</em>包中 <code>IsNaN()</code> 实现完全相同，<em>sort</em>包之所以不使用 math.IsNaN()，完全是基于包依赖性的考虑，应当看到，<em>sort</em>包的实现不依赖与其他任何包。</p>
+</blockquote>
+<h3 id="string排序和查找"><a class="markdownIt-Anchor" href="#string排序和查找"></a> []string排序和查找</h3>
+<p>两个string对象之间的大小比较是基于<strong>字典序</strong>的。</p>
+<p>排序：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">string</span>&#123;<span class="string">"world"</span>, <span class="string">"b"</span>, <span class="string">"a"</span>, <span class="string">"c"</span>, <span class="string">"hello"</span>&#125;</span><br><span class="line">   sort.Strings(s)</span><br><span class="line">   fmt.Println(s) <span class="comment">// [a b c hello world]</span></span><br><span class="line">   <span class="comment">// 降序排序</span></span><br><span class="line">   sort.Sort(sort.Reverse(sort.StringSlice(s)))</span><br><span class="line">   fmt.Println(s) <span class="comment">// [world hello c b a]</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查找：（注意同样是要求已经升序排序的切片）</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s := []<span class="keyword">string</span>&#123;<span class="string">"world"</span>, <span class="string">"b"</span>, <span class="string">"a"</span>, <span class="string">"c"</span>, <span class="string">"hello"</span>&#125;</span><br><span class="line">   sort.Strings(s)</span><br><span class="line">   fmt.Println(s)                              <span class="comment">// [a b c hello world]</span></span><br><span class="line">   fmt.Println(sort.SearchStrings(s, <span class="string">"hello"</span>)) <span class="comment">// 3</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="数据集合排序"><a class="markdownIt-Anchor" href="#数据集合排序"></a> 数据集合排序</h2>
+<p>参考 <strong><a href="https://books.studygolang.com/The-Golang-Standard-Library-by-Example/chapter03/03.1.html" target="_blank" rel="noopener">go sort包用法</a></strong></p>
+<p>下面是一个使用 sort 包对学生成绩排序的示例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">    <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 学生成绩结构体</span></span><br><span class="line"><span class="keyword">type</span> StuScore <span class="keyword">struct</span> &#123;</span><br><span class="line">    name  <span class="keyword">string</span>    <span class="comment">// 姓名</span></span><br><span class="line">    score <span class="keyword">int</span>   <span class="comment">// 成绩</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> StuScores []StuScore</span><br><span class="line"></span><br><span class="line"><span class="comment">//Len()</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s StuScores)</span> <span class="title">Len</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">len</span>(s)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Less(): 成绩将有低到高排序</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s StuScores)</span> <span class="title">Less</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> s[i].score &lt; s[j].score</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Swap()</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s StuScores)</span> <span class="title">Swap</span><span class="params">(i, j <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    s[i], s[j] = s[j], s[i]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    stus := StuScores&#123;</span><br><span class="line">                &#123;<span class="string">"alan"</span>, <span class="number">95</span>&#125;,</span><br><span class="line">                &#123;<span class="string">"hikerell"</span>, <span class="number">91</span>&#125;,</span><br><span class="line">                &#123;<span class="string">"acmfly"</span>, <span class="number">96</span>&#125;,</span><br><span class="line">                &#123;<span class="string">"leao"</span>, <span class="number">90</span>&#125;,</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 打印未排序的 stus 数据</span></span><br><span class="line">    fmt.Println(<span class="string">"Default:\n\t"</span>,stus)</span><br><span class="line">    <span class="comment">//StuScores 已经实现了 sort.Interface 接口 , 所以可以调用 Sort 函数进行排序</span></span><br><span class="line">    sort.Sort(stus)</span><br><span class="line">    <span class="comment">// 判断是否已经排好顺序，将会打印 true</span></span><br><span class="line">    fmt.Println(<span class="string">"IS Sorted?\n\t"</span>, sort.IsSorted(stus))</span><br><span class="line">    <span class="comment">// 打印排序后的 stus 数据</span></span><br><span class="line">    fmt.Println(<span class="string">"Sorted:\n\t"</span>,stus)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="interface排序和查找"><a class="markdownIt-Anchor" href="#interface排序和查找"></a> []interface排序和查找</h2>
+<p>参考 <strong><a href="https://books.studygolang.com/The-Golang-Standard-Library-by-Example/chapter03/03.1.html" target="_blank" rel="noopener">go sort包用法</a></strong></p>
+<blockquote>
+<p>在gin-IM项目中，我们对从MangoDB查询出来的数据放到了slice中，并使用<code>sort.Slice</code>对其中的<code>StartTime</code> 进行了升序排序（自然排序）。</p>
+<p>先看个例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">	age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	s1 := Student&#123;<span class="string">"张三"</span>, <span class="number">18</span>&#125;</span><br><span class="line">	s2 := Student&#123;<span class="string">"tom"</span>, <span class="number">28</span>&#125;</span><br><span class="line">	s3 := Student&#123;<span class="string">"王五"</span>, <span class="number">14</span>&#125;</span><br><span class="line">	s4 := Student&#123;<span class="string">"jack"</span>, <span class="number">21</span>&#125;</span><br><span class="line">	students := <span class="built_in">make</span>([]Student, <span class="number">0</span>)</span><br><span class="line">	students = <span class="built_in">append</span>(students, s1, s2, s3, s4)</span><br><span class="line">	fmt.Println(students) <span class="comment">// [&#123;张三 18&#125; &#123;tom 28&#125; &#123;王五 14&#125; &#123;jack 21&#125;]</span></span><br><span class="line">	sort.Slice(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> students[i].age &lt; students[j].age</span><br><span class="line">	&#125;)</span><br><span class="line">	fmt.Println(students) <span class="comment">// [&#123;王五 14&#125; &#123;张三 18&#125; &#123;jack 21&#125; &#123;tom 28&#125;]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>通过前面的内容我们可以知道，只要实现了 <code>sort.Interface</code> 接口，即可通过 sort 包内的函数完成排序，查找等操作。并且 sort 包已经帮我们把<code>[]int</code>，<code>[]float64</code>，<code>[]string</code> 三种类型都实现了该接口，我们可以方便的调用。但是这种用法对于其它数据类型的 slice 不友好，可能我们需要为大量的 struct 定义一个单独的 <code>[]struct</code> 类型，再为其实现 <code>sort.Interface</code> 接口，类似这样：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">    Name <span class="keyword">string</span></span><br><span class="line">    Age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> Persons []Person</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Persons)</span> <span class="title">Len</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">"implement me"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Persons)</span> <span class="title">Less</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">"implement me"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Persons)</span> <span class="title">Swap</span><span class="params">(i, j <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(<span class="string">"implement me"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>sort</code> 包提供了以下函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Slice</span><span class="params">(x any, less <span class="keyword">func</span>(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span>)</span> </span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SliceStable</span><span class="params">(x any, less <span class="keyword">func</span>(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span>)</span> </span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SliceIsSorted</span><span class="params">(x any, less <span class="keyword">func</span>(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span>) <span class="title">bool</span></span></span><br></pre></td></tr></table></figure>
+<p>通过函数签名可以看到，排序相关的三个函数都接收 <code>any</code>，<strong>并且需要传入一个比较函数</strong>，用于为程序比较两个变量的大小，因为函数签名和作用域的原因，这个函数只能是<strong>匿名函数</strong>。</p>
+<p>文字说那么多反而看起来复杂，直接看代码就能看懂。</p>
+<h3 id="sortslice"><a class="markdownIt-Anchor" href="#sortslice"></a> sort.Slice</h3>
+<p>排序稳定性：不稳定。</p>
+<blockquote>
+<p>Slice sorts the slice x given the provided less <a href="http://function.It" target="_blank" rel="noopener">function.It</a> panics if x is not a slice.</p>
+<p>The sort is not guaranteed to be stable: equal elements may be reversed from their original order.For a stable sort, use SliceStable.</p>
+<p>The less function must satisfy the same requirements as the Interface type’s Less method.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Slice</span><span class="params">(x any, less <span class="keyword">func</span>(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span>)</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">	age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	s1 := Student&#123;<span class="string">"张三"</span>, <span class="number">18</span>&#125;</span><br><span class="line">	s2 := Student&#123;<span class="string">"tom"</span>, <span class="number">28</span>&#125;</span><br><span class="line">	s3 := Student&#123;<span class="string">"王五"</span>, <span class="number">14</span>&#125;</span><br><span class="line">	s4 := Student&#123;<span class="string">"jack"</span>, <span class="number">21</span>&#125;</span><br><span class="line">	students := <span class="built_in">make</span>([]Student, <span class="number">0</span>)</span><br><span class="line">	students = <span class="built_in">append</span>(students, s1, s2, s3, s4)</span><br><span class="line">	fmt.Println(students) <span class="comment">// [&#123;张三 18&#125; &#123;tom 28&#125; &#123;王五 14&#125; &#123;jack 21&#125;]</span></span><br><span class="line">	sort.Slice(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> students[i].age &lt; students[j].age</span><br><span class="line">	&#125;)</span><br><span class="line">	fmt.Println(students) <span class="comment">// [&#123;王五 14&#125; &#123;张三 18&#125; &#123;jack 21&#125; &#123;tom 28&#125;]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="sortslicestable"><a class="markdownIt-Anchor" href="#sortslicestable"></a> sort.SliceStable</h3>
+<p>排序稳定性：稳定。</p>
+<blockquote>
+<p>SliceStable sorts the slice x using the provided less function, keeping equal elements in their original order.</p>
+<p>It panics if x is not a slice.</p>
+<p>The less function must satisfy the same requirements as the Interface type’s Less method.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SliceStable</span><span class="params">(x any, less <span class="keyword">func</span>(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span>)</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">	age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	s1 := Student&#123;<span class="string">"张三"</span>, <span class="number">18</span>&#125;</span><br><span class="line">	s2 := Student&#123;<span class="string">"tom"</span>, <span class="number">28</span>&#125;</span><br><span class="line">	s3 := Student&#123;<span class="string">"王五"</span>, <span class="number">14</span>&#125;</span><br><span class="line">	s4 := Student&#123;<span class="string">"jack"</span>, <span class="number">21</span>&#125;</span><br><span class="line">	students := <span class="built_in">make</span>([]Student, <span class="number">0</span>)</span><br><span class="line">	students = <span class="built_in">append</span>(students, s1, s2, s3, s4)</span><br><span class="line">	fmt.Println(students) <span class="comment">// [&#123;张三 18&#125; &#123;tom 28&#125; &#123;王五 14&#125; &#123;jack 21&#125;]</span></span><br><span class="line">	sort.SliceStable(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> students[i].age &lt; students[j].age</span><br><span class="line">	&#125;)</span><br><span class="line">	fmt.Println(students) <span class="comment">// [&#123;王五 14&#125; &#123;张三 18&#125; &#123;jack 21&#125; &#123;tom 28&#125;]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="sortsliceissorted"><a class="markdownIt-Anchor" href="#sortsliceissorted"></a> sort.SliceIsSorted</h3>
+<p>判断给定slice是否为有序。</p>
+<blockquote>
+<p>SliceIsSorted reports whether the slice x is sorted according to the provided less function.</p>
+<p>It panics if x is not a slice.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SliceIsSorted</span><span class="params">(x any, less <span class="keyword">func</span>(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span>) <span class="title">bool</span></span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">	age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	s1 := Student&#123;<span class="string">"张三"</span>, <span class="number">18</span>&#125;</span><br><span class="line">	s2 := Student&#123;<span class="string">"tom"</span>, <span class="number">28</span>&#125;</span><br><span class="line">	s3 := Student&#123;<span class="string">"王五"</span>, <span class="number">14</span>&#125;</span><br><span class="line">	s4 := Student&#123;<span class="string">"jack"</span>, <span class="number">21</span>&#125;</span><br><span class="line">	students := <span class="built_in">make</span>([]Student, <span class="number">0</span>)</span><br><span class="line">	students = <span class="built_in">append</span>(students, s1, s2, s3, s4)</span><br><span class="line"></span><br><span class="line">	fmt.Println(sort.SliceIsSorted(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> students[i].age &lt; students[j].age <span class="comment">// 判断是否为升序</span></span><br><span class="line">	&#125;)) <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line">	sort.Slice(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> students[i].age &lt; students[j].age <span class="comment">// 按age升序排序</span></span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	fmt.Println(sort.SliceIsSorted(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> students[i].age &lt; students[j].age <span class="comment">// 判断是否为升序</span></span><br><span class="line">	&#125;)) <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">	fmt.Println(sort.SliceIsSorted(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> students[i].age &gt; students[j].age <span class="comment">// 判断是否为降序</span></span><br><span class="line">	&#125;)) <span class="comment">// false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="sortsearch"><a class="markdownIt-Anchor" href="#sortsearch"></a> sort.Search</h3>
+<p>判断 []interface 是否存在指定元素。</p>
+<blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Search</span><span class="params">(n <span class="keyword">int</span>, f <span class="keyword">func</span>(<span class="keyword">int</span>)</span> <span class="title">bool</span>) <span class="title">int</span></span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>sort 中包为 <code>[]int</code>，<code>[]float64</code>，<code>[]string</code> 提供的 Search 函数其实也是调用的该函数，因为该函数是使用的二分查找法，所以要求 slice 为升序排序状态。并且判断条件<strong>必须</strong>为 <code>&gt;=</code>，这也是官方库提供的三个查找相关函数的的写法。</p>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"sort"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">   name <span class="keyword">string</span></span><br><span class="line">   age  <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   s1 := Student&#123;<span class="string">"张三"</span>, <span class="number">18</span>&#125;</span><br><span class="line">   s2 := Student&#123;<span class="string">"tom"</span>, <span class="number">28</span>&#125;</span><br><span class="line">   s3 := Student&#123;<span class="string">"王五"</span>, <span class="number">14</span>&#125;</span><br><span class="line">   s4 := Student&#123;<span class="string">"jack"</span>, <span class="number">21</span>&#125;</span><br><span class="line">   students := <span class="built_in">make</span>([]Student, <span class="number">0</span>)</span><br><span class="line">   students = <span class="built_in">append</span>(students, s1, s2, s3, s4)</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 生序排序</span></span><br><span class="line">   sort.Slice(students, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">      <span class="keyword">return</span> students[i].age &lt; students[j].age</span><br><span class="line">   &#125;)</span><br><span class="line"></span><br><span class="line">   index := sort.Search(<span class="built_in">len</span>(students), <span class="function"><span class="keyword">func</span><span class="params">(i <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">      <span class="keyword">return</span> students[i].age &gt;= <span class="number">21</span></span><br><span class="line">   &#125;)</span><br><span class="line"></span><br><span class="line">   fmt.Println(students) <span class="comment">// [&#123;王五 14&#125; &#123;张三 18&#125; &#123;jack 21&#125; &#123;tom 28&#125;]</span></span><br><span class="line">   fmt.Println(index)    <span class="comment">// 2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>如果 slice 是降序状态</strong>，而我们又不想将其变为升序，只需将判断条件由 <code>&gt;=</code> 变更为 <code>&lt;=</code> 即可。</p>
+<p><strong>推荐采用升序排列及相应的判断条件，与官方函数保持风格一致。</strong></p>
+</blockquote>
+<hr />
+<h1 id="进阶pdqsort"><a class="markdownIt-Anchor" href="#进阶pdqsort"></a> 进阶：pdqsort</h1>
+<p>之前在字节青训营的学习中，学习了从零开始打造目前业界性能一流的排序算法pdqsort（Pattern-Defeating-QuickSort）。这里简单记录一下。（<strong>将来会是Go1.19的默认排序算法</strong>）</p>
+<p>我们都知道Go的sort包里已经给我们设计好了排序算法。那么Go的排序算法有提升空间吗？</p>
+<blockquote>
+<p>什么是最快的排序算法？</p>
+<ul>
+<li>Python中使用timsort</li>
+<li>C++中使用introsort</li>
+<li>Rust中使用pdqsort</li>
+<li>Go(&lt;=1.18)使用introsort</li>
+</ul>
+</blockquote>
+<p>字节团队内部在21年10月的时候将自己的想法提供给了官方。<a href="https://github.com/golang/go/issues/50154" target="_blank" rel="noopener">sort: use pdqsort #50154</a></p>
+<p>pdqsort重新实现了Go的排序算法，在某些常见场景中比之前算法快了~10倍，成为Go1.19的默认排序算法。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">Best</th>
+<th style="text-align:center">Avg</th>
+<th style="text-align:center">Worst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">InsertionSort</td>
+<td style="text-align:center">O(n)</td>
+<td style="text-align:center">O(n^2)</td>
+<td style="text-align:center">O(n^2)</td>
+</tr>
+<tr>
+<td style="text-align:center">QuickSort</td>
+<td style="text-align:center">O(n*logn)</td>
+<td style="text-align:center">O(n*logn)</td>
+<td style="text-align:center">O(n^2)</td>
+</tr>
+<tr>
+<td style="text-align:center">HeapSort</td>
+<td style="text-align:center">O(n*logn)</td>
+<td style="text-align:center">O(n*logn)</td>
+<td style="text-align:center">O(n*logn)</td>
+</tr>
+<tr>
+<td style="text-align:center"><mark>pdqsort</mark></td>
+<td style="text-align:center"><strong>O(n)</strong></td>
+<td style="text-align:center"><strong>O(n*logn)</strong></td>
+<td style="text-align:center"><strong>O(n*logn)</strong></td>
+</tr>
+</tbody>
+</table>
+<p>pdqsort（pattern-defeating-quicksort）是一种不稳定的混合排序算法，它的不同版本被应用在C++ BOOST、Rust以及Go1.19中。它对常见的序列类型做了特殊的优化，是的在不同条件下都能拥有不错的性能。</p>
+<h2 id="pdqsort-version1"><a class="markdownIt-Anchor" href="#pdqsort-version1"></a> pdqsort - version1</h2>
+<p>结合三种排序方法的优点：</p>
+<ul>
+<li>对于短序列（小于一定长度）我们使用插入排序</li>
+<li>其他情况，使用快速排序来保证整体性能（选择首个元素作为pivot）</li>
+<li>当快速排序表现不佳时，使用堆排序来保证最坏情况下时间复杂度仍然为O(n*logn)</li>
+</ul>
+<p>Q&amp;A：</p>
+<ul>
+<li>短序列的具体长度是多少呢？
+<ul>
+<li>12~32，在不同语言和场景下会有不同，在泛型版本根据测试选定24</li>
+</ul>
+</li>
+<li>如何得知快速排序表现不佳，以及如何及时切换到堆排序？
+<ul>
+<li>当最终pivot的位置离序列两端很近时（距离小于length/8），判定其表现不佳，当<strong>这种情况的次数</strong>达到limit（即bits.Len(length)）时，切换到堆排序</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220707162115.png" alt="" /></p>
+<h2 id="pdqsort-version2"><a class="markdownIt-Anchor" href="#pdqsort-version2"></a> pdqsort - version2</h2>
+<p>如何让pdqsort速度更快？</p>
+<ul>
+<li><strong>尽量使得QuickSort的pivot为序列的中位数（改进pivot）</strong></li>
+</ul>
+<p>关于pivot的选择：</p>
+<ul>
+<li>使用首个元素作为pivot（最简单的方案）
+<ul>
+<li>实现简单，但是效果往往不好，例如在sorted情况下性能很差</li>
+</ul>
+</li>
+<li>遍历数组，寻找真正的中位数
+<ul>
+<li>遍历比对代价很高，性能不好</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>我们要在平衡<code>寻找pivot所需要的开销</code>和<code>pivot带来的性能优化</code>。</p>
+</blockquote>
+<p>最终的解决方案是：<strong>寻找近似中位数</strong>！</p>
+<p>优化pivot选择：根据序列长度的不同，来决定选择策略</p>
+<ul>
+<li><s>短序列（&lt;=8），选择固定元素</s>（忽略，短序列直接采用插入排序了）</li>
+<li>中序列（&lt;=50），采样三个元素，取中位数</li>
+<li>长序列（&gt;50），采样九个元素，去中位数</li>
+</ul>
+<blockquote>
+<p>这里顺带引出：pivot的采样方式使得我们有探知序列当前状态的能力。</p>
+<ul>
+<li>采样的元素都是逆序排序 —&gt; 序列可能已经逆序 —&gt; 翻转整个序列</li>
+<li>采样的元素都是顺序排序 —&gt; 序列可能已经有序 —&gt; 使用插入排序</li>
+</ul>
+<p>（注意：插入排序实际使用partiallnsertionSort，即有限制次数的插入排序。为了防止因为误判而all in插入排序从而影响性能。）</p>
+</blockquote>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220707164755.png" alt="" /></p>
+<blockquote>
+<p>version1升级到version2优化总结：</p>
+<ul>
+<li>升级pivot选择策略（近似中位数）</li>
+<li>发现序列可能逆序，则反转序列（应对reverse场景）</li>
+<li>发现序列可能有序，使用有限制插入排序（应对sorted场景）</li>
+</ul>
+</blockquote>
+<h2 id="pdqsort-final-version"><a class="markdownIt-Anchor" href="#pdqsort-final-version"></a> pdqsort - final version</h2>
+<p>最后，还有什么场景我们没有优化？</p>
+<ul>
+<li>短序列情况
+<ul>
+<li>使用插入插入（version1）</li>
+</ul>
+</li>
+<li>极端情况
+<ul>
+<li>使用堆排序保证算法可行性（verison1）</li>
+</ul>
+</li>
+<li>完全随机的情况（random）
+<ul>
+<li>更好的pivot选择策略（version2）</li>
+</ul>
+</li>
+<li>有序/逆序的情况（sorted/reverse）
+<ul>
+<li>根据序列状态翻转或者插入排序（version2）</li>
+</ul>
+</li>
+</ul>
+<p>最后还需要优化的场景：<strong>如何优化重复元素很多的情况？</strong></p>
+<blockquote>
+<p>采用pivot的时候检测重复度？</p>
+<ul>
+<li>不是很好，因为采样数量有限，不一定能采样到相同元素</li>
+</ul>
+<p>解决方案：<strong>如果两次partition生成的pivot相同，即partition进行了无效分割，此时认为pivot的值为重复元素。</strong></p>
+</blockquote>
+<p>优化重复元素较多的情况：</p>
+<ul>
+<li>当检测此时pivot和上次相同时（发生在leftSubArray），使用partitionEqual将重复元素排列在一起，减少重复元素对于pivot选择的干扰</li>
+</ul>
+<p>当pivot选择策略表现不佳时：随机交换元素。（避免一些极端情况使得QuickSort总是表现不佳，以及黑客攻击情况）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220707172423.png" alt="" /></p>
+<blockquote>
+<p>标黄可能发生也可能不发生。</p>
+</blockquote>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:qingbo1011@163.com">qingbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.qingbo1011.top/2022/04/28/Go%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/">http://www.qingbo1011.top/2022/04/28/Go%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.qingbo1011.top" target="_blank">Qing's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Go/">Go</a><a class="post-meta__tags" href="/tags/%E7%AE%97%E6%B3%95/">算法</a><a class="post-meta__tags" href="/tags/%E6%8E%92%E5%BA%8F/">排序</a></div><div class="post_share"><div class="social-share" data-image="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20231003161115.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/05/01/Gin+JWT+Air%E7%83%AD%E9%83%A8%E7%BD%B2%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5/"><img class="prev_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220525201522.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Gin+JWT+Air热部署的简单实践</div></div></a></div><div class="next-post pull_right"><a href="/2022/04/27/Go%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/"><img class="next_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220711144924.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Go常用标准库</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/09/03/算法学习：哈希表/" title="算法学习：哈希表"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20221117213245.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-09-03</div><div class="relatedPosts_title">算法学习：哈希表</div></div></a></div><div class="relatedPosts_item"><a href="/2022/09/01/算法学习：数组/" title="算法学习：数组"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20221117213215.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-09-01</div><div class="relatedPosts_title">算法学习：数组</div></div></a></div><div class="relatedPosts_item"><a href="/2022/09/02/算法学习：链表/" title="算法学习：链表"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20221117213230.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-09-02</div><div class="relatedPosts_title">算法学习：链表</div></div></a></div><div class="relatedPosts_item"><a href="/2022/06/26/Gin+Gorm v2+Github Action的实践/" title="Gin+Gorm v2+Github Action的实践"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220808182712.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-06-26</div><div class="relatedPosts_title">Gin+Gorm v2+Github Action的实践</div></div></a></div><div class="relatedPosts_item"><a href="/2022/05/02/Gin+Gorm开发在线备忘录（To do list）/" title="Gin+Gorm开发在线备忘录（To do list）"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220525201522.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-05-02</div><div class="relatedPosts_title">Gin+Gorm开发在线备忘录（To do list）</div></div></a></div><div class="relatedPosts_item"><a href="/2022/05/01/Gin+JWT+Air热部署的简单实践/" title="Gin+JWT+Air热部署的简单实践"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220525201522.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-05-01</div><div class="relatedPosts_title">Gin+JWT+Air热部署的简单实践</div></div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail','link'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'oNS5Emx1qUL3wN5yvPLKol0W-gzGzoHsz',
+  appKey: 'ytbw0ho3DMX0FeoAOWa37lf9',
+  notify: false,
+  verify: false,
+  placeholder: 'Stay hungry,stay foolish~',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: 'https://',
+  emojiMaps: {"欢呼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100836.gif","笑眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100849.gif","花心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100907.gif","吐舌":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100937.gif","疑问":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100951.gif","滑稽":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101004.gif","太开心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101017.gif","酷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101029.gif","怒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101044.gif","阴险":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101100.gif","委屈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101116.gif","乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101129.gif","你懂的":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101204.gif","小乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101215.gif","突然兴奋":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101228.gif","喷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101241.gif","哈哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101255.gif","喝酒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101305.gif","汗":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101323.gif","笑尿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102004.gif","嘿嘿嘿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102018.gif","真棒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102047.gif","托腮":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102108.gif","微笑":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/e3/2018new_weixioa02_org.png","礼貌":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/09/2018new_keai_org.png","笑哭":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/4a/2018new_xiaoku_thumb.png","无奈":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/83/2018new_kuxiao_org.png","爱你":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f6/2018new_aini_org.png","吃瓜":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/01/2018new_chigua_thumb.png","doge":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_doge02_org.png","dog":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/22/2018new_erha_org.png","cat":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7b/2018new_miaomiao_thumb.png","星星眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102225.png","酸了":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102240.png","大哭":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102254.png","傲娇":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102314.png","给心心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102328.png","嘿哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102345.png","custom0":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101410.gif","custom1":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101424.webp","狗头":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101710.png","搬砖中":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101744.png","忙到飞起":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102411.png","裂开":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102426.png","叹气":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102439.png","让我看看":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102456.png","panda0":"https://bbs.res.meizu.com/static/image/smiley/panda/_000.png","panda1":"https://bbs.res.meizu.com/static/image/smiley/panda/_001.png","panda2":"https://bbs.res.meizu.com/static/image/smiley/panda/_002.png","panda3":"https://bbs.res.meizu.com/static/image/smiley/panda/_003.png","panda4":"https://bbs.res.meizu.com/static/image/smiley/panda/_004.png","panda5":"https://bbs.res.meizu.com/static/image/smiley/panda/_005.png","panda6":"https://bbs.res.meizu.com/static/image/smiley/panda/_006.png","panda7":"https://bbs.res.meizu.com/static/image/smiley/panda/_007.png","panda8":"https://bbs.res.meizu.com/static/image/smiley/panda/_008.png","panda9":"https://bbs.res.meizu.com/static/image/smiley/panda/_009.png","panda10":"https://bbs.res.meizu.com/static/image/smiley/panda/_010.png","panda11":"https://bbs.res.meizu.com/static/image/smiley/panda/_011.png","panda12":"https://bbs.res.meizu.com/static/image/smiley/panda/_012.png","panda13":"https://bbs.res.meizu.com/static/image/smiley/panda/_013.png","panda14":"https://bbs.res.meizu.com/static/image/smiley/panda/_014.png","panda15":"https://bbs.res.meizu.com/static/image/smiley/panda/_015.png","panda16":"https://bbs.res.meizu.com/static/image/smiley/panda/_016.png","panda17":"https://bbs.res.meizu.com/static/image/smiley/panda/_017.png","panda18":"https://bbs.res.meizu.com/static/image/smiley/panda/_018.png","panda19":"https://bbs.res.meizu.com/static/image/smiley/panda/_019.png","panda20":"https://bbs.res.meizu.com/static/image/smiley/panda/_020.png","panda21":"https://bbs.res.meizu.com/static/image/smiley/panda/_021.png","panda22":"https://bbs.res.meizu.com/static/image/smiley/panda/_022.png","panda23":"https://bbs.res.meizu.com/static/image/smiley/panda/_023.png","panda24":"https://bbs.res.meizu.com/static/image/smiley/panda/_024.png","panda25":"https://bbs.res.meizu.com/static/image/smiley/panda/_025.png","panda26":"https://bbs.res.meizu.com/static/image/smiley/panda/_026.png","panda27":"https://bbs.res.meizu.com/static/image/smiley/panda/_027.png","panda28":"https://bbs.res.meizu.com/static/image/smiley/panda/_028.png","panda29":"https://bbs.res.meizu.com/static/image/smiley/panda/_029.png"},
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220707172953.png)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By qingbo</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div><div class="footer_custom_text">宇宙很大，生活更大</div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script></body></html>

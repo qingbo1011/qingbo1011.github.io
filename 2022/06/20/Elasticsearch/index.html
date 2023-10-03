@@ -1,0 +1,848 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Elasticsearch | Qing's Blog</title><meta name="description" content="Elasticsearch What is Elasticsearch? 官网Quick start 官网Elasticsearch Guide Elasticsearch 技术分析系列 Elasticsearch 快速入门（elk7版本教程） （多看官网，需要用到什么就去官网查。另外Elasticsearch 技术分析系列文章适合学习时阅读） 我们选择elasticsearch 6.4.0版本"><meta name="keywords" content="Elasticsearch学习"><meta name="author" content="qingbo,qingbo1011@163.com"><meta name="copyright" content="qingbo"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="dns-prefetch" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="dns-prefetch" href="https://fonts.googleapis.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="dns-prefetch" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Elasticsearch"><meta name="twitter:description" content="Elasticsearch What is Elasticsearch? 官网Quick start 官网Elasticsearch Guide Elasticsearch 技术分析系列 Elasticsearch 快速入门（elk7版本教程） （多看官网，需要用到什么就去官网查。另外Elasticsearch 技术分析系列文章适合学习时阅读） 我们选择elasticsearch 6.4.0版本"><meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220621122244.png"><meta property="og:type" content="article"><meta property="og:title" content="Elasticsearch"><meta property="og:url" content="http://www.qingbo1011.top/2022/06/20/Elasticsearch/"><meta property="og:site_name" content="Qing's Blog"><meta property="og:description" content="Elasticsearch What is Elasticsearch? 官网Quick start 官网Elasticsearch Guide Elasticsearch 技术分析系列 Elasticsearch 快速入门（elk7版本教程） （多看官网，需要用到什么就去官网查。另外Elasticsearch 技术分析系列文章适合学习时阅读） 我们选择elasticsearch 6.4.0版本"><meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220621122244.png"><meta property="article:published_time" content="2022-06-20T00:47:03.000Z"><meta property="article:modified_time" content="2023-10-03T08:16:11.745Z"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="http://www.qingbo1011.top/2022/06/20/Elasticsearch/"><link rel="prev" title="Go操作Elasticsearch" href="http://www.qingbo1011.top/2022/06/21/Go%E6%93%8D%E4%BD%9CElasticSearch/"><link rel="next" title="Gin-blog：go1.18在gin上的实践" href="http://www.qingbo1011.top/2022/06/12/Gin-blog%EF%BC%9Ago1.18%E5%9C%A8gin%E4%B8%8A%E7%9A%84%E5%AE%9E%E8%B7%B5/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://xxx/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: true,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'false',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: true
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.0"></head><body><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230440.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">87</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">81</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">15</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#elasticsearch"><span class="toc-number">1.</span> <span class="toc-text"> Elasticsearch</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#elasticsearch介绍"><span class="toc-number">2.</span> <span class="toc-text"> Elasticsearch介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#版本选择"><span class="toc-number">2.1.</span> <span class="toc-text"> 版本选择</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装elasticsearch"><span class="toc-number">3.</span> <span class="toc-text"> 安装Elasticsearch</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建网关"><span class="toc-number">3.1.</span> <span class="toc-text"> 创建网关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装elasticsearch-2"><span class="toc-number">3.2.</span> <span class="toc-text"> 安装elasticsearch</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装ik分词器"><span class="toc-number">3.3.</span> <span class="toc-text"> 安装IK分词器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#分词器使用验证"><span class="toc-number">3.3.1.</span> <span class="toc-text"> 分词器使用验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装kibana"><span class="toc-number">3.4.</span> <span class="toc-text"> 安装kibana</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装elasticsearch-head"><span class="toc-number">3.5.</span> <span class="toc-text"> 安装elasticsearch-head</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装docker安装logstash"><span class="toc-number">3.6.</span> <span class="toc-text"> 安装docker安装logstash</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#docker-compose安装elk"><span class="toc-number">4.</span> <span class="toc-text"> docker compose安装elk</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#elasticsearch基本概念"><span class="toc-number">5.</span> <span class="toc-text"> ElasticSearch基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#集群cluster"><span class="toc-number">5.1.</span> <span class="toc-text"> 集群(Cluster)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#节点node"><span class="toc-number">5.2.</span> <span class="toc-text"> 节点(Node)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#索引index"><span class="toc-number">5.3.</span> <span class="toc-text"> 索引（Index）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类型type已弃用"><span class="toc-number">5.4.</span> <span class="toc-text"> 类型（Type）（已弃用）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文档document"><span class="toc-number">5.5.</span> <span class="toc-text"> 文档（Document）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#分片shards"><span class="toc-number">5.6.</span> <span class="toc-text"> 分片(Shards)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#副本replicasedit"><span class="toc-number">5.7.</span> <span class="toc-text"> 副本(Replicasedit)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#elasticsearch和关系型数据库的概念对比"><span class="toc-number">5.8.</span> <span class="toc-text"> elasticsearch和关系型数据库的概念对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-number">5.9.</span> <span class="toc-text"> 小结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#elasticsearch交互"><span class="toc-number">6.</span> <span class="toc-text"> ElasticSearch交互</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#elasticsearch数据格式"><span class="toc-number">7.</span> <span class="toc-text"> ElasticSearch数据格式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#操作elasticsearch索引的应用"><span class="toc-number">8.</span> <span class="toc-text"> 操作ElasticSearch：索引的应用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建第一个简单索引"><span class="toc-number">8.1.</span> <span class="toc-text"> 创建第一个简单索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#新增索引数据"><span class="toc-number">8.2.</span> <span class="toc-text"> 新增索引数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询索引数据"><span class="toc-number">8.3.</span> <span class="toc-text"> 查询索引数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#匹配查询-matchmatch_all"><span class="toc-number">8.3.1.</span> <span class="toc-text"> 匹配查询 match，match_all</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#过滤查询-filter"><span class="toc-number">8.3.2.</span> <span class="toc-text"> 过滤查询 Filter</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#elasticsearch索引映射mapping问题"><span class="toc-number">9.</span> <span class="toc-text"> ElasticSearch索引映射Mapping问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#字段类型"><span class="toc-number">9.1.</span> <span class="toc-text"> 字段类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#核心数据类型"><span class="toc-number">9.1.1.</span> <span class="toc-text"> 核心数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#复杂数据类型"><span class="toc-number">9.1.2.</span> <span class="toc-text"> 复杂数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#geo数据类型"><span class="toc-number">9.1.3.</span> <span class="toc-text"> Geo数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#专用数据类型"><span class="toc-number">9.1.4.</span> <span class="toc-text"> 专用数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多字段"><span class="toc-number">9.1.5.</span> <span class="toc-text"> 多字段</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#映射"><span class="toc-number">9.2.</span> <span class="toc-text"> 映射</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#动态映射"><span class="toc-number">9.2.1.</span> <span class="toc-text"> 动态映射</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#日期检测"><span class="toc-number">9.2.1.1.</span> <span class="toc-text"> 日期检测</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#数字检测"><span class="toc-number">9.2.1.2.</span> <span class="toc-text"> 数字检测</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#静态映射显式映射"><span class="toc-number">9.2.2.</span> <span class="toc-text"> 静态映射(显式映射)</span></a></li></ol></li></ol></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220621122244.png)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">Qing's Blog</a></span><span class="pull_right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">Elasticsearch</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2022-06-20 08:47:03"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2022-06-20</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2023-10-03 16:16:11"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2023-10-03</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Database/">Database</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="post-meta__icon fa fa-file-word-o" aria-hidden="true"></i><span>字数总计:</span><span class="word-count">11.6k</span><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-clock-o" aria-hidden="true"></i><span>阅读时长: 42 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-comment-o" aria-hidden="true"></i><span>评论数:</span><a href="/2022/06/20/Elasticsearch/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/2022/06/20/Elasticsearch/" itemprop="commentCount"></span></a></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="elasticsearch"><a class="markdownIt-Anchor" href="#elasticsearch"></a> Elasticsearch</h1>
+<p><a href="https://www.youtube.com/watch?v=ZP0NmfyfsoM" target="_blank" rel="noopener">What is Elasticsearch?</a></p>
+<p><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.17/getting-started.html" target="_blank" rel="noopener">官网Quick start</a></strong></p>
+<p><strong><a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.17/index.html" target="_blank" rel="noopener">官网Elasticsearch Guide</a></strong></p>
+<p><strong><a href="https://www.cnblogs.com/jajian/category/1280015.html" target="_blank" rel="noopener">Elasticsearch 技术分析系列</a></strong></p>
+<p><strong><a href="https://www.tizi365.com/archives/609.html" target="_blank" rel="noopener">Elasticsearch 快速入门</a></strong>（<strong>elk7版本教程</strong>）</p>
+<p>（多看官网，需要用到什么就去官网查。另外Elasticsearch 技术分析系列文章适合学习时阅读）</p>
+<p>我们选择<code>elasticsearch 6.4.0</code>版本进行学习。</p>
+<h1 id="elasticsearch介绍"><a class="markdownIt-Anchor" href="#elasticsearch介绍"></a> Elasticsearch介绍</h1>
+<blockquote>
+<p>Elasticsearch是一个高度可扩展的、开源的、基于 Lucene 的全文搜索和分析引擎。它允许您快速，近实时地存储，搜索和分析大量数据，并支持多租户。 Elasticsearch也使用Java开发并使用 Lucene 作为其核心来实现所有索引和搜索的功能，但是它的目的是通过简单的 RESTful API 来隐藏 Lucene 的复杂性，从而让全文搜索变得简单。</p>
+</blockquote>
+<p>Elasticsearch是一个高度可扩展的、开源的、基于 Lucene 的全文搜索和分析引擎。它允许您快速，近实时地存储，搜索和分析大量数据，并支持多租户。</p>
+<p>Elasticsearch使用Java开发并使用 Lucene 作为其核心来实现所有索引和搜索的功能，但是它的目的是<strong>通过简单的 RESTful API 来隐藏 Lucene 的复杂性</strong>，从而让全文搜索变得简单。</p>
+<p>不过，Elasticsearch 不仅仅是 Lucene 和全文搜索，我们还能这样去描述它：</p>
+<ul>
+<li>分布式的实时文件存储，每个字段都被索引并可被搜索</li>
+<li>分布式的实时分析搜索引擎</li>
+<li>可以扩展到上百台服务器，处理PB级结构化或非结构化数据</li>
+</ul>
+<p>而且，所有的这些功能被集成到一个服务里面，你的应用可以通过简单的RESTful API、各种语言的客户端甚至命令行与之交互。</p>
+<h2 id="版本选择"><a class="markdownIt-Anchor" href="#版本选择"></a> 版本选择</h2>
+<p>在决定使用 Elasticsearch 的时候首先要考虑的是版本问题，Elasticsearch 目前有三个常用的稳定的主版本：<code>2.x</code>，<code>5.x</code>，<code>6.x</code>（排除 <code>0.x</code> 和 <code>1.x</code>）。</p>
+<p>Elasticsearch 可以在这里查看所有<a href="https://www.elastic.co/downloads/past-releases" target="_blank" rel="noopener">历史版本</a>。你可能会发现没有 3.x 和 4.x，ES 从 <code>2.4.6</code> 直接跳到了 <code>5.0.0</code>。这是为什么？其实是为了ELK（ElasticSearch, logstash, kibana）技术栈的版本统一，免的给用户带来混乱。</p>
+<blockquote>
+<p>我们知道 <code>elasticsearch</code>，<code>kibana</code>，<code>logstash</code> 都是 Elastic Stack 成员， 而且很多时候都是配合使用，那么为了协同开发，避免造成版本困惑，所以需要统一版本，至少保持在一个主版本号下。</p>
+<p>在 Elasticsearch 是 2.x （2.x 的最后一版 2.4.6 的发布时间是 July 25, 2017） 的情况下，kibana 已经是 4.x（Kibana 4.6.5 的发布时间是 July 25, 2017），那么在 kibana 的下一主版本肯定是 5.x 了，所以 Elasticsearch 直接将自己的主版本发布为 5.0.0 了。统一之后，我们选版本就不会犹豫困惑了，我们选定 elasticsearch 的版本后再选择相同版本的 kibana 就行了，不用担忧版本不兼容的问题。</p>
+</blockquote>
+<p>版本选择可以从以下几个方面考虑：</p>
+<ul>
+<li>
+<p><strong>版本问题</strong></p>
+<ul>
+<li><code>2.x</code> 版本较老，无法体验新功能，且性能不如 <code>5.x</code></li>
+<li><code>6.x</code> 版本有点新，网上资料相对比较少</li>
+</ul>
+</li>
+<li>
+<p><strong>数据迁移</strong></p>
+<ul>
+<li><code>2.x</code> 版本数据可以直接迁移到 <code>5.x</code></li>
+<li><code>5.X</code> 版本的数据可以直接迁移到 <code>6.x</code>； 但是 <code>2.x</code> 版本数据无法直接迁移到 <code>6.x</code></li>
+</ul>
+</li>
+<li>
+<p><strong>周边工具</strong></p>
+<ul>
+<li><code>2.x</code> 版本周边工具版本比较混乱；Kibana 等工具的对应版本需要自己查，不好匹配</li>
+<li><code>5.x</code> 之后 Kibana 等工具的主版本号进行了统一</li>
+</ul>
+</li>
+<li>
+<p><strong>Sql 语法支持</strong></p>
+<ul>
+<li><code>2.x</code>，<code>5.x</code>，<code>6.x</code> 都可以安装 Elasticsearch-sql 插件，使用熟悉的SQL语法查询 Elasticsearch</li>
+<li><code>6.3.0</code> 以后内置支持 SQL 模块，这个 SQL 模块是属于 X-Pack 的一部分</li>
+</ul>
+</li>
+</ul>
+<p>我们选择<code>elasticsearch 6.4.0</code>版本进行学习。</p>
+<h1 id="安装elasticsearch"><a class="markdownIt-Anchor" href="#安装elasticsearch"></a> 安装Elasticsearch</h1>
+<p><a href="https://blog.csdn.net/ThinkWon/article/details/122808762" target="_blank" rel="noopener">Docker安装ElasticSearch和Kibana</a></p>
+<p>使用docker安装Elasticsearch会方便很多。</p>
+<h2 id="创建网关"><a class="markdownIt-Anchor" href="#创建网关"></a> 创建网关</h2>
+<p>因为ES和Kibana建议以一个独立的服务存在，所以这里我们给ES和Kibana单独创建一个network：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network create es-net</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>可以通过<code>docker network ls</code>命令查看所以的network。</p>
+</blockquote>
+<h2 id="安装elasticsearch-2"><a class="markdownIt-Anchor" href="#安装elasticsearch-2"></a> 安装elasticsearch</h2>
+<p>首先<code>docker pull</code>拉取镜像：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull elasticsearch:6.4.0</span><br></pre></td></tr></table></figure>
+<p>接下来<code>docker run</code>启动容器（直接这样可能会报错，看下面的新方法！）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name es6 \</span><br><span class="line">--network es-net \</span><br><span class="line">-p 9200:9200 -p 9300:9300 \</span><br><span class="line">-v /home/root/dockerVolumes/es/es6.4.0/data:/usr/share/elasticsearch/data \</span><br><span class="line">-v /home/root/dockerVolumes/es/es6.4.0/config:/usr/share/elasticsearch/config \</span><br><span class="line">-e "discovery.type=single-node" \</span><br><span class="line">-e ES_JAVA_OPTS="-Xms512m -Xmx512m" \</span><br><span class="line">elasticsearch:6.4.0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数说明：</p>
+<ul>
+<li><code>-d</code>：后台运行容器，并返回容器ID</li>
+<li><code>--name es6</code>：为该容器指定名称为es6</li>
+<li><code>--network es-net</code>：指定network（注意指定的network要与安装Kibana时指定的network一样）</li>
+<li><code>-p 9200:9200 -p 9300:9300</code>：端口映射（主机(宿主)端口:容器端口）。即宿主机开放出9200端口，指向容器内的9200端口；宿主机开放出9300端口，指向容器内的9300端口（9200：Web端口，与RESTful客户端通信；9300：为TCP端口，与Java做通信）</li>
+<li><code>-v /home/root/dockerVolumes/es/es6.4.0/data:/usr/share/elasticsearch/data</code>：绑定数据卷（/宿主机绝对路径目录:/容器内目录），将容器内的<code>/usr/share/elasticsearch/data</code>挂载到宿主机的<code>/home/root/dockerVolumes/es/es6.4.0/data</code>文件夹下（ES在Docker中的所有数据都存储在容器中的 <code>/usr/share/elasticsearch/data</code> 中）</li>
+<li><code>-v /home/root/dockerVolumes/es/es6.4.0/config:/usr/share/elasticsearch/config</code>：绑定数据卷（/宿主机绝对路径目录:/容器内目录），将容器内的<code>/usr/share/elasticsearch/config</code>挂载到宿主机的<code>/home/root/dockerVolumes/es/es6.4.0/config</code>文件夹下（ES在Docker中的所有配置都存储在容器中的 <code>/usr/share/elasticsearch/config</code>中）</li>
+<li><code>-e &quot;discovery.type=single-node&quot;</code>：设置环境变量，表示ES以单节点模式启动（虽然名为单节点，但是还是以集群模式启动。所以不加这个参数，默认集群启动，也没有问题）</li>
+<li><code>-e ES_JAVA_OPTS=&quot;-Xms512m -Xmx512m&quot;</code>：设置环境变量，设置JVM参数（如果启动不了，可以添加此参数加大内存设置）</li>
+</ul>
+</blockquote>
+<p>这样启动会发现启动失败，查询日志发现：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617124342.png" alt="" /></p>
+<p><a href="https://blog.csdn.net/s1078229131/article/details/101027019" target="_blank" rel="noopener">docker启动elasticsearch异常java.nio.file.NoSuchFileException</a></p>
+<p><strong>解决办法：先将挂载数据卷配置注释，启动elasticsearch后将elasticsearch容器中的config/文件夹下的文件拷出到宿主机，重新启动即可。</strong></p>
+<p>即新的运行方法为：</p>
+<p>先不加<code>-v</code>参数进行运行容器：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name es6 \</span><br><span class="line">--network es-net \</span><br><span class="line">-p 9200:9200 -p 9300:9300 \</span><br><span class="line">-e "discovery.type=single-node" \</span><br><span class="line">-e ES_JAVA_OPTS="-Xms512m -Xmx512m" \</span><br><span class="line">elasticsearch:6.4.0</span><br></pre></td></tr></table></figure>
+<p>然后将容器内的数据拷贝到宿主机：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker cp es6:/usr/share/elasticsearch/config /home/root/dockerVolumes/es/es6.4.0/</span><br></pre></td></tr></table></figure>
+<p>此时可以发现宿主机下的config文件夹下已经有文件了：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617125600.png" alt="" /></p>
+<p>此时删除容器：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker stop es6</span><br><span class="line">docker rm es6</span><br></pre></td></tr></table></figure>
+<p>这里记得先修改一下宿主机挂载目录的权限，不然会报错：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod 777 /home/root/dockerVolumes/es/es6.4.0/</span><br><span class="line">chmod 777 /home/root/dockerVolumes/es/es6.4.0/data</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>应该只需要执行<code>chmod 777 /home/root/dockerVolumes/es/es6.4.0/data</code>就行的。如果不修改宿主机目录权限会报错：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617144512.png" alt="" /></p>
+</blockquote>
+<p>然后再完整的运行一次容器：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name es6 \</span><br><span class="line">--network es-net \</span><br><span class="line">-p 9200:9200 -p 9300:9300 \</span><br><span class="line">-v /home/root/dockerVolumes/es/es6.4.0/data:/usr/share/elasticsearch/data \</span><br><span class="line">-v /home/root/dockerVolumes/es/es6.4.0/config:/usr/share/elasticsearch/config \</span><br><span class="line">-e "discovery.type=single-node" \</span><br><span class="line">-e ES_JAVA_OPTS="-Xms512m -Xmx512m" \</span><br><span class="line">elasticsearch:6.4.0</span><br></pre></td></tr></table></figure>
+<p>进入elasticsearch容器内：<code>docker exec -it es6 /bin/bash</code>。</p>
+<p>可以发现目录结构如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617145719.png" alt="" /></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">目录</th>
+<th style="text-align:center">配置文件</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">bin</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">脚本文件，包括启动 Elasticsearch、安装插件，运行统计数据等。</td>
+</tr>
+<tr>
+<td style="text-align:center">config</td>
+<td style="text-align:center">elasticsearch.yml</td>
+<td style="text-align:center">集群配置文件</td>
+</tr>
+<tr>
+<td style="text-align:center">JDK</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Java 运行环境</td>
+</tr>
+<tr>
+<td style="text-align:center">data</td>
+<td style="text-align:center">path.data</td>
+<td style="text-align:center">数据文件</td>
+</tr>
+<tr>
+<td style="text-align:center">lib</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Java 类库</td>
+</tr>
+<tr>
+<td style="text-align:center">logs</td>
+<td style="text-align:center">path.logs</td>
+<td style="text-align:center">日志文件</td>
+</tr>
+<tr>
+<td style="text-align:center">modules</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">包含所有 ES 模块</td>
+</tr>
+<tr>
+<td style="text-align:center">plugins</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">包含所有已安装插件</td>
+</tr>
+</tbody>
+</table>
+<h2 id="安装ik分词器"><a class="markdownIt-Anchor" href="#安装ik分词器"></a> 安装IK分词器</h2>
+<p>插件安装可以用<code>elasticsearch-plugin install url</code>命令。比如安装：<code>elasticsearch-analysis-ik</code>(分词器)，Ik分词器版本要和ES和Kibana版本保持一致。</p>
+<p>进入容器内：<code>docker exec -it es6 /bin/bash</code></p>
+<p>plugins安装步骤：</p>
+<ul>
+<li>进入plugins文件夹：<code>cd /usr/share/elasticsearch/plugins/</code></li>
+<li>安装插件，elasticsearch-analysis-ik版本与elasticsearch保持一致，即<code>6.4.0</code>：<code>elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.4.0/elasticsearch-analysis-ik-6.4.0.zip</code></li>
+<li>退出容器：<code>exit</code></li>
+<li>重启docker容器：<code>docker restart es6</code></li>
+</ul>
+<h3 id="分词器使用验证"><a class="markdownIt-Anchor" href="#分词器使用验证"></a> 分词器使用验证</h3>
+<ul>
+<li><code>ik_smart</code>：智能分词，最少切分，宁缺毋滥，保证查准率</li>
+<li><code>ik_max_word</code>：最大化分词法，最细粒度划分，尽量多的有意义的分词，保证查全率。<code>ik_max_word</code>分词包含<code>ik_smart</code></li>
+</ul>
+<p>Postman post请求分词测试：<code>http://ip:9200/_analyze</code></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617153538.png" alt="" /></p>
+<h2 id="安装kibana"><a class="markdownIt-Anchor" href="#安装kibana"></a> 安装kibana</h2>
+<p><code>kibana</code>和<code>elasticsearch</code>的版本必须保持严格一致。</p>
+<p>首先<code>docker pull</code>拉取镜像：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull kibana:6.4.0</span><br></pre></td></tr></table></figure>
+<p>接下来<code>docker run</code>启动容器：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name kibana6 \</span><br><span class="line">--net es-net \</span><br><span class="line">-p 5601:5601 \</span><br><span class="line">-e ELASTICSEARCH_URL&#x3D;http:&#x2F;&#x2F;es6:9200 \</span><br><span class="line">kibana:6.4.0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数说明：</p>
+<ul>
+<li><code>-d</code>：后台运行容器，并返回容器ID</li>
+<li><code>--name kibana6</code>：为该容器指定名称为kibana6</li>
+<li><code>--network es-net</code>：指定network（注意指定的network要与安装elasticsearch时指定的network一样）</li>
+<li><code>-e ELASTICSEARCH_URL=http://es6:9200</code>：设置环境变量，让kibana能连接到elasticsearch（es6为上面我们创建elasticsearch时取的容器名，9200为创建elasticsearch容器时宿主机对应的容器内9200端口）</li>
+</ul>
+</blockquote>
+<p>进入kibana容器内：<code>docker exec -it kibana6 bash</code></p>
+<p>访问<code>http://ip:5601</code>就可以访问到kibana的界面了。</p>
+<h2 id="安装elasticsearch-head"><a class="markdownIt-Anchor" href="#安装elasticsearch-head"></a> 安装elasticsearch-head</h2>
+<p><code>elasticsearch-head</code>是用于Elasticsearch监控的插件。</p>
+<p>首先<code>docker pull</code>拉取镜像：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull mobz/elasticsearch-head:5</span><br></pre></td></tr></table></figure>
+<p>接下来<code>docker run</code>启动容器：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name es-head5 \</span><br><span class="line">-p 9100:9100 \</span><br><span class="line">mobz/elasticsearch-head:5</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数说明：</p>
+<ul>
+<li><code>-d</code>：后台运行容器，并返回容器ID</li>
+<li><code>--name es-head5</code>：为该容器指定名称为es-head5</li>
+<li><code>-p 9100:9100</code>：端口映射（主机(宿主)端口:容器端口），即宿主机开放出9100端口，指向容器内的9100端口</li>
+</ul>
+</blockquote>
+<p>进入elasticsearch-head容器内：<code>docker exec -it es-head5 bash</code></p>
+<p>浏览器访问：<code>http://ip:9100/</code>。如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617170656.png" alt="" /></p>
+<p>当输入 <code>http://ip:9200/</code> 点击连接时，会发现无法连接。是因为前后端分离开发，存在跨域问题，需要在服务端做 CORS 的配置。</p>
+<p>由于我们进行过数据卷挂载，不需要进入elasticsearch 容器内部，直接在宿主机的<code>/home/root/dockerVolumes/es/es6.4.0/config</code>下修改<code>elasticsearch.yml</code> 配置。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617171126.png" alt="" /></p>
+<p>输入<code>vim elasticsearch.yml</code>，添加如下两条配置，注意冒号后面有空格，保存并退出。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">http.cors.enabled:</span> <span class="literal">true</span> </span><br><span class="line"><span class="attr">http.cors.allow-origin:</span> <span class="string">"*"</span></span><br></pre></td></tr></table></figure>
+<p>重启容器：<code>docker restart es6</code></p>
+<p>此时输入 <code>http://ip:9200/</code> 点击连接就可以连接到了：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617171707.png" alt="" /></p>
+<h2 id="安装docker安装logstash"><a class="markdownIt-Anchor" href="#安装docker安装logstash"></a> 安装docker安装logstash</h2>
+<p><code>logstash</code>和<code>elasticsearch</code>的版本必须保持严格一致。</p>
+<p>首先<code>docker pull</code>拉取镜像：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull logstash:6.4.0</span><br></pre></td></tr></table></figure>
+<p>接下来先<code>docker run</code>启动容器（这里先启动容器是为了后面方便<code>docker cp</code>）：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name=logstash6 logstash:6.4.0</span><br></pre></td></tr></table></figure>
+<p>拷贝数据，授予权限：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker cp logstash6:/usr/share/logstash /home/root/dockerVolumes/logstash/logstash6.4.0</span><br><span class="line">chmod 777 -R /home/root/dockerVolumes/logstash/logstash6.4.0</span><br></pre></td></tr></table></figure>
+<p>接下来修改配置文件中的elasticsearch地址。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220617183807.png" alt="" /></p>
+<p>输入<code>vim logstash.yml</code>，完整内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">http.host:</span> <span class="string">"0.0.0.0"</span></span><br><span class="line"><span class="comment">#根据实际修改es的ip：port</span></span><br><span class="line"><span class="attr">xpack.monitoring.elasticsearch.hosts:</span> <span class="string">[</span> <span class="string">"http://192.168.31.196:9200"</span> <span class="string">]</span></span><br><span class="line"><span class="comment"># 主管道的Logstash配置路径，如果指定目录或通配符，配置文件将按字母顺序从目录中读取</span></span><br><span class="line"><span class="attr">path.config:</span> <span class="string">/usr/share/logstash/config/conf.d/*.conf</span></span><br><span class="line"><span class="comment">#Logstash将其日志写到的目录</span></span><br><span class="line"><span class="attr">path.logs:</span> <span class="string">/usr/share/logstash/logs</span></span><br></pre></td></tr></table></figure>
+<p>在<code>/home/root/dockerVolumes/logstash/logstash6.4.0/config</code>新建<code>logstash.conf</code>文件，<code>vim logstash.conf</code>，内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">input</span> <span class="string">&#123;</span></span><br><span class="line">  <span class="string">file</span> <span class="string">&#123;</span></span><br><span class="line">    <span class="comment">#标签</span></span><br><span class="line">    <span class="string">type</span> <span class="string">=&gt;</span> <span class="string">"systemlog-localhost"</span></span><br><span class="line">    <span class="comment">#采集点(这里一定要注意，由于我是docker启动的logstash,这里是容器内的文件，如果要生成外面日志索引，那么文件的路径一定要挂载正确)</span></span><br><span class="line">    <span class="string">path</span> <span class="string">=&gt;</span> <span class="string">"/var/log/messages"</span></span><br><span class="line">    <span class="comment">#开始收集点</span></span><br><span class="line">    <span class="string">start_position</span> <span class="string">=&gt;</span> <span class="string">"beginning"</span></span><br><span class="line">    <span class="comment">#扫描间隔时间，默认是1s，建议5s</span></span><br><span class="line">    <span class="string">stat_interval</span> <span class="string">=&gt;</span> <span class="string">"5"</span></span><br><span class="line">  <span class="string">&#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="string">output</span> <span class="string">&#123;</span></span><br><span class="line">  <span class="string">elasticsearch</span> <span class="string">&#123;</span></span><br><span class="line">  <span class="comment">#集群的话，直接添加多个url</span></span><br><span class="line">    <span class="string">hosts</span> <span class="string">=&gt;</span> <span class="string">["172.17.0.3:9200"]</span></span><br><span class="line">    <span class="comment">#es的用户名和密码</span></span><br><span class="line">	<span class="comment">#user =&gt;"elastic"</span></span><br><span class="line">	<span class="comment">#password =&gt;"elastic"</span></span><br><span class="line">	<span class="comment">#建立的索引以日期区分</span></span><br><span class="line">    <span class="string">index</span> <span class="string">=&gt;</span> <span class="string">"logstash-system-localhost-<span class="template-variable">%&#123;+YYYY.MM.dd&#125;</span>"</span></span><br><span class="line"> <span class="string">&#125;</span></span><br><span class="line"> <span class="comment">#在控制台输出logstash的日志</span></span><br><span class="line"> <span class="comment">#stdout &#123; codec=&gt; rubydebug &#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>接下来删除旧的logstash然后再<code>docker run</code>一个新的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker stop logstash6</span><br><span class="line">docker rm logstash6</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name=logstash6 \</span><br><span class="line">  -p 5044:5044 \</span><br><span class="line">  --privileged=true \</span><br><span class="line">  --restart=always \</span><br><span class="line">  -v /home/root/dockerVolumes/logstash/logstash6.4.0:/usr/share/logstash \</span><br><span class="line">  -v /home/root/dockerVolumes/logstash/logstash6.4.0/log/messages:/var/log/messages \</span><br><span class="line">  logstash:6.4.0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>其他的参数说明就不细说了，一眼能看懂。具体说一下：</p>
+<ul>
+<li><code>--privileged=true</code>：解决docker挂载主机目录时docker容器访问出现<code>cannot open directory：Permission denied</code></li>
+<li><code>--restart=always</code>：只要docker是启动的，容器就会跟着启动</li>
+</ul>
+</blockquote>
+<h1 id="docker-compose安装elk"><a class="markdownIt-Anchor" href="#docker-compose安装elk"></a> docker compose安装elk</h1>
+<p>上面用docker一个一个的安装还是比较麻烦，而且很容易出错（其实上面安装时logstash6.4.0是失败的，虽然可以成功跑起来，但是并没有成功在es上创建索引）。</p>
+<p>这里还是推荐使用<strong>docker compose</strong>一次性安装elk。以安装elk7为例。</p>
+<h1 id="elasticsearch基本概念"><a class="markdownIt-Anchor" href="#elasticsearch基本概念"></a> ElasticSearch基本概念</h1>
+<p>安装成功后，一切准备就绪，我们正式操作之前，先来了解一些 ES 的核心基本概念，从一开始就理解这些概念将极大地帮助简化学习过程。</p>
+<p>Elasticsearch是一个近乎实时（NRT）的搜索平台。这意味着从索引文档到可搜索文档的时间有一点延迟（通常是一秒）。通常有集群，节点，分片，副本等概念。</p>
+<h2 id="集群cluster"><a class="markdownIt-Anchor" href="#集群cluster"></a> 集群(Cluster)</h2>
+<p>集群(cluster)是一组具有相同<code>cluster.name</code>的节点集合，他们协同工作，共享数据并提供故障转移和扩展功能，当然一个节点也可以组成一个集群。</p>
+<p>集群由唯一名称标识，默认情况下为“elasticsearch”。此名称很重要，因为如果节点设置为按名称加入集群的话，则该节点只能是集群的一部分。</p>
+<p>确保不同的环境中使用不同的集群名称，否则最终会导致节点加入错误的集群。</p>
+<blockquote>
+<p><strong>【集群健康状态】</strong></p>
+<p>集群状态通过 <strong>绿</strong>，<strong>黄</strong>，<strong>红</strong> 来标识</p>
+<ul>
+<li><strong>绿色</strong> - 一切都很好（集群功能齐全）。</li>
+<li><strong>黄色</strong> - 所有数据均可用，但尚未分配一些副本（集群功能齐全）。</li>
+<li><strong>红色</strong> - 某些数据由于某种原因不可用（集群部分功能）。</li>
+</ul>
+<p><strong>注意：当群集为红色时，它将继续提供来自可用分片的搜索请求，但您可能需要尽快修复它，因为存在未分配的分片。</strong></p>
+</blockquote>
+<p>要检查群集运行状况，我们可以在 Kibana 控制台中运行以下命令<code>GET /_cluster/health</code>，得到如下信息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"cluster_name"</span>: <span class="string">"docker-cluster"</span>,</span><br><span class="line">  <span class="attr">"status"</span>: <span class="string">"green"</span>,</span><br><span class="line">  <span class="attr">"timed_out"</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">"number_of_nodes"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"number_of_data_nodes"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"active_primary_shards"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"active_shards"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"relocating_shards"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"initializing_shards"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"unassigned_shards"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"delayed_unassigned_shards"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"number_of_pending_tasks"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"number_of_in_flight_fetch"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"task_max_waiting_in_queue_millis"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"active_shards_percent_as_number"</span>: <span class="number">100</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220620120052.png" alt="" /></p>
+<h2 id="节点node"><a class="markdownIt-Anchor" href="#节点node"></a> 节点(Node)</h2>
+<p>节点，一个运行的 ES 实例就是一个节点，节点存储数据并参与集群的索引和搜索功能。</p>
+<p>就像集群一样，节点由名称标识，默认情况下，该名称是在启动时分配给节点的随机通用唯一标识符（UUID）。如果不需要默认值，可以定义所需的任何节点名称。此名称对于管理目的非常重要，您可以在其中识别网络中哪些服务器与 Elasticsearch 集群中的哪些节点相对应。</p>
+<p>可以将节点配置为按集群名称加入特定集群。默认情况下，每个节点都设置为加入一个名为 cluster 的 elasticsearch 集群，这意味着如果您在网络上启动了许多节点并且假设它们可以相互发现，它们将自动形成并加入一个名为 elasticsearch 的集群。</p>
+<h2 id="索引index"><a class="markdownIt-Anchor" href="#索引index"></a> 索引（Index）</h2>
+<p>索引是具有某些类似特征的文档集合。例如，您可以拥有店铺数据的索引，商品的一个索引以及订单数据的一个索引。</p>
+<p>索引由名称标识（<strong>必须全部小写</strong>），此名称用于在对其中的文档执行索引，搜索，更新和删除操作时引用索引。</p>
+<h2 id="类型type已弃用"><a class="markdownIt-Anchor" href="#类型type已弃用"></a> <s>类型（Type）</s>（已弃用）</h2>
+<p><s>类型</s>，曾经是索引的逻辑类别/分区，允许您在同一索引中存储不同类型的文档，例如，一种类型用于用户，另一种类型用于博客帖子。</p>
+<blockquote>
+<p><strong>在 6.0.0 中弃用，以后将不再可能在索引中创建多个类型，并且将在更高版本中删除类型的整个概念</strong>。</p>
+</blockquote>
+<h2 id="文档document"><a class="markdownIt-Anchor" href="#文档document"></a> 文档（Document）</h2>
+<p><strong>文档是可以建立索引的基本信息单元</strong>。例如，您可以为单个客户提供文档，为单个产品提供一个文档，为单个订单提供一个文档。该文档以<strong>JSON</strong>（JavaScript Object Notation）表示，JSON是一种普遍存在的互联网数据交换格式。</p>
+<p>在索引/类型中，您可以根据需要存储任意数量的文档。请注意，尽管文档实际上驻留在索引中，但实际上必须将文档编入索引/分配给索引中的类型。</p>
+<h2 id="分片shards"><a class="markdownIt-Anchor" href="#分片shards"></a> 分片(Shards)</h2>
+<p>索引可能存储大量可能超过单个节点的硬件限制的数据。例如，占用1TB磁盘空间的十亿个文档的单个索引可能不适合单个节点的磁盘，或者可能太慢而无法单独从单个节点提供搜索请求。</p>
+<p>为了解决这个问题，Elasticsearch 提供了将索引细分为多个称为分片的功能。创建索引时，只需定义所需的分片数即可。每个分片本身都是一个功能齐全且独立的“索引”，可以托管在集群中的任何节点上。</p>
+<p>设置分片的目的及原因主要是：</p>
+<ul>
+<li>它允许您水平拆分/缩放内容量</li>
+<li>它允许您跨分片（可能在多个节点上）分布和并行化操作，从而提高性能/吞吐量</li>
+</ul>
+<p>分片的分布方式以及如何将其文档聚合回搜索请求的机制完全由 Elasticsearch 管理，对用户而言是透明的。</p>
+<p>在可能随时发生故障的网络/云环境中，分片非常有用，建议使用故障转移机制，以防分片/节点以某种方式脱机或因任何原因消失。为此，Elasticsearch 允许您将索引的分片的一个或多个副本制作成所谓的副本分片或简称副本。</p>
+<h2 id="副本replicasedit"><a class="markdownIt-Anchor" href="#副本replicasedit"></a> 副本(Replicasedit)</h2>
+<p>副本，是对分片的复制。目的是为了当分片/节点发生故障时提供高可用性，它允许您扩展搜索量/吞吐量，因为可以在所有副本上并行执行搜索。</p>
+<p>总而言之，每个索引可以拆分为多个分片。索引也可以复制为零次（表示没有副本）或更多次。复制之后，每个索引将具有主分片(从原始分片复制而来的)和复制分片(主分片的副本)。</p>
+<p>可以在创建索引时为每个索引定义分片和副本的数量。创建索引后，您也可以随时动态更改副本数。您可以使用<code>_shrink</code> 和 <code>_splitAPI</code> 更改现有索引的分片数，但这不是一项轻松的任务，所以预先计划正确数量的分片是最佳方法。</p>
+<p>默认情况下，Elasticsearch 中的每个索引都分配了5个主分片和1个副本，这意味着如果集群中至少有两个节点，则索引将包含5个主分片和另外5个副本分片（1个完整副本），总计为每个索引10个分片。</p>
+<h2 id="elasticsearch和关系型数据库的概念对比"><a class="markdownIt-Anchor" href="#elasticsearch和关系型数据库的概念对比"></a> elasticsearch和关系型数据库的概念对比</h2>
+<ul>
+<li>关系型数据库 -&gt; Databases(库) -&gt; Tables(表) -&gt; Rows(行) -&gt; Columns(列)。</li>
+<li>Elasticsearch -&gt; Indeces(索引) -&gt; <s>Types(类型)</s> -&gt; Documents(文档) -&gt; Fields(属性)。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Elasticsearch</th>
+<th style="text-align:center">关系型数据库</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Databases(库)</td>
+<td style="text-align:center">Indeces(索引)</td>
+</tr>
+<tr>
+<td style="text-align:center">Tables(表)</td>
+<td style="text-align:center"><s>Types(类型)</s></td>
+</tr>
+<tr>
+<td style="text-align:center">Rows(行)</td>
+<td style="text-align:center">Documents(文档)</td>
+</tr>
+<tr>
+<td style="text-align:center">Columns(列)</td>
+<td style="text-align:center">Fields(属性)</td>
+</tr>
+</tbody>
+</table>
+<p>Elasticsearch集群可以包含多个索引(indices)（数据库），每一个索引可以包含多个<s>类型 (Types)</s>（表），每一个类型包含多个文档(documents)（行），然后每个文档包含多个字段(Fields)（列）。</p>
+<p>虽然这么类比，但是毕竟是两个差异化的产品，而且上面也说过在以后的版本中<s>类型 (Types)</s> 可能会被删除，所以一般我们创建索引都是一个种类对应一个索引。生鲜就创建商品的索引，生活用品就创建生活用品的索引，而不会说创建一个商品的索引，里面既包含生鲜的类型，又包含生活用品的类型。</p>
+<p>而且你可能已经注意到索引(index)这个词在Elasticsearch中有着不同的含义，所以有必要在此做一下区分：</p>
+<blockquote>
+<p><strong>「索引」含义的区分</strong></p>
+<ul>
+<li><strong>索引（名词）</strong> 如上文所述，一个索引(index)就像是传统关系数据库中的数据库，它是相关文档存储的地方，index的复数是 indices 或 indexes。</li>
+<li><strong>索引（动词）</strong> 「索引一个文档」表示把一个文档存储到索引（名词）里，以便它可以被检索或者查询。这很像SQL中的INSERT关键字，差别是，<strong>如果文档已经存在，新的文档将覆盖旧的文档。</strong></li>
+<li><strong>倒排索引</strong> 传统数据库为特定列增加一个索引，例如<strong>B-Tree</strong>索引来加速检索。Elasticsearch和Lucene使用一种叫做**倒排索引(inverted index)**的数据结构来达到相同目的。</li>
+</ul>
+</blockquote>
+<h2 id="小结"><a class="markdownIt-Anchor" href="#小结"></a> 小结</h2>
+<p>我们假设有一个集群由三个节点组成(Node1 , Node2 , Node3)。 它有两个主分片(P0 , P1)，每个主分片有两个副本分片(R0 , R1)。相同分片的副本不会放在同一节点，所以我们的集群看起来如下图所示 “有三个节点和一个索引的集群”。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220620125030.png" alt="" /></p>
+<blockquote>
+<p>类似于关系型数据库：数据库集群，假如有个用户表，我担心数据量过大，我新建了多个用户表(即 Shard)，将用户信息数据切分成多份，然后根据某种规则分到这些用户表中，我又担心某个表会出现异常造成数据丢失，我又将每个表分别备份了一次(即 Replica )。</p>
+</blockquote>
+<p><strong>副本是乘法，越多越浪费，但也越保险。分片是除法，分片越多，单分片数据就越少也越分散。</strong></p>
+<h1 id="elasticsearch交互"><a class="markdownIt-Anchor" href="#elasticsearch交互"></a> ElasticSearch交互</h1>
+<p>目前与 elasticsearch 交互主要有两种方式：<code>Client API</code> 和 <code>RESTful API</code>。</p>
+<ul>
+<li>
+<p><strong>Client API方式</strong>：Elasticsearch 为Go，Java等等语言提供了官方的客户端和插件，所有这些都可以在 <a href="https://www.elastic.co/guide/en/elasticsearch/client/index.html" target="_blank" rel="noopener">Elasticsearch Clients</a> 中找到。（<a href="https://www.elastic.co/guide/en/elasticsearch/client/go-api/current/index.html" target="_blank" rel="noopener">Elasticsearch Go Client</a>）</p>
+</li>
+<li>
+<p><strong>RESTful API with JSON over HTTP</strong>：所有其他语言可以使用 RESTful API 通过端口 9200 和 Elasticsearch 进行通信，你可以用web 客户端访问 Elasticsearch 。事实上，正如你所看到的，你甚至可以使用 <code>curl</code> 命令来和 Elasticsearch 交互。（<a href="https://www.yiibai.com/elasticsearch/elasticsearch_api_conventions.html" target="_blank" rel="noopener">Elasticsearch API约定</a>）</p>
+<p>一个 Elasticsearch 请求和任何 HTTP 请求一样由若干相同的部件组成：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X&lt;VERB&gt; &#39;&lt;PROTOCOL&gt;:&#x2F;&#x2F;&lt;HOST&gt;:&lt;PORT&gt;&#x2F;&lt;PATH&gt;?&lt;QUERY_STRING&gt;&#39; -d &#39;&lt;BODY&gt;&#39;</span><br></pre></td></tr></table></figure>
+<p>被<code>&lt; &gt;</code>标记的部件：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220620150001.png" alt="" /></p>
+</li>
+</ul>
+<h1 id="elasticsearch数据格式"><a class="markdownIt-Anchor" href="#elasticsearch数据格式"></a> ElasticSearch数据格式</h1>
+<p>在应用程序中对象很少只是一个简单的键和值的列表。通常，它们拥有更复杂的数据结构，可能包括日期、地理信息、其他对象或者数组等。</p>
+<p>也许有一天你想把这些对象存储在数据库中。使用关系型数据库的行和列存储，这相当于是把一个表现力丰富的对象挤压到一个非常大的电子表格中：你必须将这个对象扁平化来适应表结构，通常一个字段对应一列，而且又不得不在每次查询时重新构造对象。</p>
+<p><strong>Elasticsearch 是面向文档的</strong>，意味着它存储整个对象或文档。<strong>Elasticsearch不仅存储文档，而且每个文档的内容可以被检索</strong>。在 Elasticsearch 中，<strong>是对文档进行索引、检索、排序和过滤而不是对行列数据</strong>。这是一种完全不同的思考数据的方式，也是Elasticsearch能支持复杂全文检索的原因。</p>
+<p>Elasticsearch 使用JSON作为文档的序列化格式。JSON序列化被大多数编程语言所支持，并且已经成为 NoSQL领域的标准格式。 它简单、简洁、易于阅读。几乎所有的语言都有相应的模块可以将任意的数据结构或对象转化成 JSON 格式，只是细节各不相同。</p>
+<p>JSON数据示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"_index"</span> :   <span class="string">"megacorp"</span>,</span><br><span class="line">  <span class="attr">"_type"</span> :    <span class="string">"employee"</span>,</span><br><span class="line">  <span class="attr">"_id"</span> :      <span class="string">"1"</span>,</span><br><span class="line">  <span class="attr">"_version"</span> : <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"found"</span> :    <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"_source"</span> :  &#123;</span><br><span class="line">      <span class="attr">"first_name"</span> :  <span class="string">"John"</span>,</span><br><span class="line">      <span class="attr">"last_name"</span> :   <span class="string">"Smith"</span>,</span><br><span class="line">      <span class="attr">"age"</span> :         <span class="number">25</span>,</span><br><span class="line">      <span class="attr">"about"</span> :       <span class="string">"I love to go rock climbing"</span>,</span><br><span class="line">      <span class="attr">"interests"</span>:  [ <span class="string">"sports"</span>, <span class="string">"music"</span> ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="操作elasticsearch索引的应用"><a class="markdownIt-Anchor" href="#操作elasticsearch索引的应用"></a> 操作ElasticSearch：索引的应用</h1>
+<p><a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.17/rest-apis.html" target="_blank" rel="noopener">REST APIs</a></p>
+<p>一切准备就绪之后我们开始使用起来，体验 ElasticSearch 的世界。</p>
+<p>首先，我们来查看我们的所有索引信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GET _search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;match_all&quot;: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回结果如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"took"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"timed_out"</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">"_shards"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"successful"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"skipped"</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">"failed"</span>: <span class="number">0</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"hits"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"max_score"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"hits"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">".kibana"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"doc"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"config:6.4.0"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"type"</span>: <span class="string">"config"</span>,</span><br><span class="line">          <span class="attr">"updated_at"</span>: <span class="string">"2022-06-17T11:08:55.923Z"</span>,</span><br><span class="line">          <span class="attr">"config"</span>: &#123;</span><br><span class="line">            <span class="attr">"buildNum"</span>: <span class="number">17929</span>,</span><br><span class="line">            <span class="attr">"telemetry:optIn"</span>: <span class="literal">true</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以发现，当前只有一个索引，是<code>.kibana</code>，当然这不是我们自己的，这是kibana的。</p>
+<blockquote>
+<p>在<code>kibana</code>的<code>Dev Tools</code>这里找到<code>Console</code>。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220620150848.png" alt="" /></p>
+</blockquote>
+<h2 id="创建第一个简单索引"><a class="markdownIt-Anchor" href="#创建第一个简单索引"></a> 创建第一个简单索引</h2>
+<p>我们创建一个 NBA 球队的索引，开始我们的学习之路，注意<strong>索引名称必须是小写</strong>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">PUT nba</span><br><span class="line">&#123;</span><br><span class="line">  &quot;settings&quot;:&#123;</span><br><span class="line">    &quot;number_of_shards&quot;: 3,   </span><br><span class="line">    &quot;number_of_replicas&quot;: 1    </span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;mappings&quot;:&#123;</span><br><span class="line">    &quot;nba&quot;:&#123;</span><br><span class="line">      &quot;properties&quot;:&#123;</span><br><span class="line">        &quot;name_cn&quot;:&#123; </span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;name_en&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;gymnasium&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;topStar&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;championship&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;integer&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;date&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;date&quot;,</span><br><span class="line">          &quot;format&quot;:&quot;yyyy-MM-dd HH:mm:ss|| yyy-MM-dd||epoch_millis&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>字段说明：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">字段名称</th>
+<th style="text-align:center">字段说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">nba</td>
+<td style="text-align:center">索引</td>
+</tr>
+<tr>
+<td style="text-align:center">number_of_shards</td>
+<td style="text-align:center">分片数</td>
+</tr>
+<tr>
+<td style="text-align:center">number_of_replicas</td>
+<td style="text-align:center">副本数</td>
+</tr>
+<tr>
+<td style="text-align:center">name_cn</td>
+<td style="text-align:center">球队中文名</td>
+</tr>
+<tr>
+<td style="text-align:center">name_en</td>
+<td style="text-align:center">球队英文名</td>
+</tr>
+<tr>
+<td style="text-align:center">gymnasium</td>
+<td style="text-align:center">球馆名称</td>
+</tr>
+<tr>
+<td style="text-align:center">championship</td>
+<td style="text-align:center">总冠军次数</td>
+</tr>
+<tr>
+<td style="text-align:center">topStar</td>
+<td style="text-align:center">当家球星</td>
+</tr>
+<tr>
+<td style="text-align:center">date</td>
+<td style="text-align:center">加入NBA年份</td>
+</tr>
+</tbody>
+</table>
+<p>如果格式书写正确，我们会得到如下返回信息，表示创建成功：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"acknowledged"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"shards_acknowledged"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"index"</span>: <span class="string">"nba"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="新增索引数据"><a class="markdownIt-Anchor" href="#新增索引数据"></a> 新增索引数据</h2>
+<p>索引创建完成之后，我们往索引中加入球队数据，1,2,3 是我们指定的ID，如果不写ES会提供一个默认ID。</p>
+<blockquote>
+<p>其实我们可以不创建上面的索引 mapping 直接推送数据，但是这样ES会<strong>根据数据信息自动为我们设定字段类型，这会造成索引信息不准确的风险</strong>。</p>
+</blockquote>
+<p>依次运行以下几个PUT命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">PUT &#x2F;nba&#x2F;nba&#x2F;1</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name_en&quot;:&quot;San Antonio Spurs SAS&quot;,</span><br><span class="line">  &quot;name_cn&quot;:&quot;圣安东尼安马刺&quot;,</span><br><span class="line">  &quot;gymnasium&quot;:&quot;AT&amp;T中心球馆&quot;,</span><br><span class="line">  &quot;championship&quot;: 5,</span><br><span class="line">  &quot;topStar&quot;:&quot;蒂姆·邓肯&quot;,</span><br><span class="line">  &quot;date&quot;:&quot;1995-04-12&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PUT &#x2F;nba&#x2F;nba&#x2F;2</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name_en&quot;:&quot;Los Angeles Lakers&quot;,</span><br><span class="line">  &quot;name_cn&quot;:&quot;洛杉矶湖人&quot;,</span><br><span class="line">  &quot;gymnasium&quot;:&quot;斯台普斯中心球馆&quot;,</span><br><span class="line">  &quot;championship&quot;: 16,</span><br><span class="line">  &quot;topStar&quot;:&quot;科比·布莱恩特&quot;,</span><br><span class="line">  &quot;date&quot;:&quot;1947-05-12&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PUT &#x2F;nba&#x2F;nba&#x2F;3</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name_en&quot;:&quot;Golden State Warriors&quot;,</span><br><span class="line">  &quot;name_cn&quot;:&quot;金州勇士队&quot;,</span><br><span class="line">  &quot;gymnasium&quot;:&quot;甲骨文球馆&quot;,</span><br><span class="line">  &quot;championship&quot;: 6,</span><br><span class="line">  &quot;topStar&quot;:&quot;斯蒂芬·库里&quot;,</span><br><span class="line">  &quot;date&quot;:&quot;1949-06-13&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PUT &#x2F;nba&#x2F;nba&#x2F;4</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name_en&quot;:&quot;Miami Heat&quot;,</span><br><span class="line">  &quot;name_cn&quot;:&quot;迈阿密热火队&quot;,</span><br><span class="line">  &quot;gymnasium&quot;:&quot;美国航空球场&quot;,</span><br><span class="line">  &quot;championship&quot;: 3,</span><br><span class="line">  &quot;topStar&quot;:&quot;勒布朗·詹姆斯&quot;,</span><br><span class="line">  &quot;date&quot;:&quot;1988-06-13&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PUT &#x2F;nba&#x2F;nba&#x2F;5</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name_en&quot;:&quot;Cleveland Cavaliers&quot;,</span><br><span class="line">  &quot;name_cn&quot;:&quot;克利夫兰骑士队&quot;,</span><br><span class="line">  &quot;gymnasium&quot;:&quot;速贷球馆&quot;,</span><br><span class="line">  &quot;championship&quot;: 1,</span><br><span class="line">  &quot;topStar&quot;:&quot;勒布朗·詹姆斯&quot;,</span><br><span class="line">  &quot;date&quot;:&quot;1970-06-13&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以最后一个PUT命令为例，运行成功后会返回：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">  <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">  <span class="attr">"_id"</span>: <span class="string">"5"</span>,</span><br><span class="line">  <span class="attr">"_version"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"result"</span>: <span class="string">"created"</span>,</span><br><span class="line">  <span class="attr">"_shards"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">2</span>,</span><br><span class="line">    <span class="attr">"successful"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"failed"</span>: <span class="number">0</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"_seq_no"</span>: <span class="number">2</span>,</span><br><span class="line">  <span class="attr">"_primary_term"</span>: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220620153236.png" alt="索引创建成功" /></p>
+<h2 id="查询索引数据"><a class="markdownIt-Anchor" href="#查询索引数据"></a> 查询索引数据</h2>
+<p>上面新增完数据之后，这时候我们再执行开始的 <code>MATCH_ALL</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GET _search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;match_all&quot;: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>就会发现我们自己的索引信息也在查询的结果里面了，只是查询的结果是全部信息，其中包括索引、分片和副本的信息，内容比较多。我们可单独查询自己需要的索引信息。</p>
+<p>Elasticsearch 提供丰富且灵活的查询语言叫做 <strong>DSL 查询 (Query DSL)</strong> ，它允许你构建更加复杂、强大的搜索。（<a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-dsl.html" target="_blank" rel="noopener">Query DSL</a>）</p>
+<h3 id="匹配查询-matchmatch_all"><a class="markdownIt-Anchor" href="#匹配查询-matchmatch_all"></a> 匹配查询 match，match_all</h3>
+<p>1.查询全部球队的信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;nba&#x2F;nba&#x2F;_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;query&quot;: &#123;</span><br><span class="line">        &quot;match_all&quot;: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>得到的查询结果如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"took"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"timed_out"</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">"_shards"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"successful"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"skipped"</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">"failed"</span>: <span class="number">0</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"hits"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">5</span>,</span><br><span class="line">    <span class="attr">"max_score"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"hits"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"2"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Los Angeles Lakers"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"洛杉矶湖人"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"斯台普斯中心球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">16</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"科比·布莱恩特"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1947-05-12"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"4"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Miami Heat"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"迈阿密热火队"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"美国航空球场"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">3</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"勒布朗·詹姆斯"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1988-06-13"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"5"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Cleveland Cavaliers"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"克利夫兰骑士队"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"速贷球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">1</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"勒布朗·詹姆斯"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1970-06-13"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"1"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"San Antonio Spurs SAS"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"圣安东尼安马刺"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"AT&amp;T中心球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">5</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"蒂姆·邓肯"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1995-04-12"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"3"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Golden State Warriors"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"金州勇士队"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"甲骨文球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">6</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"斯蒂芬·库里"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1949-06-13"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>响应的数据结果分为两部分：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">----------------first part--------------------</span><br><span class="line">  "took": 0,</span><br><span class="line">  "timed_out": false,</span><br><span class="line">  "_shards": &#123;</span><br><span class="line">    "total": 3,</span><br><span class="line">    "successful": 3,</span><br><span class="line">    "skipped": 0,</span><br><span class="line">    "failed": 0</span><br><span class="line">  &#125;,</span><br><span class="line">---------------second part---------------------</span><br><span class="line">  "hits": &#123;</span><br><span class="line">    "total": 0,</span><br><span class="line">    "max_score": null,</span><br><span class="line">    "hits": []</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一部分为分片副本信息，第二部分 <code>hits</code> 包装的为查询的数据集。</p>
+<blockquote>
+<p>**注意：**响应内容不仅会告诉我们哪些文档被匹配到，而且这些文档内容完整的被包含在其中。也就是说我们在给用户展示搜索结果时需要用到的所有信息都有了。</p>
+</blockquote>
+<p>2.查询英文名称为：“Golden State Warriors” 的球队信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;nba&#x2F;nba&#x2F;_search</span><br><span class="line">&#123;</span><br><span class="line">   &quot;query&quot;: &#123;</span><br><span class="line">        &quot;match&quot;: &#123;</span><br><span class="line">            &quot;name_en&quot;: &quot;Golden State Warriors&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查询结果为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"took"</span>: <span class="number">27</span>,</span><br><span class="line">  <span class="attr">"timed_out"</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">"_shards"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"successful"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"skipped"</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">"failed"</span>: <span class="number">0</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"hits"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"max_score"</span>: <span class="number">2.2085102</span>,</span><br><span class="line">    <span class="attr">"hits"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"3"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">2.2085102</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Golden State Warriors"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"金州勇士队"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"甲骨文球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">6</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"斯蒂芬·库里"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1949-06-13"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="过滤查询-filter"><a class="markdownIt-Anchor" href="#过滤查询-filter"></a> 过滤查询 Filter</h3>
+<p>我们让搜索变的复杂一些。我们想要找到当家球星是<strong>勒布朗·詹姆斯</strong>，但是我们只想得到总冠军大于1次的球队。我们的语句将做一些改变用来添加<strong>过滤器(filter)</strong>，它允许我们有效的执行一个结构化搜索：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;nba&#x2F;nba&#x2F;_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;bool&quot;: &#123;</span><br><span class="line">      &quot;filter&quot;: &#123;</span><br><span class="line">        &quot;range&quot;: &#123;</span><br><span class="line">          &quot;championship&quot;: &#123;</span><br><span class="line">            &quot;gt&quot;: 1</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;must&quot;: &#123;</span><br><span class="line">        &quot;match&quot;: &#123;</span><br><span class="line">          &quot;topStar&quot;: &quot;勒布朗·詹姆斯&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回结果如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"took"</span>: <span class="number">82</span>,</span><br><span class="line">  <span class="attr">"timed_out"</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">"_shards"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"successful"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"skipped"</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">"failed"</span>: <span class="number">0</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"hits"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">4</span>,</span><br><span class="line">    <span class="attr">"max_score"</span>: <span class="number">2.4835496</span>,</span><br><span class="line">    <span class="attr">"hits"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"4"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">2.4835496</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Miami Heat"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"迈阿密热火队"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"美国航空球场"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">3</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"勒布朗·詹姆斯"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1988-06-13"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"1"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">0.7261542</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"San Antonio Spurs SAS"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"圣安东尼安马刺"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"AT&amp;T中心球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">5</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"蒂姆·邓肯"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1995-04-12"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"3"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">0.66301036</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Golden State Warriors"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"金州勇士队"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"甲骨文球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">6</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"斯蒂芬·库里"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1949-06-13"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"_index"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_type"</span>: <span class="string">"nba"</span>,</span><br><span class="line">        <span class="attr">"_id"</span>: <span class="string">"2"</span>,</span><br><span class="line">        <span class="attr">"_score"</span>: <span class="number">0.13353139</span>,</span><br><span class="line">        <span class="attr">"_source"</span>: &#123;</span><br><span class="line">          <span class="attr">"name_en"</span>: <span class="string">"Los Angeles Lakers"</span>,</span><br><span class="line">          <span class="attr">"name_cn"</span>: <span class="string">"洛杉矶湖人"</span>,</span><br><span class="line">          <span class="attr">"gymnasium"</span>: <span class="string">"斯台普斯中心球馆"</span>,</span><br><span class="line">          <span class="attr">"championship"</span>: <span class="number">16</span>,</span><br><span class="line">          <span class="attr">"topStar"</span>: <span class="string">"科比·布莱恩特"</span>,</span><br><span class="line">          <span class="attr">"date"</span>: <span class="string">"1947-05-12"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以发现每次查询，查询结果里面都有一个 <code>_score</code>字段，一般Elasticsearch根据相关评分排序，相关评分是根据文档与语句的匹配度来得出， <code>_score</code>值越高说明匹配度越高。</p>
+<p><strong>Elasticsearch进行全文字段搜索且首先返回相关性最大的结果</strong>。相关性(relevance)概念在Elasticsearch中非常重要，而这也是它与传统关系型数据库中记录只有匹配和不匹配概念最大的不同。</p>
+<hr />
+<h1 id="elasticsearch索引映射mapping问题"><a class="markdownIt-Anchor" href="#elasticsearch索引映射mapping问题"></a> ElasticSearch索引映射Mapping问题</h1>
+<p>数据库建表的时候，我们的DDL语句一般都会指定每个字段的存储类型，例如：varchar，int，datetime等等，目的很明确，就是更精确的存储数据，防止数据类型格式混乱。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`shop_`</span> (</span><br><span class="line">  <span class="string">`id_`</span> <span class="built_in">varchar</span>(<span class="number">36</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'id'</span>,</span><br><span class="line">  <span class="string">`shop_name_`</span> <span class="built_in">varchar</span>(<span class="number">50</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'商品名称'</span>,</span><br><span class="line">  <span class="string">`shop_integral_`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'兑换所需积分'</span>,</span><br><span class="line">  <span class="string">`shop_money_`</span> <span class="built_in">decimal</span>(<span class="number">10</span>,<span class="number">0</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'劵面金额'</span>,</span><br><span class="line">  <span class="string">`start_time_`</span> datetime <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'有效开始时间'</span>,</span><br><span class="line">  <span class="string">`end_time_`</span> datetime <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'有效结束时间'</span>,</span><br><span class="line">  <span class="string">`is_delete_`</span> <span class="built_in">int</span>(<span class="number">1</span>) <span class="keyword">DEFAULT</span> <span class="string">'1'</span> <span class="keyword">COMMENT</span> <span class="string">'是否删除-1：有效，0：删除'</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id_`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8 ROW_FORMAT=DYNAMIC;</span><br></pre></td></tr></table></figure>
+<p>在 Elasticsearch中也是这样，创建索引的时候一般也需要指定索引的字段类型，这种方式成为映射(Mapping)。</p>
+<p>这在上面我们Add数据时就已经接触到了，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">PUT nba</span><br><span class="line">&#123;</span><br><span class="line">  &quot;settings&quot;:&#123;</span><br><span class="line">    &quot;number_of_shards&quot;: 3,   </span><br><span class="line">    &quot;number_of_replicas&quot;: 1    </span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;mappings&quot;:&#123;</span><br><span class="line">    &quot;nba&quot;:&#123;</span><br><span class="line">      &quot;properties&quot;:&#123;</span><br><span class="line">        &quot;name_cn&quot;:&#123; </span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;name_en&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;gymnasium&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;topStar&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;text&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;championship&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;integer&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;date&quot;:&#123;</span><br><span class="line">          &quot;type&quot;:&quot;date&quot;,</span><br><span class="line">          &quot;format&quot;:&quot;yyyy-MM-dd HH:mm:ss|| yyy-MM-dd||epoch_millis&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以接下来就看一看ES的字段类型。</p>
+<h2 id="字段类型"><a class="markdownIt-Anchor" href="#字段类型"></a> 字段类型</h2>
+<p>映射(Mapping)针对的是文档的字段，数据库中有<code>varchar</code>，<code>int</code>，<code>datetime</code>等数据类型，那么我们ElasticSearch中又有哪些字段类型，每个字段类型都代表什么意思呢？</p>
+<p>ElasticSearch更新频繁，以下内容是针对<code>6.x</code>版本的，对于<code>5.x</code>版本以及之前的版本可能有所不同，未来版本也许也会有所改变（所以一定要针对自己的版本查阅<strong>官方文档</strong>）</p>
+<p>Elasticsearch支持文档字段的多种不同数据类型，根据官方文档的分类，可以划分为以下几个类别：<br />
+<strong>核心数据类型</strong>，<strong>复杂数据类型</strong>，<strong>Geo(地理)数据类型</strong>，<strong>专用数据类型</strong>和<strong>多字段</strong>。（<a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.17/mapping-types.html#text-search-types" target="_blank" rel="noopener">Field data types</a>）</p>
+<h3 id="核心数据类型"><a class="markdownIt-Anchor" href="#核心数据类型"></a> 核心数据类型</h3>
+<ul>
+<li>字符串类型：主要包括：<code>text</code>和<code>keyword</code>。</li>
+<li>数字类型：主要包括：<code>long</code>, <code>integer</code>, <code>short</code>, <code>byte</code>, <code>double</code>, <code>float</code>, <code>half_float</code>, <code>scaled_float</code></li>
+<li>日期类型： 主要包括：<code>date</code> ,<code>date_nanos</code></li>
+<li>布尔类型：<code>boolean</code></li>
+<li>二进制类型：<code>binary</code></li>
+<li>范围数据类型：<code>integer_range</code>, <code>float_range</code>, <code>long_range</code>, <code>double_range</code>, <code>date_range</code></li>
+</ul>
+<p>这里我们重点介绍下<code>text</code>和<code>keyword</code>的区别：</p>
+<ul>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/text.html" target="_blank" rel="noopener">text</a>：用于索引全文值的字段，例如电子邮件正文或产品说明。这些字段是analyzed，它们通过分词器传递 ，以在被索引之前将字符串转换为单个术语的列表。分析过程允许Elasticsearch搜索单个单词中每个完整的文本字段。文本字段不用于排序，很少用于聚合（尽管 重要的文本聚合 是一个值得注意的例外）</li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/keyword.html" target="_blank" rel="noopener">keyword</a>：用于索引结构化内容的字段，例如电子邮件地址，主机名，状态代码，邮政编码或标签。它们通常<strong>用于过滤，排序，和聚合</strong>。keyword字段只能按其确切值进行搜索。如果您需要索引电子邮件正文或产品说明等全文内容，则可能应该使用text字段</li>
+</ul>
+<blockquote>
+<p>官网：For example, you can index strings to both <code>text</code> and <code>keyword</code> fields. However, <code>text</code> field values are <a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.17/analysis.html" target="_blank" rel="noopener">analyzed</a> for full-text search while <code>keyword</code> strings are left as-is for filtering and sorting.</p>
+</blockquote>
+<p>有时候一个字段同时拥有全文类型（text）和关键字类型（keyword）是有用的：一个用于全文搜索，另一个用于聚合和排序。这可以通过<strong>多字段</strong>类型来实现。</p>
+<h3 id="复杂数据类型"><a class="markdownIt-Anchor" href="#复杂数据类型"></a> 复杂数据类型</h3>
+<ul>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/array.html" target="_blank" rel="noopener">数组数据类型</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/object.html" target="_blank" rel="noopener">对象数据类型</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/nested.html" target="_blank" rel="noopener">嵌套数据类型（Nested datatype）</a></li>
+</ul>
+<h3 id="geo数据类型"><a class="markdownIt-Anchor" href="#geo数据类型"></a> Geo数据类型</h3>
+<ul>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/geo-point.html" target="_blank" rel="noopener">地理点数据类型</a>：<code>geo_point</code> 对于纬度/经度点</li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/geo-shape.html" target="_blank" rel="noopener">Geo-Shape数据类型</a>：<code>geo_shape</code> 对于像多边形这样的复杂形状</li>
+</ul>
+<h3 id="专用数据类型"><a class="markdownIt-Anchor" href="#专用数据类型"></a> 专用数据类型</h3>
+<ul>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/ip.html" target="_blank" rel="noopener">IP数据类型</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/search-suggesters-completion.html" target="_blank" rel="noopener">Completion 数据类型</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/token-count.html" target="_blank" rel="noopener">令牌计数数据类型</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/plugins/6.5/mapper-murmur3.html" target="_blank" rel="noopener">mapper-murmur3</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/plugins/6.5/mapper-annotated-text.html" target="_blank" rel="noopener">mapper-annotated-text</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/percolator.html" target="_blank" rel="noopener">Percolator 类型</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/parent-join.html" target="_blank" rel="noopener">join 数据类型</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/alias.html" target="_blank" rel="noopener">别名数据类型</a></li>
+</ul>
+<h3 id="多字段"><a class="markdownIt-Anchor" href="#多字段"></a> 多字段</h3>
+<p>有时候单纯的一个字段类型满足不了我们复杂的需求，为了不同的目的，以不同的方式索引同一个字段通常很有用。多字段也是ES的一种数据类型，只不过结合了更多的功能。</p>
+<p>例如，对于字符串字段，我们既可以将它映射为<code>text</code>类型用于全文搜索，亦可以将它映射为<code>keyword</code>类型用于排序或聚合，或者，还可以使用标准分词器、英语分词器和其他语言分词器索引文本字段。</p>
+<p>大多数数据类型都通过<code>fields</code>参数支持多字段。例如对于城市名称的多字段映射，可以这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">PUT my_index</span><br><span class="line">&#123;</span><br><span class="line">  &quot;mappings&quot;: &#123;</span><br><span class="line">    &quot;_doc&quot;: &#123;</span><br><span class="line">      &quot;properties&quot;: &#123;</span><br><span class="line">        &quot;cityName&quot;: &#123;</span><br><span class="line">          &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">          &quot;fields&quot;: &#123;</span><br><span class="line">            &quot;raw&quot;: &#123; </span><br><span class="line">              &quot;type&quot;:  &quot;keyword&quot;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="映射"><a class="markdownIt-Anchor" href="#映射"></a> 映射</h2>
+<p><strong>映射</strong>是定义一个文档及其包含的字段如何存储和索引的过程。例如，使用映射来定义：</p>
+<ul>
+<li>应将哪些字符串字段视为全文字段</li>
+<li>哪些字段包含数字，日期或地理位置</li>
+<li>是否应将文档中所有字段的值索引到<code>catch-all _all</code>字段中</li>
+<li>日期值的格式</li>
+<li>自定义规则以控制动态添加字段的映射</li>
+</ul>
+<p>其实在 ElasticSearch中可以不需要事先定义映射（Mapping），文档写入ElasticSearch时，会根据文档字段自动识别类型，<strong>但是通过这种自动识别的字段不是很精确，对于一些复杂的需要分词的就不适合了</strong>。</p>
+<p>根据是否自动识别映射类型，我们可以将映射分为<strong>动态映射</strong>和<strong>静态映射</strong>：</p>
+<ul>
+<li>动态映射：不事先指定映射类型(Mapping)，文档写入ElasticSearch时，ES会根据文档字段自动识别类型，这种机制称之为动态映射。</li>
+<li>静态映射：人为事先定义好映射，包含文档的各个字段及其类型等，这种方式称之为静态映射，亦可称为显式映射。</li>
+</ul>
+<h3 id="动态映射"><a class="markdownIt-Anchor" href="#动态映射"></a> 动态映射</h3>
+<p>Elasticsearch最重要的功能之一是它试图摆脱你的方式，让你尽快开始探索你的数据。Elasticsearch试图让你成功安装环境之后就可以直接使用。要索引文档，您不必首先创建索引、定义映射类型和定义字段，其实您只需索引一个文档数据，然后索引、类型和字段将自动生效。</p>
+<p>索引一个图书的文档：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PUT /library/book/1</span><br><span class="line">&#123;</span><br><span class="line">  "bookId":1,</span><br><span class="line">  "bookName":"Java核心技术卷I",</span><br><span class="line">  "publishDate":"2014-03-12"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回结果如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"_index"</span>: <span class="string">"library"</span>,</span><br><span class="line">  <span class="attr">"_type"</span>: <span class="string">"book"</span>,</span><br><span class="line">  <span class="attr">"_id"</span>: <span class="string">"1"</span>,</span><br><span class="line">  <span class="attr">"_version"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"result"</span>: <span class="string">"created"</span>,</span><br><span class="line">  <span class="attr">"_shards"</span>: &#123;</span><br><span class="line">    <span class="attr">"total"</span>: <span class="number">2</span>,</span><br><span class="line">    <span class="attr">"successful"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"failed"</span>: <span class="number">0</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"_seq_no"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"_primary_term"</span>: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们看下mapping映射信息：<code>GET library/_mapping</code>。</p>
+<p>得到结果如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"library"</span>: &#123;</span><br><span class="line">    <span class="attr">"mappings"</span>: &#123;</span><br><span class="line">      <span class="attr">"book"</span>: &#123;</span><br><span class="line">        <span class="attr">"properties"</span>: &#123;</span><br><span class="line">          <span class="attr">"bookId"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"long"</span></span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="attr">"bookName"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"text"</span>,</span><br><span class="line">            <span class="attr">"fields"</span>: &#123;</span><br><span class="line">              <span class="attr">"keyword"</span>: &#123;</span><br><span class="line">                <span class="attr">"type"</span>: <span class="string">"keyword"</span>,</span><br><span class="line">                <span class="attr">"ignore_above"</span>: <span class="number">256</span></span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="attr">"publishDate"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"date"</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重点关注mapping节点的内容。可以看到，我们并没有创建索引映射，Elasticsearch自动根据文档数据为我们映射了字段类型，bookId的映射类型为<code>long</code>；bookName的映射类型为多字段的即为<code>text</code>，同时也为<code>keyword</code>；publishDate的映射类型为<code>date</code>。可以看到ES的动态映射功能还是蛮强大的。</p>
+<p>默认情况下，当在文档中找到以前未见过的字段时，Elasticsearch会自动将这个新字段添加到类型映射中。我们可以在文档和object级别禁用这项功能，具体操作方式就是通过将<code>dynamic</code>参数设置为<code>false</code>或<code>strict</code>，<strong>设为false是忽略新字段，而设为strict是如果遇到未知字段，就抛出异常</strong>。</p>
+<p>假设启用了动态字段映射功能，则使用一些简单的规则来确定字段应具有的数据类型：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">JSON datatype</th>
+<th style="text-align:center">Elasticsearch datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">null</td>
+<td style="text-align:center">没有字段添加</td>
+</tr>
+<tr>
+<td style="text-align:center">true or false</td>
+<td style="text-align:center">boolean</td>
+</tr>
+<tr>
+<td style="text-align:center">integer</td>
+<td style="text-align:center">long</td>
+</tr>
+<tr>
+<td style="text-align:center">object</td>
+<td style="text-align:center">object</td>
+</tr>
+<tr>
+<td style="text-align:center">array</td>
+<td style="text-align:center">依赖于数组中首个非空值</td>
+</tr>
+<tr>
+<td style="text-align:center">string</td>
+<td style="text-align:center">可以是日期字段、double或long字段，也可以是带有关键字子字段的文本字段。</td>
+</tr>
+</tbody>
+</table>
+<p>上面这些是可以动态检测到的字段数据类型，而<strong>其他的字段必须要显式映射数据类型了。</strong></p>
+<hr />
+<blockquote>
+<p>对于string字符串字段，动态映射的结果会有多种，可能映射为日期<code>date</code>类型，也可能映射为<code>double</code>或<code>long</code>类型，也可能映射为带有关键字的<code>text</code>类型，具体结果要看配置的检测类型，是日期检测还是数字检测。</p>
+</blockquote>
+<h4 id="日期检测"><a class="markdownIt-Anchor" href="#日期检测"></a> 日期检测</h4>
+<p>如果<code>date_detection</code>启用（默认启用），则检查新字符串字段以查看其内容是否与<code>dynamic_date_formats</code>指定的任何日期模式匹配 。如果找到匹配项，那么则添加为具有对应格式的date新字段。（<code>dynamic_date_formats</code>默认值为：<code>[ &quot;strict_date_optional_time&quot;，&quot;yyyy/MM/dd HH:mm:ss Z||yyyy/MM/dd Z&quot;]</code>）</p>
+<p>例如：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PUT my_index/_doc/1</span><br><span class="line">&#123;</span><br><span class="line">  "create_date": "2015/09/02"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过<code>GET my_index/_mapping</code>得到的结果为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"my_index"</span>: &#123;</span><br><span class="line">    <span class="attr">"mappings"</span>: &#123;</span><br><span class="line">      <span class="attr">"_doc"</span>: &#123;</span><br><span class="line">        <span class="attr">"properties"</span>: &#123;</span><br><span class="line">          <span class="attr">"create_date"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"date"</span>,</span><br><span class="line">            <span class="attr">"format"</span>: <span class="string">"yyyy/MM/dd HH:mm:ss||yyyy/MM/dd||epoch_millis"</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>动态日期检测可以通过设置<code>date_detection</code>为<code>false</code>来禁用:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">PUT my_index2</span><br><span class="line">&#123;</span><br><span class="line">  &quot;mappings&quot;: &#123;</span><br><span class="line">    &quot;_doc&quot;: &#123;</span><br><span class="line">      &quot;date_detection&quot;: false</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">PUT my_index2&#x2F;_doc&#x2F;1 </span><br><span class="line">&#123;</span><br><span class="line">  &quot;create&quot;: &quot;2022&#x2F;09&#x2F;02&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>禁用之后，通过<code>GET my_index2/_mapping</code>获取映射类型，得到如下结果：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"my_index2"</span>: &#123;</span><br><span class="line">    <span class="attr">"mappings"</span>: &#123;</span><br><span class="line">      <span class="attr">"_doc"</span>: &#123;</span><br><span class="line">        <span class="attr">"date_detection"</span>: <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">"properties"</span>: &#123;</span><br><span class="line">          <span class="attr">"create"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"text"</span>,</span><br><span class="line">            <span class="attr">"fields"</span>: &#123;</span><br><span class="line">              <span class="attr">"keyword"</span>: &#123;</span><br><span class="line">                <span class="attr">"type"</span>: <span class="string">"keyword"</span>,</span><br><span class="line">                <span class="attr">"ignore_above"</span>: <span class="number">256</span></span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="数字检测"><a class="markdownIt-Anchor" href="#数字检测"></a> 数字检测</h4>
+<p>虽然JSON支持本机浮点和整数数据类型，但某些应用程序或语言有时可能将数字呈现为字符串**。通常，正确的解决方案是显式映射这些字段，但可以启用数字检测（默认情况下禁用）**以自动执行此操作：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">PUT my_index3</span><br><span class="line">&#123; </span><br><span class="line">  &quot;mappings&quot;:&#123; </span><br><span class="line">    &quot;_doc&quot;:&#123; </span><br><span class="line">      &quot;numeric_detection&quot;:true </span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">PUT my_index3&#x2F;_doc&#x2F;1 </span><br><span class="line">&#123; </span><br><span class="line">  &quot;my_float&quot;:&quot;1.0&quot;,</span><br><span class="line">  &quot;my_integer&quot;:&quot;1&quot; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过<code>GET my_index3/_mapping</code>获取映射类型，得到如下结果：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"my_index3"</span>: &#123;</span><br><span class="line">    <span class="attr">"mappings"</span>: &#123;</span><br><span class="line">      <span class="attr">"_doc"</span>: &#123;</span><br><span class="line">        <span class="attr">"numeric_detection"</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">"properties"</span>: &#123;</span><br><span class="line">          <span class="attr">"my_float"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"float"</span></span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="attr">"my_integer"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"long"</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到my_float字段将添加为<code>float</code>类型，my_integer字段将添加为<code>long</code>类型。</p>
+<p>除了上面列出的选项外，还可以进一步自定义动态字段映射规则<code>dynamic_templates</code>，动态模板允许您定义可应用于动态添加字段的自定义映射，具体取决于：</p>
+<ul>
+<li>Elasticsearch检测到的数据类型match_mapping_type</li>
+<li>字段的名称，带match和unmatch或match_pattern</li>
+<li>字段的完整虚线路径，带path_match和path_unmatch</li>
+</ul>
+<p>更多具体内容可参考官方文档<a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/dynamic-templates.html" target="_blank" rel="noopener">Dynamic templates</a>。这里就不多叙述了。</p>
+<h3 id="静态映射显式映射"><a class="markdownIt-Anchor" href="#静态映射显式映射"></a> 静态映射(显式映射)</h3>
+<p>动态映射的自动类型推测功能并不是100%正确的，这就需要静态映射机制。静态映射与关系数据库中创建表语句类型，需要事先指定字段类型。相对于动态映射，静态映射可以添加更加详细字段类型、更精准的配置信息等。</p>
+<p>既然可以自定义映射字段类型，那么那些复杂的字段类型和分词器我们都可以根据自己需求添加了，以提供了字段映射使用的各种映射参数的详细说明，这些映射参数对于某些或所有字段数据类型是通用的。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">映射参数</td>
+<td style="text-align:center">说明</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/analyzer.html" target="_blank" rel="noopener">analyzer</a></td>
+<td style="text-align:center">分析器</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/normalizer.html" target="_blank" rel="noopener">normalizer</a></td>
+<td style="text-align:center">在 Elasticsearch 中处理字符串类型的数据时，如果我们想把整个字符串作为一个完整的 term 存储，我们通常会将其类型 type 设定为 keyword。但有时这种设定又会给我们带来麻烦，比如同一个数据再写入时由于没有做好清洗，导致大小写不一致，比如 apple、Apple两个实际都是 apple，但当我们去搜索 apple时却无法返回 Apple的文档。要解决这个问题，就需要 Normalizer出场了。</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/mapping-boost.html" target="_blank" rel="noopener">boost</a></td>
+<td style="text-align:center">单个字段可以自动提升以计数更多的相关性得分</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/coerce.html" target="_blank" rel="noopener">coerce</a></td>
+<td style="text-align:center">强制尝试清除脏值以适合字段的数据类型。数据并不总是干净的，根据它的生成方式，数字可能会在JSON正文中呈现为真正的JSON数字，例如5，但它也可能呈现为字符串，例如&quot;5&quot;。或者，应该是整数的数字可以替代地呈现为浮点，例如5.0，或甚至 “5.0”。</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/copy-to.html" target="_blank" rel="noopener">copy_to</a></td>
+<td style="text-align:center">copy_to参数允许您创建自定义 _all字段，可以将多个字段的值复制到组字段中，然后可以将其作为单个字段进行查询。</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/doc-values.html" target="_blank" rel="noopener">doc_values</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/dynamic.html" target="_blank" rel="noopener">dynamic</a></td>
+<td style="text-align:center">设置动态映射</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/enabled.html" target="_blank" rel="noopener">enabled</a></td>
+<td style="text-align:center">enabled设置只能应用于映射类型和 object字段，导致Elasticsearch完全跳过对字段内容的解析</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/fielddata.html" target="_blank" rel="noopener">fielddata</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/eager-global-ordinals.html" target="_blank" rel="noopener">eager_global_ordinals</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/mapping-date-format.html" target="_blank" rel="noopener">format</a></td>
+<td style="text-align:center">格式化日期</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/ignore-above.html" target="_blank" rel="noopener">ignore_above</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/ignore-malformed.html" target="_blank" rel="noopener">ignore_malformed</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/index-options.html" target="_blank" rel="noopener">index_options</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/mapping-index.html" target="_blank" rel="noopener">index</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/multi-fields.html" target="_blank" rel="noopener">fields</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/norms.html" target="_blank" rel="noopener">norms</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/null-value.html" target="_blank" rel="noopener">null_value</a></td>
+<td style="text-align:center">当字段设置为null，（或空数组或null值数组）时，它被视为该字段没有值。不能被索引或搜索</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/position-increment-gap.html" target="_blank" rel="noopener">position_increment_gap</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/properties.html" target="_blank" rel="noopener">properties</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/search-analyzer.html" target="_blank" rel="noopener">search_analyzer</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/similarity.html" target="_blank" rel="noopener">similarity</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/mapping-store.html" target="_blank" rel="noopener">store</a></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.5/term-vector.html" target="_blank" rel="noopener">term_vector</a></td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:qingbo1011@163.com">qingbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.qingbo1011.top/2022/06/20/Elasticsearch/">http://www.qingbo1011.top/2022/06/20/Elasticsearch/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.qingbo1011.top" target="_blank">Qing's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Database/">Database</a><a class="post-meta__tags" href="/tags/Elasticsearch/">Elasticsearch</a><a class="post-meta__tags" href="/tags/elk/">elk</a></div><div class="post_share"><div class="social-share" data-image="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20231003161115.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2022/06/21/Go%E6%93%8D%E4%BD%9CElasticSearch/"><img class="prev_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705111821.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Go操作Elasticsearch</div></div></a></div><div class="next-post pull_right"><a href="/2022/06/12/Gin-blog%EF%BC%9Ago1.18%E5%9C%A8gin%E4%B8%8A%E7%9A%84%E5%AE%9E%E8%B7%B5/"><img class="next_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220525201522.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Gin-blog：go1.18在gin上的实践</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2022/06/21/Go操作ElasticSearch/" title="Go操作Elasticsearch"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705111821.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-06-21</div><div class="relatedPosts_title">Go操作Elasticsearch</div></div></a></div><div class="relatedPosts_item"><a href="/2022/06/25/Gorm v2/" title="GORM v2操作MySQL"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220806214514.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-06-25</div><div class="relatedPosts_title">GORM v2操作MySQL</div></div></a></div><div class="relatedPosts_item"><a href="/2022/05/22/Go操作Redis/" title="Go操作Redis"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220715143752.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2022-05-22</div><div class="relatedPosts_title">Go操作Redis</div></div></a></div><div class="relatedPosts_item"><a href="/2021/03/25/JDBC（一）/" title="JDBC（一）"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508214453.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2021-03-25</div><div class="relatedPosts_title">JDBC（一）</div></div></a></div><div class="relatedPosts_item"><a href="/2021/03/28/JDBC（二）/" title="JDBC（二）"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508214453.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2021-03-28</div><div class="relatedPosts_title">JDBC（二）</div></div></a></div><div class="relatedPosts_item"><a href="/2021/04/11/Jedis/" title="Jedis"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508214944.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2021-04-11</div><div class="relatedPosts_title">Jedis</div></div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail','link'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'oNS5Emx1qUL3wN5yvPLKol0W-gzGzoHsz',
+  appKey: 'ytbw0ho3DMX0FeoAOWa37lf9',
+  notify: false,
+  verify: false,
+  placeholder: 'Stay hungry,stay foolish~',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: 'https://',
+  emojiMaps: {"欢呼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100836.gif","笑眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100849.gif","花心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100907.gif","吐舌":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100937.gif","疑问":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100951.gif","滑稽":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101004.gif","太开心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101017.gif","酷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101029.gif","怒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101044.gif","阴险":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101100.gif","委屈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101116.gif","乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101129.gif","你懂的":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101204.gif","小乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101215.gif","突然兴奋":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101228.gif","喷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101241.gif","哈哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101255.gif","喝酒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101305.gif","汗":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101323.gif","笑尿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102004.gif","嘿嘿嘿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102018.gif","真棒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102047.gif","托腮":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102108.gif","微笑":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/e3/2018new_weixioa02_org.png","礼貌":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/09/2018new_keai_org.png","笑哭":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/4a/2018new_xiaoku_thumb.png","无奈":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/83/2018new_kuxiao_org.png","爱你":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f6/2018new_aini_org.png","吃瓜":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/01/2018new_chigua_thumb.png","doge":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_doge02_org.png","dog":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/22/2018new_erha_org.png","cat":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7b/2018new_miaomiao_thumb.png","星星眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102225.png","酸了":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102240.png","大哭":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102254.png","傲娇":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102314.png","给心心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102328.png","嘿哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102345.png","custom0":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101410.gif","custom1":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101424.webp","狗头":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101710.png","搬砖中":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101744.png","忙到飞起":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102411.png","裂开":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102426.png","叹气":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102439.png","让我看看":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102456.png","panda0":"https://bbs.res.meizu.com/static/image/smiley/panda/_000.png","panda1":"https://bbs.res.meizu.com/static/image/smiley/panda/_001.png","panda2":"https://bbs.res.meizu.com/static/image/smiley/panda/_002.png","panda3":"https://bbs.res.meizu.com/static/image/smiley/panda/_003.png","panda4":"https://bbs.res.meizu.com/static/image/smiley/panda/_004.png","panda5":"https://bbs.res.meizu.com/static/image/smiley/panda/_005.png","panda6":"https://bbs.res.meizu.com/static/image/smiley/panda/_006.png","panda7":"https://bbs.res.meizu.com/static/image/smiley/panda/_007.png","panda8":"https://bbs.res.meizu.com/static/image/smiley/panda/_008.png","panda9":"https://bbs.res.meizu.com/static/image/smiley/panda/_009.png","panda10":"https://bbs.res.meizu.com/static/image/smiley/panda/_010.png","panda11":"https://bbs.res.meizu.com/static/image/smiley/panda/_011.png","panda12":"https://bbs.res.meizu.com/static/image/smiley/panda/_012.png","panda13":"https://bbs.res.meizu.com/static/image/smiley/panda/_013.png","panda14":"https://bbs.res.meizu.com/static/image/smiley/panda/_014.png","panda15":"https://bbs.res.meizu.com/static/image/smiley/panda/_015.png","panda16":"https://bbs.res.meizu.com/static/image/smiley/panda/_016.png","panda17":"https://bbs.res.meizu.com/static/image/smiley/panda/_017.png","panda18":"https://bbs.res.meizu.com/static/image/smiley/panda/_018.png","panda19":"https://bbs.res.meizu.com/static/image/smiley/panda/_019.png","panda20":"https://bbs.res.meizu.com/static/image/smiley/panda/_020.png","panda21":"https://bbs.res.meizu.com/static/image/smiley/panda/_021.png","panda22":"https://bbs.res.meizu.com/static/image/smiley/panda/_022.png","panda23":"https://bbs.res.meizu.com/static/image/smiley/panda/_023.png","panda24":"https://bbs.res.meizu.com/static/image/smiley/panda/_024.png","panda25":"https://bbs.res.meizu.com/static/image/smiley/panda/_025.png","panda26":"https://bbs.res.meizu.com/static/image/smiley/panda/_026.png","panda27":"https://bbs.res.meizu.com/static/image/smiley/panda/_027.png","panda28":"https://bbs.res.meizu.com/static/image/smiley/panda/_028.png","panda29":"https://bbs.res.meizu.com/static/image/smiley/panda/_029.png"},
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220621122244.png)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By qingbo</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div><div class="footer_custom_text">宇宙很大，生活更大</div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script></body></html>
