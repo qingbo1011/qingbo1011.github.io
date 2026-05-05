@@ -1,0 +1,1215 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>第三章：Agent 循环——大脑如何思考与行动 | Qing's Blog</title><meta name="description" content="第三章：Agent 循环——大脑如何思考与行动  这是整个 Claude Code 项目最核心的部分。理解了 Agent 循环，就理解了 Coding Agent 的本质。 本章深入 query.ts 的 1729 行代码，拆解&quot;思考→行动→观察&quot;循环的每一个环节。    目录  3.1 Agent 循环是什么？ 3.2 核心文件关系图 3.3 函数签名与类型体系 3.4 单"><meta name="keywords" content="Claude Code, Agent, 思考循环, 大模型"><meta name="author" content="qingbo,qingbo1011@163.com"><meta name="copyright" content="qingbo"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="dns-prefetch" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="dns-prefetch" href="https://fonts.googleapis.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="dns-prefetch" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="第三章：Agent 循环——大脑如何思考与行动"><meta name="twitter:description" content="第三章：Agent 循环——大脑如何思考与行动  这是整个 Claude Code 项目最核心的部分。理解了 Agent 循环，就理解了 Coding Agent 的本质。 本章深入 query.ts 的 1729 行代码，拆解&quot;思考→行动→观察&quot;循环的每一个环节。    目录  3.1 Agent 循环是什么？ 3.2 核心文件关系图 3.3 函数签名与类型体系 3.4 单"><meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><meta property="og:type" content="article"><meta property="og:title" content="第三章：Agent 循环——大脑如何思考与行动"><meta property="og:url" content="https://www.qingbo1011.top/2026/05/03/chapter-03-agent-loop/"><meta property="og:site_name" content="Qing's Blog"><meta property="og:description" content="第三章：Agent 循环——大脑如何思考与行动  这是整个 Claude Code 项目最核心的部分。理解了 Agent 循环，就理解了 Coding Agent 的本质。 本章深入 query.ts 的 1729 行代码，拆解&quot;思考→行动→观察&quot;循环的每一个环节。    目录  3.1 Agent 循环是什么？ 3.2 核心文件关系图 3.3 函数签名与类型体系 3.4 单"><meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><meta property="article:published_time" content="2026-05-03T04:15:00.000Z"><meta property="article:modified_time" content="2026-05-05T07:06:20.512Z"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="https://www.qingbo1011.top/2026/05/03/chapter-03-agent-loop/"><link rel="prev" title="第四章：工具系统——Agent 的双手" href="https://www.qingbo1011.top/2026/05/04/chapter-04-tool-system/"><link rel="next" title="第二章：启动流程——从敲下命令到界面就绪" href="https://www.qingbo1011.top/2026/05/02/chapter-02-startup-flow/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://xxx/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: true,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'false',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: true
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.1"></head><body><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230440.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">95</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">87</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">16</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#第三章agent-循环大脑如何思考与行动"><span class="toc-number">1.</span> <span class="toc-text"> 第三章：Agent 循环——大脑如何思考与行动</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#目录"><span class="toc-number">1.1.</span> <span class="toc-text"> 目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#31-agent-循环是什么"><span class="toc-number">1.2.</span> <span class="toc-text"> 3.1 Agent 循环是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-核心文件关系图"><span class="toc-number">1.3.</span> <span class="toc-text"> 3.2 核心文件关系图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-函数签名与类型体系"><span class="toc-number">1.4.</span> <span class="toc-text"> 3.3 函数签名与类型体系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#公开入口query"><span class="toc-number">1.4.1.</span> <span class="toc-text"> 公开入口：query()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#内部循环queryloop"><span class="toc-number">1.4.2.</span> <span class="toc-text"> 内部循环：queryLoop()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参数类型queryparams"><span class="toc-number">1.4.3.</span> <span class="toc-text"> 参数类型：QueryParams</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#循环状态state"><span class="toc-number">1.4.4.</span> <span class="toc-text"> 循环状态：State</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-单轮循环的-6-个阶段"><span class="toc-number">1.5.</span> <span class="toc-text"> 3.4 单轮循环的 6 个阶段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-phase-a上下文准备四层压缩管线"><span class="toc-number">1.6.</span> <span class="toc-text"> 3.5 Phase A：上下文准备——四层压缩管线</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-snip历史裁剪"><span class="toc-number">1.6.1.</span> <span class="toc-text"> ① Snip（历史裁剪）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-microcompact微压缩"><span class="toc-number">1.6.2.</span> <span class="toc-text"> ② Microcompact（微压缩）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-context-collapse上下文折叠"><span class="toc-number">1.6.3.</span> <span class="toc-text"> ③ Context Collapse（上下文折叠）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-autocompact自动压缩"><span class="toc-number">1.6.4.</span> <span class="toc-text"> ④ Autocompact（自动压缩）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#blocking-limit-检查"><span class="toc-number">1.6.5.</span> <span class="toc-text"> Blocking Limit 检查</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#36-phase-b-api-调用流式响应与工具提取"><span class="toc-number">1.7.</span> <span class="toc-text"> 3.6 Phase B: API 调用——流式响应与工具提取</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#流式调用流程"><span class="toc-number">1.7.1.</span> <span class="toc-text"> 流式调用流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#工具调用的提取"><span class="toc-number">1.7.2.</span> <span class="toc-text"> 工具调用的提取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#withholding-机制错误扣留"><span class="toc-number">1.7.3.</span> <span class="toc-text"> Withholding 机制（错误扣留）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#37-phase-c后处理错误恢复与回退"><span class="toc-number">1.8.</span> <span class="toc-text"> 3.7 Phase C：后处理——错误恢复与回退</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#模型回退fallback"><span class="toc-number">1.8.1.</span> <span class="toc-text"> 模型回退（Fallback）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#通用错误处理"><span class="toc-number">1.8.2.</span> <span class="toc-text"> 通用错误处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#中断信号检查"><span class="toc-number">1.8.3.</span> <span class="toc-text"> 中断信号检查</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#38-phase-d无工具路径停止判断与恢复策略"><span class="toc-number">1.9.</span> <span class="toc-text"> 3.8 Phase D：无工具路径——停止判断与恢复策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#max-output-tokens-恢复策略"><span class="toc-number">1.9.1.</span> <span class="toc-text"> Max Output Tokens 恢复策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stop-hooks-处理"><span class="toc-number">1.9.2.</span> <span class="toc-text"> Stop Hooks 处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#39-phase-e工具执行路径并行与串行"><span class="toc-number">1.10.</span> <span class="toc-text"> 3.9 Phase E：工具执行路径——并行与串行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#工具分类与并发策略"><span class="toc-number">1.10.1.</span> <span class="toc-text"> 工具分类与并发策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#工具摘要的错峰生成"><span class="toc-number">1.10.2.</span> <span class="toc-text"> 工具摘要的&quot;错峰&quot;生成</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#310-phase-f状态推进构建下一轮"><span class="toc-number">1.11.</span> <span class="toc-text"> 3.10 Phase F：状态推进——构建下一轮</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#311-十二种终止条件"><span class="toc-number">1.12.</span> <span class="toc-text"> 3.11 十二种终止条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#312-依赖注入可测试性的基石"><span class="toc-number">1.13.</span> <span class="toc-text"> 3.12 依赖注入：可测试性的基石</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#接口定义querydepsts"><span class="toc-number">1.13.1.</span> <span class="toc-text"> 接口定义（query&#x2F;deps.ts）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注入模式"><span class="toc-number">1.13.2.</span> <span class="toc-text"> 注入模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#为什么只有-4-个依赖"><span class="toc-number">1.13.3.</span> <span class="toc-text"> 为什么只有 4 个依赖？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#313-不可变配置快照queryconfig"><span class="toc-number">1.14.</span> <span class="toc-text"> 3.13 不可变配置快照：QueryConfig</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#关键设计决策"><span class="toc-number">1.14.1.</span> <span class="toc-text"> 关键设计决策</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#314-token-预算系统"><span class="toc-number">1.15.</span> <span class="toc-text"> 3.14 Token 预算系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#关键常量"><span class="toc-number">1.15.1.</span> <span class="toc-text"> 关键常量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nudge-消息"><span class="toc-number">1.15.2.</span> <span class="toc-text"> Nudge 消息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#315-stop-hooks停止时的后处理管线"><span class="toc-number">1.16.</span> <span class="toc-text"> 3.15 Stop Hooks：停止时的后处理管线</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#stophookresult-的处理"><span class="toc-number">1.16.1.</span> <span class="toc-text"> StopHookResult 的处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#316-上下文管理五级压缩体系"><span class="toc-number">1.17.</span> <span class="toc-text"> 3.16 上下文管理：五级压缩体系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#traditional-compaction-的完整流程"><span class="toc-number">1.17.1.</span> <span class="toc-text"> Traditional Compaction 的完整流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#session-memory-compaction-vs-traditional"><span class="toc-number">1.17.2.</span> <span class="toc-text"> Session Memory Compaction vs Traditional</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#摘要模板的-9-个段落"><span class="toc-number">1.17.3.</span> <span class="toc-text"> 摘要模板的 9 个段落</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#317-流式工具执行器streamingtoolexecutor"><span class="toc-number">1.18.</span> <span class="toc-text"> 3.17 流式工具执行器：StreamingToolExecutor</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#工具生命周期"><span class="toc-number">1.18.1.</span> <span class="toc-text"> 工具生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#并发控制模型"><span class="toc-number">1.18.2.</span> <span class="toc-text"> 并发控制模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#中断级联架构"><span class="toc-number">1.18.3.</span> <span class="toc-text"> 中断级联架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#输出顺序保证"><span class="toc-number">1.18.4.</span> <span class="toc-text"> 输出顺序保证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#318-queryengine面向-sdk-的封装层"><span class="toc-number">1.19.</span> <span class="toc-text"> 3.18 QueryEngine：面向 SDK 的封装层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#便捷封装ask"><span class="toc-number">1.19.1.</span> <span class="toc-text"> 便捷封装：ask()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#319-api-调用层重试-回退与流控"><span class="toc-number">1.20.</span> <span class="toc-text"> 3.19 API 调用层：重试、回退与流控</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#withretry异步生成器式的重试"><span class="toc-number">1.20.1.</span> <span class="toc-text"> withRetry：异步生成器式的重试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键重试参数"><span class="toc-number">1.20.2.</span> <span class="toc-text"> 关键重试参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#withretry-为什么是生成器"><span class="toc-number">1.20.3.</span> <span class="toc-text"> withRetry 为什么是生成器？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#320-预取与投机优化"><span class="toc-number">1.21.</span> <span class="toc-text"> 3.20 预取与投机优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#四大预取机制"><span class="toc-number">1.21.1.</span> <span class="toc-text"> 四大预取机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#记忆预取的去重"><span class="toc-number">1.21.2.</span> <span class="toc-text"> 记忆预取的去重</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#321-关键工程思想总结"><span class="toc-number">1.22.</span> <span class="toc-text"> 3.21 关键工程思想总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-1迭代而非递归"><span class="toc-number">1.22.1.</span> <span class="toc-text"> 思想 1：迭代而非递归</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-2异步生成器实现生产者-消费者"><span class="toc-number">1.22.2.</span> <span class="toc-text"> 思想 2：异步生成器实现生产者-消费者</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-3withhold-then-recover-模式"><span class="toc-number">1.22.3.</span> <span class="toc-text"> 思想 3：Withhold-then-Recover 模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-4分层压缩的漏斗模型"><span class="toc-number">1.22.4.</span> <span class="toc-text"> 思想 4：分层压缩的&quot;漏斗&quot;模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-5依赖注入的最小侵入"><span class="toc-number">1.22.5.</span> <span class="toc-text"> 思想 5：依赖注入的&quot;最小侵入&quot;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-6错峰并行"><span class="toc-number">1.22.6.</span> <span class="toc-text"> 思想 6：错峰并行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-7中断信号的三级级联"><span class="toc-number">1.22.7.</span> <span class="toc-text"> 思想 7：中断信号的三级级联</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-8重试的可观测性"><span class="toc-number">1.22.8.</span> <span class="toc-text"> 思想 8：重试的可观测性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-9状态转换的显式性"><span class="toc-number">1.22.9.</span> <span class="toc-text"> 思想 9：状态转换的显式性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-10配置的快照不可变"><span class="toc-number">1.22.10.</span> <span class="toc-text"> 思想 10：配置的&quot;快照不可变&quot;</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#下一步"><span class="toc-number">1.23.</span> <span class="toc-text"> 下一步</span></a></li></ol></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">Qing's Blog</a></span><span class="pull_right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">第三章：Agent 循环——大脑如何思考与行动</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2026-05-03 12:15:00"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-05-03</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2026-05-05 15:06:20"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-05-05</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/AI%E5%BA%94%E7%94%A8/">AI应用</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="post-meta__icon fa fa-file-word-o" aria-hidden="true"></i><span>字数总计:</span><span class="word-count">7.5k</span><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-clock-o" aria-hidden="true"></i><span>阅读时长: 28 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-comment-o" aria-hidden="true"></i><span>评论数:</span><a href="/2026/05/03/chapter-03-agent-loop/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/2026/05/03/chapter-03-agent-loop/" itemprop="commentCount"></span></a></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="第三章agent-循环大脑如何思考与行动"><a class="markdownIt-Anchor" href="#第三章agent-循环大脑如何思考与行动"></a> 第三章：Agent 循环——大脑如何思考与行动</h1>
+<blockquote>
+<p>这是整个 Claude Code 项目<strong>最核心</strong>的部分。理解了 Agent 循环，就理解了 Coding Agent 的本质。<br />
+本章深入 <code>query.ts</code> 的 1729 行代码，拆解&quot;思考→行动→观察&quot;循环的每一个环节。</p>
+</blockquote>
+<hr />
+<h2 id="目录"><a class="markdownIt-Anchor" href="#目录"></a> 目录</h2>
+<ul>
+<li><a href="#31-agent-%E5%BE%AA%E7%8E%AF%E6%98%AF%E4%BB%80%E4%B9%88">3.1 Agent 循环是什么？</a></li>
+<li><a href="#32-%E6%A0%B8%E5%BF%83%E6%96%87%E4%BB%B6%E5%85%B3%E7%B3%BB%E5%9B%BE">3.2 核心文件关系图</a></li>
+<li><a href="#33-%E5%87%BD%E6%95%B0%E7%AD%BE%E5%90%8D%E4%B8%8E%E7%B1%BB%E5%9E%8B%E4%BD%93%E7%B3%BB">3.3 函数签名与类型体系</a></li>
+<li><a href="#34-%E5%8D%95%E8%BD%AE%E5%BE%AA%E7%8E%AF%E7%9A%84-6-%E4%B8%AA%E9%98%B6%E6%AE%B5">3.4 单轮循环的 6 个阶段</a></li>
+<li><a href="#35-phase-a%E4%B8%8A%E4%B8%8B%E6%96%87%E5%87%86%E5%A4%87%E5%9B%9B%E5%B1%82%E5%8E%8B%E7%BC%A9%E7%AE%A1%E7%BA%BF">3.5 Phase A：上下文准备——四层压缩管线</a></li>
+<li><a href="#36-phase-b-api-%E8%B0%83%E7%94%A8%E6%B5%81%E5%BC%8F%E5%93%8D%E5%BA%94%E4%B8%8E%E5%B7%A5%E5%85%B7%E6%8F%90%E5%8F%96">3.6 Phase B：API 调用——流式响应与工具提取</a></li>
+<li><a href="#37-phase-c%E5%90%8E%E5%A4%84%E7%90%86%E9%94%99%E8%AF%AF%E6%81%A2%E5%A4%8D%E4%B8%8E%E5%9B%9E%E9%80%80">3.7 Phase C：后处理——错误恢复与回退</a></li>
+<li><a href="#38-phase-d%E6%97%A0%E5%B7%A5%E5%85%B7%E8%B7%AF%E5%BE%84%E5%81%9C%E6%AD%A2%E5%88%A4%E6%96%AD%E4%B8%8E%E6%81%A2%E5%A4%8D%E7%AD%96%E7%95%A5">3.8 Phase D：无工具路径——停止判断与恢复策略</a></li>
+<li><a href="#39-phase-e%E5%B7%A5%E5%85%B7%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84%E5%B9%B6%E8%A1%8C%E4%B8%8E%E4%B8%B2%E8%A1%8C">3.9 Phase E：工具执行路径——并行与串行</a></li>
+<li><a href="#310-phase-f%E7%8A%B6%E6%80%81%E6%8E%A8%E8%BF%9B%E6%9E%84%E5%BB%BA%E4%B8%8B%E4%B8%80%E8%BD%AE">3.10 Phase F：状态推进——构建下一轮</a></li>
+<li><a href="#311-%E5%8D%81%E4%BA%8C%E7%A7%8D%E7%BB%88%E6%AD%A2%E6%9D%A1%E4%BB%B6">3.11 十二种终止条件</a></li>
+<li><a href="#312-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E5%8F%AF%E6%B5%8B%E8%AF%95%E6%80%A7%E7%9A%84%E5%9F%BA%E7%9F%B3">3.12 依赖注入：可测试性的基石</a></li>
+<li><a href="#313-%E4%B8%8D%E5%8F%AF%E5%8F%98%E9%85%8D%E7%BD%AE%E5%BF%AB%E7%85%A7queryconfig">3.13 不可变配置快照：QueryConfig</a></li>
+<li><a href="#314-token-%E9%A2%84%E7%AE%97%E7%B3%BB%E7%BB%9F">3.14 Token 预算系统</a></li>
+<li><a href="#315-stop-hooks%E5%81%9C%E6%AD%A2%E6%97%B6%E7%9A%84%E5%90%8E%E5%A4%84%E7%90%86%E7%AE%A1%E7%BA%BF">3.15 Stop Hooks：停止时的后处理管线</a></li>
+<li><a href="#316-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%E4%BA%94%E7%BA%A7%E5%8E%8B%E7%BC%A9%E4%BD%93%E7%B3%BB">3.16 上下文管理：五级压缩体系</a></li>
+<li><a href="#317-%E6%B5%81%E5%BC%8F%E5%B7%A5%E5%85%B7%E6%89%A7%E8%A1%8C%E5%99%A8streamingtoolexecutor">3.17 流式工具执行器：StreamingToolExecutor</a></li>
+<li><a href="#318-queryengine%E9%9D%A2%E5%90%91-sdk-%E7%9A%84%E5%B0%81%E8%A3%85%E5%B1%82">3.18 QueryEngine：面向 SDK 的封装层</a></li>
+<li><a href="#319-api-%E8%B0%83%E7%94%A8%E5%B1%82%E9%87%8D%E8%AF%95%E5%9B%9E%E9%80%80%E4%B8%8E%E6%B5%81%E6%8E%A7">3.19 API 调用层：重试、回退与流控</a></li>
+<li><a href="#320-%E9%A2%84%E5%8F%96%E4%B8%8E%E6%8A%95%E6%9C%BA%E4%BC%98%E5%8C%96">3.20 预取与投机优化</a></li>
+<li><a href="#321-%E5%85%B3%E9%94%AE%E5%B7%A5%E7%A8%8B%E6%80%9D%E6%83%B3%E6%80%BB%E7%BB%93">3.21 关键工程思想总结</a></li>
+</ul>
+<hr />
+<h2 id="31-agent-循环是什么"><a class="markdownIt-Anchor" href="#31-agent-循环是什么"></a> 3.1 Agent 循环是什么？</h2>
+<p>一个 Coding Agent 的工作方式可以概括为一句话：</p>
+<blockquote>
+<p><strong>用户提问 → LLM 思考 → 调用工具 → 获取结果 → LLM 再思考 → … → 最终回复</strong></p>
+</blockquote>
+<p>这个&quot;思考→行动→观察→再思考&quot;的循环就是 <strong>Agent Loop</strong>。它是所有 AI Agent 系统的核心——无论是 Claude Code、Cursor 还是其他 Coding Agent，底层都遵循这个模式。</p>
+<div class="mermaid">
+flowchart LR
+    User[/"用户提问"/] --> Think["LLM 思考"]
+    Think --> Decide{"需要工具?"}
+    Decide -- "是" --> Act["调用工具<br/>(Read/Edit/Bash...)"]
+    Act --> Observe["获取结果"]
+    Observe --> Think
+    Decide -- "否" --> Reply[/"输出回复"/]
+</div>
+<p><strong>Claude Code 的独特之处</strong>在于它用 TypeScript 的 <strong>异步生成器</strong>（<code>async function*</code>）来实现这个循环，使得循环过程中可以<strong>实时向 UI 推送中间结果</strong>——LLM 的流式文本、工具调用的进度、状态变化事件等。</p>
+<hr />
+<h2 id="32-核心文件关系图"><a class="markdownIt-Anchor" href="#32-核心文件关系图"></a> 3.2 核心文件关系图</h2>
+<div class="mermaid">
+flowchart TD
+    subgraph EntryLayer["入口层"]
+        REPL["screens/REPL.tsx<br/>交互式 UI"]
+        QE["QueryEngine.ts<br/>SDK/Headless 入口"]
+    end
+
+    subgraph CoreLoop["核心循环层"]
+        Q["query.ts<br/>★ query() 异步生成器"]
+        QL["query.ts<br/>queryLoop() 内部循环"]
+    end
+
+    subgraph DI["依赖注入层"]
+        Deps["query/deps.ts<br/>QueryDeps 接口"]
+        Config["query/config.ts<br/>QueryConfig 快照"]
+        Budget["query/tokenBudget.ts<br/>Token 预算"]
+        Hooks["query/stopHooks.ts<br/>停止钩子"]
+    end
+
+    subgraph Execution["执行层"]
+        API["services/api/claude.ts<br/>queryModelWithStreaming()"]
+        STE["services/tools/<br/>StreamingToolExecutor"]
+        Orch["services/tools/<br/>toolOrchestration.ts"]
+        Exec["services/tools/<br/>toolExecution.ts"]
+    end
+
+    subgraph Context["上下文管理层"]
+        Snip["services/compact/<br/>snipCompact"]
+        Micro["services/compact/<br/>microCompact.ts"]
+        Auto["services/compact/<br/>autoCompact.ts"]
+        SM["services/compact/<br/>sessionMemoryCompact.ts"]
+        Trad["services/compact/<br/>compact.ts"]
+    end
+
+    REPL --> QE
+    QE --> Q
+    Q --> QL
+
+    QL --> Deps
+    QL --> Config
+    QL --> Budget
+    QL --> Hooks
+
+    QL -- "Phase B" --> API
+    QL -- "Phase E" --> STE
+    QL -- "Phase E (fallback)" --> Orch
+    STE --> Exec
+    Orch --> Exec
+
+    QL -- "Phase A" --> Snip
+    QL -- "Phase A" --> Micro
+    QL -- "Phase A" --> Auto
+    Auto --> SM
+    Auto --> Trad
+</div>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>行数</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>query.ts</code></td>
+<td>~1729</td>
+<td>★ Agent 循环主实现</td>
+</tr>
+<tr>
+<td><code>QueryEngine.ts</code></td>
+<td>~1177</td>
+<td>类封装，管理会话生命周期</td>
+</tr>
+<tr>
+<td><code>query/deps.ts</code></td>
+<td>~30</td>
+<td>依赖注入接口（4 个核心依赖）</td>
+</tr>
+<tr>
+<td><code>query/config.ts</code></td>
+<td>~40</td>
+<td>不可变配置快照</td>
+</tr>
+<tr>
+<td><code>query/tokenBudget.ts</code></td>
+<td>~120</td>
+<td>Token 预算追踪与续写决策</td>
+</tr>
+<tr>
+<td><code>query/stopHooks.ts</code></td>
+<td>~470</td>
+<td>停止钩子处理（异步生成器）</td>
+</tr>
+<tr>
+<td><code>services/api/claude.ts</code></td>
+<td>~2200</td>
+<td>流式 API 调用引擎</td>
+</tr>
+<tr>
+<td><code>services/tools/StreamingToolExecutor.ts</code></td>
+<td>~531</td>
+<td>流式工具执行器</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="33-函数签名与类型体系"><a class="markdownIt-Anchor" href="#33-函数签名与类型体系"></a> 3.3 函数签名与类型体系</h2>
+<h3 id="公开入口query"><a class="markdownIt-Anchor" href="#公开入口query"></a> 公开入口：<code>query()</code></h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// query.ts, line 219</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>* <span class="title">query</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  params: QueryParams,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">AsyncGenerator</span>&lt;</span></span><br><span class="line"><span class="function">  | <span class="title">StreamEvent</span>           // <span class="title">LLM</span> 流式事件（文本 <span class="title">delta</span>、<span class="title">usage</span> 等）</span></span><br><span class="line"><span class="function">  | <span class="title">RequestStartEvent</span>     // 每轮请求开始标记</span></span><br><span class="line"><span class="function">  | <span class="title">Message</span>               // 完整消息（助手/用户/系统）</span></span><br><span class="line"><span class="function">  | <span class="title">TombstoneMessage</span>      // 被废弃的消息标记</span></span><br><span class="line"><span class="function">  | <span class="title">ToolUseSummaryMessage</span>, // 工具使用摘要（移动端 <span class="title">UI</span>）</span></span><br><span class="line"><span class="function">  <span class="title">Terminal</span>                 // 终止原因（<span class="title">return</span> 值）</span></span><br><span class="line"><span class="function">&gt;</span></span><br></pre></td></tr></table></figure>
+<p><code>query()</code> 是一个<strong>异步生成器函数</strong>——它通过 <code>yield</code> 推送中间结果，通过 <code>return</code> 返回终止原因。</p>
+<h3 id="内部循环queryloop"><a class="markdownIt-Anchor" href="#内部循环queryloop"></a> 内部循环：<code>queryLoop()</code></h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// query.ts, line 241</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span>* <span class="title">queryLoop</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  params: QueryParams,</span></span></span><br><span class="line"><span class="function"><span class="params">  consumedCommandUuids: <span class="built_in">string</span>[],</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">AsyncGenerator</span>&lt;</span></span><br><span class="line"><span class="function">  | <span class="title">StreamEvent</span> | <span class="title">RequestStartEvent</span> | <span class="title">Message</span></span></span><br><span class="line"><span class="function">  | <span class="title">TombstoneMessage</span> | <span class="title">ToolUseSummaryMessage</span>,</span></span><br><span class="line"><span class="function">  <span class="title">Terminal</span></span></span><br><span class="line"><span class="function">&gt;</span></span><br></pre></td></tr></table></figure>
+<p><code>query()</code> 是薄包装器，核心逻辑全部在 <code>queryLoop()</code> 中。</p>
+<h3 id="参数类型queryparams"><a class="markdownIt-Anchor" href="#参数类型queryparams"></a> 参数类型：<code>QueryParams</code></h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> QueryParams = &#123;</span><br><span class="line">  messages: Message[]              <span class="comment">// 对话历史</span></span><br><span class="line">  systemPrompt: SystemPrompt       <span class="comment">// 系统提示词</span></span><br><span class="line">  userContext: Record&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt;   <span class="comment">// CLAUDE.md、日期等</span></span><br><span class="line">  systemContext: Record&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt; <span class="comment">// git 状态等</span></span><br><span class="line">  canUseTool: CanUseToolFn         <span class="comment">// 权限判断函数</span></span><br><span class="line">  toolUseContext: ToolUseContext    <span class="comment">// 工具执行上下文</span></span><br><span class="line">  fallbackModel?: <span class="built_in">string</span>           <span class="comment">// 备用模型</span></span><br><span class="line">  querySource: QuerySource         <span class="comment">// 请求来源标识</span></span><br><span class="line">  maxTurns?: <span class="built_in">number</span>                <span class="comment">// 最大循环轮次</span></span><br><span class="line">  taskBudget?: &#123; total: <span class="built_in">number</span> &#125;   <span class="comment">// Token 预算</span></span><br><span class="line">  deps?: QueryDeps                 <span class="comment">// 可注入的依赖（测试用）</span></span><br><span class="line">  <span class="comment">// ... 更多可选字段</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="循环状态state"><a class="markdownIt-Anchor" href="#循环状态state"></a> 循环状态：<code>State</code></h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> State = &#123;</span><br><span class="line">  messages: Message[]                    <span class="comment">// 不断追加的消息列表</span></span><br><span class="line">  toolUseContext: ToolUseContext          <span class="comment">// 工具执行上下文（包含 abortController）</span></span><br><span class="line">  autoCompactTracking: AutoCompactTrack  <span class="comment">// 压缩追踪（轮次、连续失败数）</span></span><br><span class="line">  maxOutputTokensRecoveryCount: <span class="built_in">number</span>   <span class="comment">// max_output_tokens 恢复尝试计数</span></span><br><span class="line">  hasAttemptedReactiveCompact: <span class="built_in">boolean</span>   <span class="comment">// 响应式压缩是否已尝试</span></span><br><span class="line">  pendingToolUseSummary: <span class="built_in">Promise</span> | <span class="literal">null</span>  <span class="comment">// 上一轮的工具摘要（后台计算）</span></span><br><span class="line">  stopHookActive: <span class="built_in">boolean</span>                <span class="comment">// 停止钩子是否激活</span></span><br><span class="line">  turnCount: <span class="built_in">number</span>                      <span class="comment">// 当前轮次</span></span><br><span class="line">  transition: Continue                   <span class="comment">// 上一次 continue 的原因</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>设计要点</strong>：循环使用 <code>while(true)</code> + <code>state = { ... }; continue</code> 而非递归调用，避免了长对话中的栈溢出风险。每次 <code>continue</code> 都携带一个 <code>transition.reason</code>，使得调试和测试可以精确追踪每次循环是因何继续的。</p>
+<hr />
+<h2 id="34-单轮循环的-6-个阶段"><a class="markdownIt-Anchor" href="#34-单轮循环的-6-个阶段"></a> 3.4 单轮循环的 6 个阶段</h2>
+<div class="mermaid">
+flowchart TD
+    Start(("Turn 开始"))
+
+    subgraph PhaseA["Phase A: 上下文准备<br/>(lines 307-598)"]
+        A1["Snip 历史裁剪"]
+        A2["Microcompact 微压缩"]
+        A3["Context Collapse 折叠"]
+        A4["Autocompact 自动压缩"]
+        A5["Blocking Limit 检查"]
+        A1 --> A2 --> A3 --> A4 --> A5
+    end
+
+    subgraph PhaseB["Phase B: API 调用<br/>(lines 650-953)"]
+        B1["构建请求参数"]
+        B2["流式调用 LLM API"]
+        B3["实时提取 tool_use 块"]
+        B4["流式工具执行<br/>(边流边执行)"]
+        B1 --> B2 --> B3 --> B4
+    end
+
+    subgraph PhaseC["Phase C: 后处理<br/>(lines 864-997)"]
+        C1["Fallback 模型回退"]
+        C2["错误处理与恢复"]
+        C3["中断信号检查"]
+    end
+
+    subgraph PhaseD["Phase D: 无工具路径<br/>(lines 1062-1358)"]
+        D1["Prompt-too-long 恢复"]
+        D2["Max output tokens 恢复"]
+        D3["Stop Hooks 执行"]
+        D4["Token Budget 检查"]
+        D5["正常完成 → return"]
+    end
+
+    subgraph PhaseE["Phase E: 工具执行路径<br/>(lines 1360-1700)"]
+        E1["执行剩余工具"]
+        E2["生成工具摘要"]
+        E3["收集附件消息"]
+        E4["刷新工具列表"]
+    end
+
+    subgraph PhaseF["Phase F: 状态推进<br/>(lines 1705-1728)"]
+        F1{"超过 maxTurns?"}
+        F2["构建新 State"]
+    end
+
+    Terminal(("return Terminal"))
+
+    Start --> PhaseA --> PhaseB --> PhaseC
+    PhaseC --> HasTools{"有工具调用?"}
+    HasTools -- "否" --> PhaseD
+    HasTools -- "是" --> PhaseE
+
+    PhaseD --> Terminal
+    PhaseE --> PhaseF
+    F1 -- "是" --> Terminal
+    F1 -- "否" --> F2
+    F2 --> Start
+</div>
+<hr />
+<h2 id="35-phase-a上下文准备四层压缩管线"><a class="markdownIt-Anchor" href="#35-phase-a上下文准备四层压缩管线"></a> 3.5 Phase A：上下文准备——四层压缩管线</h2>
+<p>每次调用 LLM 之前，都需要确保上下文不会超过 Token 限制。Claude Code 设计了一条<strong>四层压缩管线</strong>，按顺序执行：</p>
+<div class="mermaid">
+flowchart LR
+    Raw["原始消息列表"] --> Snip
+
+    subgraph Pipeline["压缩管线（每轮执行）"]
+        Snip["① Snip<br/>删除中间旧消息"]
+        Micro["② Microcompact<br/>清除旧工具结果"]
+        Collapse["③ Context Collapse<br/>折叠上下文"]
+        Auto["④ Autocompact<br/>全量摘要压缩"]
+        Snip --> Micro --> Collapse --> Auto
+    end
+
+    Auto --> Ready["压缩后的消息<br/>→ 发送给 API"]
+</div>
+<h3 id="1-snip历史裁剪"><a class="markdownIt-Anchor" href="#1-snip历史裁剪"></a> ① Snip（历史裁剪）</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">feature(&#39;HISTORY_SNIP&#39;) 门控</span><br><span class="line"></span><br><span class="line">作用：删除对话中间范围的旧消息（不是头部，不是尾部，而是&quot;中间&quot;）</span><br><span class="line">触发：每轮循环开始时</span><br><span class="line">输出：</span><br><span class="line">  - messages: 过滤后的消息数组</span><br><span class="line">  - tokensFreed: 释放的 Token 数（传递给后续阶段）</span><br><span class="line">  - boundaryMessage: 标记裁剪位置的系统消息</span><br></pre></td></tr></table></figure>
+<h3 id="2-microcompact微压缩"><a class="markdownIt-Anchor" href="#2-microcompact微压缩"></a> ② Microcompact（微压缩）</h3>
+<p>微压缩在<strong>每次 API 调用前</strong>运行，替换旧工具结果的内容，不需要 LLM 参与。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">可压缩的工具类型：</span><br><span class="line">  FileRead, Bash&#x2F;Shell, Grep, Glob, WebSearch, WebFetch, FileEdit, FileWrite</span><br><span class="line"></span><br><span class="line">替换策略：</span><br><span class="line">  旧工具结果内容 → &#39;[Old tool result content cleared]&#39;</span><br><span class="line"></span><br><span class="line">三条路径（按优先级）：</span><br><span class="line">  1. 时间基准微压缩：距上次助手消息 &gt; 60 分钟时触发</span><br><span class="line">     （此时服务端 prompt 缓存已过期，可以大胆修改）</span><br><span class="line">  2. 缓存微压缩：使用 API 的 cache_edits 机制</span><br><span class="line">     （不修改本地消息，通过 API 参数告知服务端清除）</span><br><span class="line">  3. 无操作：交给 Autocompact 处理</span><br></pre></td></tr></table></figure>
+<h3 id="3-context-collapse上下文折叠"><a class="markdownIt-Anchor" href="#3-context-collapse上下文折叠"></a> ③ Context Collapse（上下文折叠）</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">feature(&#39;CONTEXT_COLLAPSE&#39;) 门控</span><br><span class="line"></span><br><span class="line">作用：将冗长的上下文投影为精简视图</span><br><span class="line">特点：这是一个&quot;读时投影&quot;，不修改原始消息</span><br></pre></td></tr></table></figure>
+<h3 id="4-autocompact自动压缩"><a class="markdownIt-Anchor" href="#4-autocompact自动压缩"></a> ④ Autocompact（自动压缩）</h3>
+<p>当 Token 数超过阈值时触发完整的摘要压缩：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">阈值公式：</span><br><span class="line">  effectiveWindow &#x3D; contextWindow - min(maxOutputTokens, 20000)</span><br><span class="line">  threshold &#x3D; effectiveWindow - 13000</span><br><span class="line"></span><br><span class="line">执行优先级：</span><br><span class="line">  1. 先尝试 Session Memory Compaction（无 API 调用，使用磁盘上的会话记忆）</span><br><span class="line">  2. 失败则回退到 Traditional Compaction（调用 LLM 生成摘要）</span><br><span class="line"></span><br><span class="line">熔断器：连续失败 3 次后跳过（防止死循环）</span><br></pre></td></tr></table></figure>
+<h3 id="blocking-limit-检查"><a class="markdownIt-Anchor" href="#blocking-limit-检查"></a> Blocking Limit 检查</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">当 auto-compact 被关闭，且没有其他恢复手段时：</span><br><span class="line">  阻塞阈值 &#x3D; effectiveWindow - 3000</span><br><span class="line"></span><br><span class="line">如果 Token 数超过此阈值：</span><br><span class="line">  yield 错误消息</span><br><span class="line">  return &#123; reason: &#39;blocking_limit&#39; &#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="36-phase-b-api-调用流式响应与工具提取"><a class="markdownIt-Anchor" href="#36-phase-b-api-调用流式响应与工具提取"></a> 3.6 Phase B: API 调用——流式响应与工具提取</h2>
+<h3 id="流式调用流程"><a class="markdownIt-Anchor" href="#流式调用流程"></a> 流式调用流程</h3>
+<div class="mermaid">
+sequenceDiagram
+    participant QL as queryLoop()
+    participant API as claude.ts
+    participant LLM as Claude API
+    participant STE as StreamingToolExecutor
+
+    QL->>API: callModel(params)
+    API->>LLM: POST /messages (stream: true)
+
+    loop 流式响应
+        LLM-->>API: SSE chunk (text_delta / tool_use)
+        API-->>QL: yield StreamEvent
+        QL-->>QL: 检查是否有 tool_use 块
+
+        alt 发现 tool_use 块
+            QL->>STE: addTool(block)
+            STE->>STE: 如果可并发，立即开始执行
+            STE-->>QL: getCompletedResults()
+            QL-->>QL: yield 已完成的工具结果
+        end
+    end
+
+    LLM-->>API: message_stop
+    API-->>QL: yield 最终 AssistantMessage
+</div>
+<h3 id="工具调用的提取"><a class="markdownIt-Anchor" href="#工具调用的提取"></a> 工具调用的提取</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从每个助手消息中提取 tool_use 块</span></span><br><span class="line"><span class="keyword">const</span> msgToolUseBlocks = message.content.filter(</span><br><span class="line">  content =&gt; content.type === <span class="string">'tool_use'</span>,</span><br><span class="line">)</span><br><span class="line"><span class="keyword">if</span> (msgToolUseBlocks.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">  toolUseBlocks.push(...msgToolUseBlocks)</span><br><span class="line">  needsFollowUp = <span class="literal">true</span>  <span class="comment">// 标记：循环需要继续</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键变量 <code>needsFollowUp</code></strong> 决定了循环的走向：</p>
+<ul>
+<li><code>true</code>：进入 Phase E（工具执行路径）</li>
+<li><code>false</code>：进入 Phase D（无工具路径→准备终止）</li>
+</ul>
+<h3 id="withholding-机制错误扣留"><a class="markdownIt-Anchor" href="#withholding-机制错误扣留"></a> Withholding 机制（错误扣留）</h3>
+<p>对于可恢复的错误（prompt-too-long、media-size、max-output-tokens），Claude Code 不会立即 yield 给 UI，而是<strong>扣留</strong>它们：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">扣留的错误类型：</span><br><span class="line">  - prompt-too-long (HTTP 413)  → 可通过压缩恢复</span><br><span class="line">  - media-size-error            → 可通过移除媒体恢复</span><br><span class="line">  - max-output-tokens           → 可通过提升限额恢复</span><br><span class="line"></span><br><span class="line">流程：</span><br><span class="line">  1. 检测到可恢复错误 → 存入 withheldMessages（不 yield）</span><br><span class="line">  2. 进入 Phase D 尝试恢复</span><br><span class="line">  3. 恢复成功 → continue 循环（用户无感知）</span><br><span class="line">  4. 恢复失败 → 才 yield 错误给用户</span><br></pre></td></tr></table></figure>
+<p>这个设计使得 Agent 能够<strong>静默处理瞬态问题</strong>，用户只看到最终结果。</p>
+<hr />
+<h2 id="37-phase-c后处理错误恢复与回退"><a class="markdownIt-Anchor" href="#37-phase-c后处理错误恢复与回退"></a> 3.7 Phase C：后处理——错误恢复与回退</h2>
+<h3 id="模型回退fallback"><a class="markdownIt-Anchor" href="#模型回退fallback"></a> 模型回退（Fallback）</h3>
+<div class="mermaid">
+flowchart TD
+    Stream["流式响应进行中"]
+    Err{"捕获 FallbackTriggeredError?"}
+    HasFB{"有 fallbackModel?"}
+    Switch["切换到备用模型<br/>清除累积状态<br/>丢弃 StreamingToolExecutor"]
+    Retry["重新开始内层 while 循环"]
+    Surface["yield 错误消息<br/>return model_error"]
+
+    Stream --> Err
+    Err -- "是" --> HasFB
+    HasFB -- "是" --> Switch --> Retry
+    HasFB -- "否" --> Surface
+    Err -- "否，其他错误" --> Surface
+</div>
+<p>FallbackTriggeredError 在以下场景触发：</p>
+<ul>
+<li>连续 3 次 529（过载）错误</li>
+<li>模型不可用</li>
+</ul>
+<p>回退时的操作：</p>
+<ol>
+<li>所有已 yield 的孤立消息标记为 Tombstone</li>
+<li>清除工具块和助手消息</li>
+<li>如果是内部用户，剥离 thinking 签名</li>
+<li>切换模型，重试</li>
+</ol>
+<h3 id="通用错误处理"><a class="markdownIt-Anchor" href="#通用错误处理"></a> 通用错误处理</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">try&#x2F;catch 外层：</span><br><span class="line">  - ImageSizeError&#x2F;ImageResizeError → return &#123; reason: &#39;image_error&#39; &#125;</span><br><span class="line">  - 其他错误：</span><br><span class="line">    1. 为已发出但未完成的 tool_use 块生成缺失的 tool_result</span><br><span class="line">    2. yield 错误消息</span><br><span class="line">    3. return &#123; reason: &#39;model_error&#39;, error &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="中断信号检查"><a class="markdownIt-Anchor" href="#中断信号检查"></a> 中断信号检查</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if (abortController.signal.aborted) &#123;</span><br><span class="line">  1. 排空 StreamingToolExecutor 的剩余结果</span><br><span class="line">  2. 清理 Computer Use 锁</span><br><span class="line">  3. 如果不是 &#39;interrupt&#39; 原因 → yield 中断消息</span><br><span class="line">  4. return &#123; reason: &#39;aborted_streaming&#39; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>'interrupt'</code> 是特殊的中断原因——它表示用户在流式响应中提交了新消息（submit-interrupt），此时不需要显示中断提示。</p>
+<hr />
+<h2 id="38-phase-d无工具路径停止判断与恢复策略"><a class="markdownIt-Anchor" href="#38-phase-d无工具路径停止判断与恢复策略"></a> 3.8 Phase D：无工具路径——停止判断与恢复策略</h2>
+<p>当 LLM 没有调用任何工具时（<code>needsFollowUp === false</code>），循环准备终止。但在真正终止前，需要经过多道检查：</p>
+<div class="mermaid">
+flowchart TD
+    NoTool["LLM 未调用工具"]
+
+    PTL{"有扣留的<br/>prompt-too-long?"}
+    PTL -- "是" --> Collapse{"尝试 Context<br/>Collapse Drain"}
+    Collapse -- "成功" --> Continue1["continue: collapse_drain_retry"]
+    Collapse -- "失败" --> Reactive{"尝试 Reactive<br/>Compact"}
+    Reactive -- "成功" --> Continue2["continue: reactive_compact_retry"]
+    Reactive -- "失败" --> ReturnPTL["return: prompt_too_long"]
+
+    PTL -- "否" --> MOT{"有扣留的<br/>max_output_tokens?"}
+    MOT -- "是" --> Escalate{"尝试提升到<br/>64K Token"}
+    Escalate -- "成功" --> Continue3["continue: max_output_tokens_escalate"]
+    Escalate -- "失败" --> MultiTurn{"多轮恢复<br/>(最多 3 次)"}
+    MultiTurn -- "未耗尽" --> Continue4["continue: max_output_tokens_recovery"]
+    MultiTurn -- "已耗尽" --> YieldErr["yield 扣留的错误"]
+
+    MOT -- "否" --> ApiErr{"是 API 错误?"}
+    ApiErr -- "是" --> ReturnOK["return: completed"]
+    ApiErr -- "否" --> StopHook["执行 Stop Hooks"]
+    StopHook --> Prevented{"被阻止?"}
+    Prevented -- "是" --> ReturnHook["return: stop_hook_prevented"]
+    Prevented -- "否" --> HasBlocking{"有阻塞错误?"}
+    HasBlocking -- "是" --> Continue5["continue: stop_hook_blocking"]
+    HasBlocking -- "否" --> TokenBudget{"Token 预算检查"}
+    TokenBudget -- "继续" --> Continue6["continue: token_budget_continuation"]
+    TokenBudget -- "停止" --> ReturnDone["return: completed"]
+</div>
+<h3 id="max-output-tokens-恢复策略"><a class="markdownIt-Anchor" href="#max-output-tokens-恢复策略"></a> Max Output Tokens 恢复策略</h3>
+<p>分三步递进：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>策略</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Token 限额提升</td>
+<td>从默认值升到 64K（<code>ESCALATED_MAX_TOKENS</code>），单次尝试</td>
+</tr>
+<tr>
+<td>2</td>
+<td>多轮恢复</td>
+<td>注入 meta 消息&quot;请直接继续，不要总结&quot;，最多重试 3 次</td>
+</tr>
+<tr>
+<td>3</td>
+<td>放弃</td>
+<td>yield 扣留的错误消息给用户</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stop-hooks-处理"><a class="markdownIt-Anchor" href="#stop-hooks-处理"></a> Stop Hooks 处理</h3>
+<p>Stop Hooks 是在 Agent 完成一轮回复后执行的<strong>后处理管线</strong>，详见 <a href="#315-stop-hooks%E5%81%9C%E6%AD%A2%E6%97%B6%E7%9A%84%E5%90%8E%E5%A4%84%E7%90%86%E7%AE%A1%E7%BA%BF">3.15 节</a>。</p>
+<hr />
+<h2 id="39-phase-e工具执行路径并行与串行"><a class="markdownIt-Anchor" href="#39-phase-e工具执行路径并行与串行"></a> 3.9 Phase E：工具执行路径——并行与串行</h2>
+<p>当 LLM 调用了工具（<code>needsFollowUp === true</code>），进入工具执行路径：</p>
+<div class="mermaid">
+flowchart TD
+    ToolBlocks["收到 N 个 tool_use 块"]
+
+    HasSTE{"使用流式执行器?"}
+    HasSTE -- "是" --> Remain["getRemainingResults()<br/>等待所有工具完成"]
+    HasSTE -- "否" --> RunTools["runTools()<br/>传统编排器"]
+
+    subgraph Legacy["传统编排：runTools()"]
+        Partition["partitionToolCalls()<br/>分批"]
+        Concurrent["并行批次<br/>all() 最多 10 并发"]
+        Serial["串行批次"]
+        Partition --> Concurrent
+        Partition --> Serial
+    end
+
+    RunTools --> Legacy
+
+    Remain --> Yield["yield 每个工具结果消息"]
+    Legacy --> Yield
+
+    Yield --> Summary["后台生成工具摘要<br/>(Haiku 小模型)"]
+    Summary --> AbortCheck{"中断检查"}
+    AbortCheck -- "已中断" --> ReturnAbort["return: aborted_tools"]
+    AbortCheck -- "未中断" --> Attach["收集附件消息"]
+
+    subgraph Attachments["附件收集"]
+        QCmd["队列命令快照"]
+        FileNotif["文件变更通知"]
+        Memory["记忆预取消费"]
+        Skill["技能发现消费"]
+    end
+
+    Attach --> Attachments
+    Attachments --> Refresh["refreshTools()<br/>刷新工具列表"]
+    Refresh --> MaxTurns{"超过 maxTurns?"}
+    MaxTurns -- "是" --> ReturnMax["return: max_turns"]
+    MaxTurns -- "否" --> NextState["构建新 State → continue"]
+</div>
+<h3 id="工具分类与并发策略"><a class="markdownIt-Anchor" href="#工具分类与并发策略"></a> 工具分类与并发策略</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">LLM 一次可能返回多个工具调用：</span><br><span class="line"></span><br><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│ 分类：concurrencySafe?           │</span><br><span class="line">│                                  │</span><br><span class="line">│ 只读工具（Read, Grep, Glob 等） │──→ 并行执行（最多 10 个）</span><br><span class="line">│ 写入工具（Edit, Bash 等）       │──→ 串行执行（避免冲突）</span><br><span class="line">└──────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">分批规则（partitionToolCalls）：</span><br><span class="line">  - 连续的 concurrencySafe 工具合成一批 → 并行</span><br><span class="line">  - 每个非 concurrencySafe 工具独立成批 → 串行</span><br></pre></td></tr></table></figure>
+<h3 id="工具摘要的错峰生成"><a class="markdownIt-Anchor" href="#工具摘要的错峰生成"></a> 工具摘要的&quot;错峰&quot;生成</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">工具执行完成后，后台启动 Haiku 小模型生成摘要：</span><br><span class="line">  &quot;Searched in auth&#x2F;&quot;, &quot;Fixed NPE in UserService&quot; 等</span><br><span class="line"></span><br><span class="line">这个摘要不是立即消费的——它存入 state.pendingToolUseSummary，</span><br><span class="line">在 **下一轮** 循环的 Phase B 之后才 yield。</span><br><span class="line"></span><br><span class="line">为什么？因为 Haiku 的调用（~1 秒）可以和主模型的流式响应（5-30 秒）</span><br><span class="line">重叠执行，实现&quot;错峰并行&quot;。</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="310-phase-f状态推进构建下一轮"><a class="markdownIt-Anchor" href="#310-phase-f状态推进构建下一轮"></a> 3.10 Phase F：状态推进——构建下一轮</h2>
+<p>工具执行完成后，构建新的 <code>State</code> 对象：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">state = &#123;</span><br><span class="line">  messages: [...state.messages, ...assistantMessages, ...toolResults, ...attachments],</span><br><span class="line">  toolUseContext: updatedToolUseContext,</span><br><span class="line">  autoCompactTracking: updatedTracking,</span><br><span class="line">  maxOutputTokensRecoveryCount: <span class="number">0</span>,      <span class="comment">// 重置</span></span><br><span class="line">  hasAttemptedReactiveCompact: <span class="literal">false</span>,     <span class="comment">// 重置</span></span><br><span class="line">  pendingToolUseSummary: nextPending,</span><br><span class="line">  stopHookActive: <span class="literal">false</span>,</span><br><span class="line">  turnCount: state.turnCount + <span class="number">1</span>,</span><br><span class="line">  transition: &#123; reason: <span class="string">'next_turn'</span> &#125;,</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">continue</span>  <span class="comment">// 回到 while(true) 顶部</span></span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong>：不是修改旧 State，而是<strong>构建全新对象</strong>。这保证了每次循环的状态是独立的。</p>
+<hr />
+<h2 id="311-十二种终止条件"><a class="markdownIt-Anchor" href="#311-十二种终止条件"></a> 3.11 十二种终止条件</h2>
+<p>Agent 循环通过 <code>return Terminal</code> 终止。以下是所有可能的终止原因：</p>
+<table>
+<thead>
+<tr>
+<th>终止原因</th>
+<th>触发场景</th>
+<th>类别</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>completed</code></td>
+<td>LLM 不再调用工具，任务自然完成</td>
+<td>正常终止</td>
+</tr>
+<tr>
+<td><code>max_turns</code></td>
+<td>达到 maxTurns 限制</td>
+<td>安全阀</td>
+</tr>
+<tr>
+<td><code>blocking_limit</code></td>
+<td>Token 超限且 auto-compact 关闭</td>
+<td>资源限制</td>
+</tr>
+<tr>
+<td><code>prompt_too_long</code></td>
+<td>上下文超长且所有恢复策略失败</td>
+<td>资源限制</td>
+</tr>
+<tr>
+<td><code>aborted_streaming</code></td>
+<td>用户在流式响应中中断</td>
+<td>用户中断</td>
+</tr>
+<tr>
+<td><code>aborted_tools</code></td>
+<td>用户在工具执行中中断</td>
+<td>用户中断</td>
+</tr>
+<tr>
+<td><code>model_error</code></td>
+<td>API 抛出未捕获异常</td>
+<td>错误</td>
+</tr>
+<tr>
+<td><code>image_error</code></td>
+<td>图片大小/格式错误</td>
+<td>错误</td>
+</tr>
+<tr>
+<td><code>hook_stopped</code></td>
+<td>工具级 Hook 阻止继续</td>
+<td>Hook 控制</td>
+</tr>
+<tr>
+<td><code>stop_hook_prevented</code></td>
+<td>停止钩子明确阻止续写</td>
+<td>Hook 控制</td>
+</tr>
+</tbody>
+</table>
+<p>以及通过 <code>continue</code> 继续循环的 9 种 transition（过渡原因）：</p>
+<table>
+<thead>
+<tr>
+<th>过渡原因</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>next_turn</code></td>
+<td>正常的下一轮</td>
+</tr>
+<tr>
+<td><code>collapse_drain_retry</code></td>
+<td>Context Collapse 释放空间后重试</td>
+</tr>
+<tr>
+<td><code>reactive_compact_retry</code></td>
+<td>响应式压缩后重试</td>
+</tr>
+<tr>
+<td><code>max_output_tokens_escalate</code></td>
+<td>提升 Token 限额后重试</td>
+</tr>
+<tr>
+<td><code>max_output_tokens_recovery</code></td>
+<td>多轮恢复重试</td>
+</tr>
+<tr>
+<td><code>stop_hook_blocking</code></td>
+<td>Stop Hook 返回阻塞错误，需要模型修正</td>
+</tr>
+<tr>
+<td><code>token_budget_continuation</code></td>
+<td>Token 预算未用完，注入 nudge 继续</td>
+</tr>
+<tr>
+<td><code>fallback_retry</code></td>
+<td>模型回退后重试</td>
+</tr>
+<tr>
+<td><code>model_switch</code></td>
+<td>模型切换后重试</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="312-依赖注入可测试性的基石"><a class="markdownIt-Anchor" href="#312-依赖注入可测试性的基石"></a> 3.12 依赖注入：可测试性的基石</h2>
+<h3 id="接口定义querydepsts"><a class="markdownIt-Anchor" href="#接口定义querydepsts"></a> 接口定义（<code>query/deps.ts</code>）</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> QueryDeps = &#123;</span><br><span class="line">  callModel: <span class="keyword">typeof</span> queryModelWithStreaming   <span class="comment">// API 调用</span></span><br><span class="line">  microcompact: <span class="keyword">typeof</span> microcompactMessages   <span class="comment">// 微压缩</span></span><br><span class="line">  autocompact: <span class="keyword">typeof</span> autoCompactIfNeeded     <span class="comment">// 自动压缩</span></span><br><span class="line">  uuid: <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">string</span>                          <span class="comment">// UUID 生成</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>设计巧妙之处</strong>：类型定义使用 <code>typeof 真实函数</code>，确保接口签名与实现<strong>自动同步</strong>——如果 <code>queryModelWithStreaming</code> 的签名变化，<code>QueryDeps.callModel</code> 的类型会在编译期自动报错。</p>
+<h3 id="注入模式"><a class="markdownIt-Anchor" href="#注入模式"></a> 注入模式</h3>
+<div class="mermaid">
+flowchart LR
+    subgraph Production["生产环境"]
+        PD["productionDeps()"]
+        Real1["queryModelWithStreaming"]
+        Real2["microcompactMessages"]
+        Real3["autoCompactIfNeeded"]
+        Real4["crypto.randomUUID"]
+        PD --> Real1 & Real2 & Real3 & Real4
+    end
+
+    subgraph Test["测试环境"]
+        TD["{ callModel: mockCallModel, ... }"]
+        Mock1["返回预设响应"]
+        Mock2["计数调用次数"]
+        Mock3["跳过压缩"]
+        Mock4["返回固定 UUID"]
+        TD --> Mock1 & Mock2 & Mock3 & Mock4
+    end
+
+    Query["query({ deps: ... })"]
+    Production --> Query
+    Test --> Query
+</div>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用：</span></span><br><span class="line"><span class="keyword">const</span> deps = params.deps ?? productionDeps()  <span class="comment">// 无注入时用生产实现</span></span><br></pre></td></tr></table></figure>
+<h3 id="为什么只有-4-个依赖"><a class="markdownIt-Anchor" href="#为什么只有-4-个依赖"></a> 为什么只有 4 个依赖？</h3>
+<p>这是<strong>渐进式重构</strong>的体现。注释中明确说明这是 proof-of-concept，后续可以扩展到 <code>runTools</code>、<code>handleStopHooks</code>、<code>logEvent</code> 等。选择这 4 个是因为它们是测试中最常被 mock 的函数。</p>
+<hr />
+<h2 id="313-不可变配置快照queryconfig"><a class="markdownIt-Anchor" href="#313-不可变配置快照queryconfig"></a> 3.13 不可变配置快照：QueryConfig</h2>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> QueryConfig = &#123;</span><br><span class="line">  sessionId: SessionId</span><br><span class="line">  gates: &#123;</span><br><span class="line">    streamingToolExecution: <span class="built_in">boolean</span>  <span class="comment">// 流式工具执行开关</span></span><br><span class="line">    emitToolUseSummaries: <span class="built_in">boolean</span>    <span class="comment">// 工具摘要开关</span></span><br><span class="line">    isAnt: <span class="built_in">boolean</span>                    <span class="comment">// 是否内部用户</span></span><br><span class="line">    fastModeEnabled: <span class="built_in">boolean</span>          <span class="comment">// 快速模式开关</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="关键设计决策"><a class="markdownIt-Anchor" href="#关键设计决策"></a> 关键设计决策</h3>
+<ol>
+<li><strong>一次快照</strong>：<code>buildQueryConfig()</code> 在 <code>query()</code> 入口只执行一次，后续循环复用同一份配置</li>
+<li><strong>排除 <code>feature()</code> 门控</strong>：<code>feature()</code> 来自 <code>bun:bundle</code>，必须留在使用处以支持 Tree Shaking（死代码消除）</li>
+<li><strong>容忍过期</strong>：Statsig 门控本身使用 <code>CACHED_MAY_BE_STALE</code> 语义，快照不引入额外过期风险</li>
+</ol>
+<hr />
+<h2 id="314-token-预算系统"><a class="markdownIt-Anchor" href="#314-token-预算系统"></a> 3.14 Token 预算系统</h2>
+<p>Token 预算（<code>query/tokenBudget.ts</code>）用于控制 Agent 在一次任务中消耗的总 Token 量：</p>
+<div class="mermaid">
+flowchart TD
+    Check["checkTokenBudget()"]
+    SubAgent{"是子 Agent?"}
+    SubAgent -- "是" --> Stop1["stop (null event)<br/>子 Agent 不参与预算"]
+    SubAgent -- "否" --> CalcPct["计算: turnTokens / budget"]
+
+    CalcPct --> Under90{"< 90%?"}
+    Under90 -- "是" --> Diminish{"连减检测:<br/>连续 3 次 +<br/>两次 delta < 500?"}
+    Diminish -- "是" --> Stop2["stop (diminishing)"]
+    Diminish -- "否" --> Continue["continue<br/>注入 nudge 消息"]
+
+    Under90 -- "否" --> Stop3["stop (budget reached)"]
+</div>
+<h3 id="关键常量"><a class="markdownIt-Anchor" href="#关键常量"></a> 关键常量</h3>
+<table>
+<thead>
+<tr>
+<th>常量</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>COMPLETION_THRESHOLD</code></td>
+<td>0.9 (90%)</td>
+<td>达到预算 90% 即认为&quot;足够&quot;</td>
+</tr>
+<tr>
+<td><code>DIMINISHING_THRESHOLD</code></td>
+<td>500</td>
+<td>两次检查间 Token 增量低于此值视为&quot;收益递减&quot;</td>
+</tr>
+</tbody>
+</table>
+<h3 id="nudge-消息"><a class="markdownIt-Anchor" href="#nudge-消息"></a> Nudge 消息</h3>
+<p>当预算未用完但 LLM 已停止（<code>end_turn</code>），系统注入一条 nudge 消息：</p>
+<blockquote>
+<p>“Stopped at X% of token target (N / M). Keep working – do not summarize.”</p>
+</blockquote>
+<p>这条消息引导 LLM 继续工作而非过早总结。</p>
+<hr />
+<h2 id="315-stop-hooks停止时的后处理管线"><a class="markdownIt-Anchor" href="#315-stop-hooks停止时的后处理管线"></a> 3.15 Stop Hooks：停止时的后处理管线</h2>
+<p>Stop Hooks 在 LLM 完成回复后、循环终止前执行。它本身也是一个<strong>异步生成器</strong>，可以在执行过程中 yield 消息：</p>
+<div class="mermaid">
+flowchart TD
+    subgraph PreHook["Phase 1: 预处理"]
+        Cache["缓存安全参数快照<br/>(供 /btw 命令使用)"]
+        Job["模板任务分类<br/>(写入状态到磁盘)"]
+        Cache --> Job
+    end
+
+    subgraph Background["Phase 2: 后台任务（fire-and-forget）"]
+        Suggest["提示词建议"]
+        Memory["记忆提取"]
+        Dream["自动整理"]
+        Suggest ~~~ Memory ~~~ Dream
+    end
+
+    subgraph Hooks["Phase 3: 执行用户定义的 Stop Hooks"]
+        ExecHook["executeStopHooks()"]
+        Progress["progress 消息"]
+        Attach["attachment 消息"]
+        Block["blocking errors"]
+        Prevent["preventContinuation"]
+        ExecHook --> Progress & Attach & Block & Prevent
+    end
+
+    subgraph Teammate["Phase 4: 多 Agent Hooks（如果是 Teammate）"]
+        TaskDone["TaskCompleted hooks"]
+        Idle["TeammateIdle hooks"]
+        TaskDone --> Idle
+    end
+
+    Result["返回 StopHookResult:<br/>{ blockingErrors, preventContinuation }"]
+
+    PreHook --> Background --> Hooks --> Teammate --> Result
+</div>
+<h3 id="stophookresult-的处理"><a class="markdownIt-Anchor" href="#stophookresult-的处理"></a> StopHookResult 的处理</h3>
+<table>
+<thead>
+<tr>
+<th>结果</th>
+<th>query.ts 的处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>preventContinuation = true</code></td>
+<td><code>return { reason: 'stop_hook_prevented' }</code></td>
+</tr>
+<tr>
+<td><code>blockingErrors.length &gt; 0</code></td>
+<td>注入错误消息，<code>continue</code> 让 LLM 修正</td>
+</tr>
+<tr>
+<td>全部通过</td>
+<td>进入 Token Budget 检查</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="316-上下文管理五级压缩体系"><a class="markdownIt-Anchor" href="#316-上下文管理五级压缩体系"></a> 3.16 上下文管理：五级压缩体系</h2>
+<p>Claude Code 的上下文管理是一个<strong>五级递进体系</strong>，从轻量到重量排列：</p>
+<div class="mermaid">
+flowchart TD
+    subgraph L1["Level 1: Snip（最轻量）"]
+        S1["删除对话中间的旧消息"]
+        S1Note["无 API 调用 | 每轮自动执行"]
+    end
+
+    subgraph L2["Level 2: Microcompact"]
+        S2["清除旧工具结果内容"]
+        S2Note["无 API 调用 | 每轮自动执行"]
+    end
+
+    subgraph L3["Level 3: Session Memory Compaction"]
+        S3["用磁盘上的会话记忆替代旧消息"]
+        S3Note["无 API 调用 | Token 超阈值时触发"]
+    end
+
+    subgraph L4["Level 4: Traditional Compaction"]
+        S4["调用 LLM 生成完整摘要"]
+        S4Note["需要 API 调用 | Session Memory 失败时回退"]
+    end
+
+    subgraph L5["Level 5: Reactive Compaction"]
+        S5["收到 413 错误后紧急压缩"]
+        S5Note["需要 API 调用 | 最后的恢复手段"]
+    end
+
+    L1 --> L2 --> L3 --> L4 --> L5
+</div>
+<h3 id="traditional-compaction-的完整流程"><a class="markdownIt-Anchor" href="#traditional-compaction-的完整流程"></a> Traditional Compaction 的完整流程</h3>
+<div class="mermaid">
+flowchart TD
+    Start["compactConversation()"]
+    PreHook["执行 PreCompact hooks"]
+    Prompt["生成压缩提示词<br/>(9 个必填段落模板)"]
+    Stream["流式调用 LLM 生成摘要"]
+
+    PTL{"摘要本身<br/>prompt-too-long?"}
+    PTL -- "是" --> Truncate["truncateHeadForPTLRetry()<br/>删除最旧的消息组<br/>(最多重试 3 次)"]
+    Truncate --> Stream
+    PTL -- "否" --> Strip["去除 analysis 标签<br/>格式化摘要"]
+
+    Strip --> PostAttach["生成后压缩附件"]
+
+    subgraph Attachments["后压缩附件"]
+        Files["重新读取最近 5 个文件<br/>(每个 ≤5000 tokens)"]
+        Plan["当前规划附件"]
+        Skills["已调用技能附件<br/>(每个 ≤5000 tokens)"]
+        MCP["MCP 指令增量"]
+    end
+
+    PostAttach --> Attachments
+    Attachments --> SessionStart["执行 SessionStart hooks<br/>(重注入 CLAUDE.md 等)"]
+    SessionStart --> Boundary["创建压缩边界标记"]
+    Boundary --> Cleanup["runPostCompactCleanup()<br/>重置 ~12 种缓存"]
+    Cleanup --> Done(("完成"))
+</div>
+<h3 id="session-memory-compaction-vs-traditional"><a class="markdownIt-Anchor" href="#session-memory-compaction-vs-traditional"></a> Session Memory Compaction vs Traditional</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Session Memory</th>
+<th>Traditional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需要 API 调用</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>摘要来源</td>
+<td>磁盘上的会话记忆文件</td>
+<td>LLM 实时生成</td>
+</tr>
+<tr>
+<td>保留策略</td>
+<td>保留最近 N 条消息（≥10K tokens, ≥5 条文本消息, ≤40K）</td>
+<td>全部替换为摘要</td>
+</tr>
+<tr>
+<td>速度</td>
+<td>毫秒级</td>
+<td>秒级（取决于 API 延迟）</td>
+</tr>
+<tr>
+<td>质量</td>
+<td>依赖已有的会话记忆质量</td>
+<td>实时分析完整上下文</td>
+</tr>
+</tbody>
+</table>
+<h3 id="摘要模板的-9-个段落"><a class="markdownIt-Anchor" href="#摘要模板的-9-个段落"></a> 摘要模板的 9 个段落</h3>
+<p>Traditional Compaction 要求 LLM 按以下结构输出摘要：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1. Primary Request and Intent     — 用户的主要目标</span><br><span class="line">2. Key Technical Concepts          — 涉及的技术概念</span><br><span class="line">3. Files and Code Sections         — 关键文件和代码片段</span><br><span class="line">4. Errors and Fixes                — 遇到的错误及修复</span><br><span class="line">5. Problem Solving                 — 问题解决过程</span><br><span class="line">6. All User Messages               — 所有用户消息（非工具结果）</span><br><span class="line">7. Pending Tasks                   — 待完成的任务</span><br><span class="line">8. Current Work                    — 当前工作状态</span><br><span class="line">9. Optional Next Step              — 下一步建议</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="317-流式工具执行器streamingtoolexecutor"><a class="markdownIt-Anchor" href="#317-流式工具执行器streamingtoolexecutor"></a> 3.17 流式工具执行器：StreamingToolExecutor</h2>
+<p>StreamingToolExecutor 是 Agent 循环的<strong>性能优化核心</strong>——它允许在 LLM 还在输出后续内容时，<strong>提前开始执行已识别的工具</strong>。</p>
+<h3 id="工具生命周期"><a class="markdownIt-Anchor" href="#工具生命周期"></a> 工具生命周期</h3>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> queued: addTool()
+    queued --> executing: processQueue()
+    executing --> completed: 工具执行完成
+    completed --> yielded: getCompletedResults()
+    yielded --> [*]
+
+    executing --> completed: 工具执行出错
+
+    note right of queued: 等待并发槽位
+    note right of executing: 实际执行中
+    note right of completed: 等待按序输出
+    note right of yielded: 已返回给调用方
+</div>
+<h3 id="并发控制模型"><a class="markdownIt-Anchor" href="#并发控制模型"></a> 并发控制模型</h3>
+<div class="mermaid">
+flowchart TD
+    AddTool["addTool(block)"]
+    IsSafe{"tool.isConcurrencySafe()?"}
+
+    IsSafe -- "是" --> CheckRunning{"当前运行中的<br/>都是 safe?"}
+    CheckRunning -- "是" --> StartParallel["立即并行启动"]
+    CheckRunning -- "否" --> Queue["排队等待"]
+
+    IsSafe -- "否" --> CheckEmpty{"当前无运行中?"}
+    CheckEmpty -- "是" --> StartExclusive["独占启动"]
+    CheckEmpty -- "否" --> Queue
+
+    Queue --> WaitComplete["等待运行中的工具完成"]
+    WaitComplete --> ProcessQueue["processQueue() 重新扫描"]
+</div>
+<h3 id="中断级联架构"><a class="markdownIt-Anchor" href="#中断级联架构"></a> 中断级联架构</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">toolUseContext.abortController          ← 顶层：用户中断</span><br><span class="line">    └── siblingAbortController          ← 中层：Bash 错误时取消兄弟</span><br><span class="line">        ├── toolAbortController #1      ← 工具 1 独立 abort</span><br><span class="line">        ├── toolAbortController #2      ← 工具 2 独立 abort</span><br><span class="line">        └── toolAbortController #3      ← 工具 3 独立 abort</span><br><span class="line"></span><br><span class="line">关键规则：</span><br><span class="line">  - Bash 工具出错 → abort siblingAbortController → 取消所有兄弟工具</span><br><span class="line">  - 非 Bash 工具出错 → 不影响兄弟</span><br><span class="line">  - 用户中断 → abort 顶层 → 级联取消所有</span><br></pre></td></tr></table></figure>
+<h3 id="输出顺序保证"><a class="markdownIt-Anchor" href="#输出顺序保证"></a> 输出顺序保证</h3>
+<p><code>getCompletedResults()</code> 是<strong>同步生成器</strong>，它确保工具结果<strong>按原始顺序</strong> yield，即使后面的工具先完成：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">工具调用顺序: [A, B, C]</span><br><span class="line">完成顺序:     [B, A, C]</span><br><span class="line">输出顺序:     [A, B, C]  ← 始终按原始顺序</span><br><span class="line"></span><br><span class="line">规则：扫描到第一个非 concurrent 且未完成的工具时停止</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="318-queryengine面向-sdk-的封装层"><a class="markdownIt-Anchor" href="#318-queryengine面向-sdk-的封装层"></a> 3.18 QueryEngine：面向 SDK 的封装层</h2>
+<p><code>QueryEngine</code> 是 <code>query()</code> 的<strong>类封装</strong>，为 SDK/Headless 场景提供完整的会话生命周期管理：</p>
+<div class="mermaid">
+flowchart TD
+    subgraph QE["QueryEngine 实例"]
+        Config["config: QueryEngineConfig"]
+        Messages["mutableMessages: Message[]"]
+        Abort["abortController: AbortController"]
+        Usage["totalUsage: NonNullableUsage"]
+
+        SM["submitMessage(prompt)"]
+        Int["interrupt()"]
+        GetMsg["getMessages()"]
+        SetModel["setModel(model)"]
+    end
+
+    subgraph Turn["单轮交互 (submitMessage)"]
+        direction TB
+        T1["1. 构建系统提示词"]
+        T2["2. 处理用户输入<br/>(斜杠命令/文件附件)"]
+        T3["3. 持久化到 transcript"]
+        T4["4. 调用 query() 异步生成器"]
+        T5["5. for await 消费输出"]
+        T6["6. 转换为 SDKMessage yield"]
+        T7["7. 生成最终 result"]
+        T1 --> T2 --> T3 --> T4 --> T5 --> T6 --> T7
+    end
+
+    SM --> Turn
+
+    subgraph Switch["消息类型处理 (step 5 的 switch)"]
+        SA["assistant → 推入历史 + yield"]
+        SU["user → 推入历史 + yield"]
+        SE["stream_event → 累加 usage"]
+        SS["system → 处理压缩边界"]
+        ST["tool_use_summary → yield"]
+    end
+
+    T5 --> Switch
+</div>
+<h3 id="便捷封装ask"><a class="markdownIt-Anchor" href="#便捷封装ask"></a> 便捷封装：<code>ask()</code></h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一次性使用的便捷函数</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>* <span class="title">ask</span>(<span class="params">config</span>): <span class="title">AsyncGenerator</span>&lt;<span class="title">SDKMessage</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> engine = <span class="keyword">new</span> QueryEngine(config)</span><br><span class="line">  <span class="keyword">yield</span>* engine.submitMessage(config.prompt)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="319-api-调用层重试-回退与流控"><a class="markdownIt-Anchor" href="#319-api-调用层重试-回退与流控"></a> 3.19 API 调用层：重试、回退与流控</h2>
+<h3 id="withretry异步生成器式的重试"><a class="markdownIt-Anchor" href="#withretry异步生成器式的重试"></a> withRetry：异步生成器式的重试</h3>
+<div class="mermaid">
+flowchart TD
+    Start["withRetry(operation)"]
+    Attempt["执行 operation()"]
+
+    Success{"成功?"}
+    Success -- "是" --> Return["return 结果"]
+
+    Success -- "否" --> Classify{"错误分类"}
+
+    Classify -- "429 Rate Limit" --> Backoff429["指数退避<br/>尊重 Retry-After"]
+    Classify -- "529 Overloaded" --> Count529{"连续 529<br/>≥ 3 次?"}
+    Count529 -- "是" --> Fallback["throw FallbackTriggeredError"]
+    Count529 -- "否" --> Backoff529["退避重试"]
+    Classify -- "401/403" --> Refresh["刷新凭证<br/>重建客户端"]
+    Classify -- "5xx" --> Backoff5xx["退避重试"]
+    Classify -- "Context Overflow" --> Adjust["调整 maxTokens<br/>重试"]
+    Classify -- "ECONNRESET" --> DisableKA["禁用 Keep-Alive<br/>重试"]
+
+    Backoff429 --> YieldMsg["yield SystemAPIErrorMessage<br/>(UI 显示 'Retrying in Xs...')"]
+    Backoff529 --> YieldMsg
+    Refresh --> Attempt
+    Backoff5xx --> YieldMsg
+    Adjust --> Attempt
+    DisableKA --> Attempt
+
+    YieldMsg --> MaxRetry{"超过最大重试次数<br/>(默认 10)?"}
+    MaxRetry -- "否" --> Attempt
+    MaxRetry -- "是" --> Throw["throw 最终错误"]
+</div>
+<h3 id="关键重试参数"><a class="markdownIt-Anchor" href="#关键重试参数"></a> 关键重试参数</h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最大重试次数</td>
+<td>10</td>
+<td>可通过 <code>CLAUDE_CODE_MAX_RETRIES</code> 覆盖</td>
+</tr>
+<tr>
+<td>基础退避</td>
+<td>500ms</td>
+<td>指数增长</td>
+</tr>
+<tr>
+<td>最大退避</td>
+<td>32s</td>
+<td>正常模式</td>
+</tr>
+<tr>
+<td>Jitter</td>
+<td>25%</td>
+<td>避免重试风暴</td>
+</tr>
+<tr>
+<td>529 触发回退阈值</td>
+<td>3 次连续</td>
+<td>之后切换备用模型</td>
+</tr>
+<tr>
+<td>流空闲超时</td>
+<td>90s</td>
+<td>挂起的流会被自动终止</td>
+</tr>
+</tbody>
+</table>
+<h3 id="withretry-为什么是生成器"><a class="markdownIt-Anchor" href="#withretry-为什么是生成器"></a> withRetry 为什么是生成器？</h3>
+<p>传统的重试函数只能在内部等待，调用方无法感知重试过程。而 <code>withRetry</code> 作为异步生成器，可以在等待期间 <strong>yield 重试状态消息</strong>给 UI，让用户看到 “Retrying in 5 seconds…” 而非黑屏等待。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 调用方式（在 queryModel 中）：</span></span><br><span class="line"><span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> retryMessage of withRetry(getClient, makeRequest, options)) &#123;</span><br><span class="line">  <span class="keyword">yield</span> retryMessage  <span class="comment">// 透传给 UI</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// withRetry return 时，result 就是成功的 API 响应</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="320-预取与投机优化"><a class="markdownIt-Anchor" href="#320-预取与投机优化"></a> 3.20 预取与投机优化</h2>
+<p>Agent 循环中隐藏了多处<strong>预取优化</strong>，将等待时间转化为有用计算：</p>
+<div class="mermaid">
+gantt
+    title 单轮循环的时间线与并行任务
+    dateFormat X
+    axisFormat %s
+
+    section 主流程
+    上下文准备           :a1, 0, 2
+    LLM 流式响应         :a2, 2, 15
+    工具执行              :a3, 15, 20
+    状态推进              :a4, 20, 21
+
+    section 并行任务
+    记忆预取              :b1, 0, 8
+    技能发现预取          :b2, 2, 10
+    流式工具执行          :b3, 8, 15
+    工具摘要生成(Haiku)   :b4, 20, 21
+</div>
+<h3 id="四大预取机制"><a class="markdownIt-Anchor" href="#四大预取机制"></a> 四大预取机制</h3>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>启动时机</th>
+<th>消费时机</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>记忆预取</strong></td>
+<td>用户消息进入时（仅首轮）</td>
+<td>每轮工具执行后检查</td>
+<td>提前加载相关记忆文件</td>
+</tr>
+<tr>
+<td><strong>技能发现</strong></td>
+<td>每轮迭代开始时</td>
+<td>工具执行后收集</td>
+<td>发现可用技能</td>
+</tr>
+<tr>
+<td><strong>流式工具执行</strong></td>
+<td>LLM 流中识别到 tool_use 时</td>
+<td>流式输出期间 &amp; 流结束后</td>
+<td>减少工具等待时间</td>
+</tr>
+<tr>
+<td><strong>工具摘要</strong></td>
+<td>工具批次完成后（后台）</td>
+<td>下一轮 Phase B 之后</td>
+<td>利用模型思考时间生成摘要</td>
+</tr>
+</tbody>
+</table>
+<h3 id="记忆预取的去重"><a class="markdownIt-Anchor" href="#记忆预取的去重"></a> 记忆预取的去重</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">记忆预取返回的附件需要去重：</span><br><span class="line">  filterDuplicateMemoryAttachments(attachments, readFileState)</span><br><span class="line"></span><br><span class="line">readFileState 跨迭代累积，记录 Agent 已经读取过的文件。</span><br><span class="line">已读取的文件不会再作为记忆附件注入。</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="321-关键工程思想总结"><a class="markdownIt-Anchor" href="#321-关键工程思想总结"></a> 3.21 关键工程思想总结</h2>
+<h3 id="思想-1迭代而非递归"><a class="markdownIt-Anchor" href="#思想-1迭代而非递归"></a> 思想 1：迭代而非递归</h3>
+<p>循环使用 <code>while(true)</code> + <code>state = {...}; continue</code> 而非递归调用。这避免了：</p>
+<ul>
+<li>长对话中的栈溢出（一次对话可能循环数百次）</li>
+<li>递归调用的上下文保持开销</li>
+</ul>
+<p>每次 <code>continue</code> 都携带 <code>transition.reason</code>，使得状态转换可追踪、可测试。</p>
+<h3 id="思想-2异步生成器实现生产者-消费者"><a class="markdownIt-Anchor" href="#思想-2异步生成器实现生产者-消费者"></a> 思想 2：异步生成器实现生产者-消费者</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">query() 是生产者：yield 中间结果（流事件、消息、工具结果）</span><br><span class="line">REPL&#x2F;SDK 是消费者：for await 消费并渲染</span><br><span class="line"></span><br><span class="line">好处：</span><br><span class="line">  - 计算与展示完全解耦</span><br><span class="line">  - 消费者可以控制消费速度（背压）</span><br><span class="line">  - 多层 yield* 委托实现透明的消息传递</span><br></pre></td></tr></table></figure>
+<h3 id="思想-3withhold-then-recover-模式"><a class="markdownIt-Anchor" href="#思想-3withhold-then-recover-模式"></a> 思想 3：Withhold-then-Recover 模式</h3>
+<p>可恢复错误<strong>不立即暴露</strong>给用户，而是先扣留，尝试修复。只有修复失败才通知用户。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">传统模式：错误 → 通知用户 → 用户决定</span><br><span class="line">Claude Code：错误 → 静默恢复 → 成功则无感 &#x2F; 失败才通知</span><br></pre></td></tr></table></figure>
+<p>这在 prompt-too-long 和 max-output-tokens 两种场景中特别有效。</p>
+<h3 id="思想-4分层压缩的漏斗模型"><a class="markdownIt-Anchor" href="#思想-4分层压缩的漏斗模型"></a> 思想 4：分层压缩的&quot;漏斗&quot;模型</h3>
+<p>五级压缩从轻到重排列，形成漏斗：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Snip       ← 最轻：删除中间消息（无 API 调用）</span><br><span class="line">Microcompact ← 较轻：清除工具结果（无 API 调用）</span><br><span class="line">SM Compact   ← 中等：用本地记忆替换（无 API 调用）</span><br><span class="line">Traditional  ← 较重：调用 LLM 生成摘要</span><br><span class="line">Reactive     ← 最重：收到 413 后紧急压缩</span><br></pre></td></tr></table></figure>
+<p>大多数情况下，前两层就足够了。只有上下文真正膨胀时才触发重量级压缩。</p>
+<h3 id="思想-5依赖注入的最小侵入"><a class="markdownIt-Anchor" href="#思想-5依赖注入的最小侵入"></a> 思想 5：依赖注入的&quot;最小侵入&quot;</h3>
+<p>只注入 4 个最常被 mock 的依赖，而非重构整个系统。这是<strong>实用主义的工程决策</strong>：</p>
+<ul>
+<li>足够解决测试痛点</li>
+<li>不引入过度抽象</li>
+<li>为后续渐进式扩展留了口</li>
+</ul>
+<h3 id="思想-6错峰并行"><a class="markdownIt-Anchor" href="#思想-6错峰并行"></a> 思想 6：错峰并行</h3>
+<p>利用不同操作的时间特征实现并行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LLM 思考（5-30s）期间：</span><br><span class="line">  - 流式执行已识别的工具</span><br><span class="line">  - 消费记忆预取</span><br><span class="line">  - 消费技能发现</span><br><span class="line"></span><br><span class="line">工具执行（1-10s）期间：</span><br><span class="line">  - 后台生成工具摘要（Haiku ~1s）</span><br><span class="line">  → 在下一轮 LLM 思考期间消费</span><br></pre></td></tr></table></figure>
+<h3 id="思想-7中断信号的三级级联"><a class="markdownIt-Anchor" href="#思想-7中断信号的三级级联"></a> 思想 7：中断信号的三级级联</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">用户中断 → 顶层 AbortController</span><br><span class="line">              → siblingAbortController（Bash 错误时触发）</span><br><span class="line">                  → 每个工具的独立 AbortController</span><br><span class="line"></span><br><span class="line">不同级别的 abort 有不同的语义：</span><br><span class="line">  - 用户中断：停止一切</span><br><span class="line">  - Bash 错误：只停止兄弟工具，不停止整个循环</span><br><span class="line">  - 单工具超时：只停止该工具</span><br></pre></td></tr></table></figure>
+<h3 id="思想-8重试的可观测性"><a class="markdownIt-Anchor" href="#思想-8重试的可观测性"></a> 思想 8：重试的可观测性</h3>
+<p><code>withRetry</code> 作为异步生成器，在等待重试期间 yield 状态消息。这实现了：</p>
+<ul>
+<li>用户可以看到 “Retrying in 5s…”</li>
+<li>UI 不会卡死</li>
+<li>重试过程完全透明</li>
+</ul>
+<h3 id="思想-9状态转换的显式性"><a class="markdownIt-Anchor" href="#思想-9状态转换的显式性"></a> 思想 9：状态转换的显式性</h3>
+<p>每次 <code>continue</code> 都写入完整的 <code>State</code> 对象并携带 <code>transition.reason</code>。这带来了：</p>
+<ul>
+<li>调试时可以看到&quot;为什么这次循环没有终止&quot;</li>
+<li>测试可以断言特定的恢复路径被触发</li>
+<li>日志可以追踪完整的状态转换链</li>
+</ul>
+<h3 id="思想-10配置的快照不可变"><a class="markdownIt-Anchor" href="#思想-10配置的快照不可变"></a> 思想 10：配置的&quot;快照不可变&quot;</h3>
+<p><code>QueryConfig</code> 在入口处一次性快照，整个循环复用。这避免了：</p>
+<ul>
+<li>循环中途配置变化导致的不一致</li>
+<li>每轮重复读取配置的开销</li>
+<li>Statsig 门控的并发安全问题</li>
+</ul>
+<hr />
+<h2 id="下一步"><a class="markdownIt-Anchor" href="#下一步"></a> 下一步</h2>
+<ul>
+<li><strong>第四章</strong>：斜杠命令系统——/resume、/clear、/compact 的完整实现剖析</li>
+<li><strong>第五章</strong>：工具系统——Agent 的双手</li>
+<li><strong>第六章</strong>：权限与安全——信任的边界</li>
+</ul>
+<hr />
+<blockquote>
+<p>本文档基于 Claude Code 源码分析生成，核心源码路径：<code>claude-code/src/query.ts</code>（1729 行）</p>
+</blockquote>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:qingbo1011@163.com">qingbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://www.qingbo1011.top/2026/05/03/chapter-03-agent-loop/">https://www.qingbo1011.top/2026/05/03/chapter-03-agent-loop/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://www.qingbo1011.top" target="_blank">Qing's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Claude-Code/">Claude Code</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a></div><div class="post_share"><div class="social-share" data-image="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2026/05/04/chapter-04-tool-system/"><img class="prev_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">第四章：工具系统——Agent 的双手</div></div></a></div><div class="next-post pull_right"><a href="/2026/05/02/chapter-02-startup-flow/"><img class="next_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">第二章：启动流程——从敲下命令到界面就绪</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2026/05/01/chapter-01-project-overview/" title="第一章：项目全景——目录结构与模块划分"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-01</div><div class="relatedPosts_title">第一章：项目全景——目录结构与模块划分</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/02/chapter-02-startup-flow/" title="第二章：启动流程——从敲下命令到界面就绪"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-02</div><div class="relatedPosts_title">第二章：启动流程——从敲下命令到界面就绪</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/05/chapter-05-permission-security/" title="第五章：权限与安全——信任的边界"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-05</div><div class="relatedPosts_title">第五章：权限与安全——信任的边界</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/04/chapter-04-tool-system/" title="第四章：工具系统——Agent 的双手"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-04</div><div class="relatedPosts_title">第四章：工具系统——Agent 的双手</div></div></a></div><div class="relatedPosts_item"><a href="/2026/04/30/claude-code-source-guide/" title="Claude Code 源码学习指南"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-04-30</div><div class="relatedPosts_title">Claude Code 源码学习指南</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/06/chapter-06-terminal-ui/" title="第六章：终端 UI——在命令行里做"前端""><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-06</div><div class="relatedPosts_title">第六章：终端 UI——在命令行里做"前端"</div></div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail','link'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'oNS5Emx1qUL3wN5yvPLKol0W-gzGzoHsz',
+  appKey: 'ytbw0ho3DMX0FeoAOWa37lf9',
+  notify: false,
+  verify: false,
+  placeholder: 'Stay hungry,stay foolish~',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: 'https://',
+  emojiMaps: {"欢呼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100836.gif","笑眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100849.gif","花心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100907.gif","吐舌":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100937.gif","疑问":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100951.gif","滑稽":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101004.gif","太开心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101017.gif","酷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101029.gif","怒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101044.gif","阴险":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101100.gif","委屈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101116.gif","乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101129.gif","你懂的":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101204.gif","小乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101215.gif","突然兴奋":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101228.gif","喷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101241.gif","哈哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101255.gif","喝酒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101305.gif","汗":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101323.gif","笑尿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102004.gif","嘿嘿嘿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102018.gif","真棒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102047.gif","托腮":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102108.gif","微笑":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/e3/2018new_weixioa02_org.png","礼貌":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/09/2018new_keai_org.png","笑哭":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/4a/2018new_xiaoku_thumb.png","无奈":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/83/2018new_kuxiao_org.png","爱你":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f6/2018new_aini_org.png","吃瓜":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/01/2018new_chigua_thumb.png","doge":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_doge02_org.png","dog":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/22/2018new_erha_org.png","cat":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7b/2018new_miaomiao_thumb.png","星星眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102225.png","酸了":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102240.png","大哭":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102254.png","傲娇":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102314.png","给心心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102328.png","嘿哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102345.png","custom0":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101410.gif","custom1":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101424.webp","狗头":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101710.png","搬砖中":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101744.png","忙到飞起":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102411.png","裂开":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102426.png","叹气":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102439.png","让我看看":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102456.png","panda0":"https://bbs.res.meizu.com/static/image/smiley/panda/_000.png","panda1":"https://bbs.res.meizu.com/static/image/smiley/panda/_001.png","panda2":"https://bbs.res.meizu.com/static/image/smiley/panda/_002.png","panda3":"https://bbs.res.meizu.com/static/image/smiley/panda/_003.png","panda4":"https://bbs.res.meizu.com/static/image/smiley/panda/_004.png","panda5":"https://bbs.res.meizu.com/static/image/smiley/panda/_005.png","panda6":"https://bbs.res.meizu.com/static/image/smiley/panda/_006.png","panda7":"https://bbs.res.meizu.com/static/image/smiley/panda/_007.png","panda8":"https://bbs.res.meizu.com/static/image/smiley/panda/_008.png","panda9":"https://bbs.res.meizu.com/static/image/smiley/panda/_009.png","panda10":"https://bbs.res.meizu.com/static/image/smiley/panda/_010.png","panda11":"https://bbs.res.meizu.com/static/image/smiley/panda/_011.png","panda12":"https://bbs.res.meizu.com/static/image/smiley/panda/_012.png","panda13":"https://bbs.res.meizu.com/static/image/smiley/panda/_013.png","panda14":"https://bbs.res.meizu.com/static/image/smiley/panda/_014.png","panda15":"https://bbs.res.meizu.com/static/image/smiley/panda/_015.png","panda16":"https://bbs.res.meizu.com/static/image/smiley/panda/_016.png","panda17":"https://bbs.res.meizu.com/static/image/smiley/panda/_017.png","panda18":"https://bbs.res.meizu.com/static/image/smiley/panda/_018.png","panda19":"https://bbs.res.meizu.com/static/image/smiley/panda/_019.png","panda20":"https://bbs.res.meizu.com/static/image/smiley/panda/_020.png","panda21":"https://bbs.res.meizu.com/static/image/smiley/panda/_021.png","panda22":"https://bbs.res.meizu.com/static/image/smiley/panda/_022.png","panda23":"https://bbs.res.meizu.com/static/image/smiley/panda/_023.png","panda24":"https://bbs.res.meizu.com/static/image/smiley/panda/_024.png","panda25":"https://bbs.res.meizu.com/static/image/smiley/panda/_025.png","panda26":"https://bbs.res.meizu.com/static/image/smiley/panda/_026.png","panda27":"https://bbs.res.meizu.com/static/image/smiley/panda/_027.png","panda28":"https://bbs.res.meizu.com/static/image/smiley/panda/_028.png","panda29":"https://bbs.res.meizu.com/static/image/smiley/panda/_029.png"},
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By qingbo</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div><div class="footer_custom_text">宇宙很大，生活更大</div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script><script>if (document.getElementsByClassName('mermaid').length) {
+  loadScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',function () {
+    mermaid.initialize({
+      theme: 'default',
+  })
+})
+}</script></body></html>

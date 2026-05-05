@@ -1,0 +1,809 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>第四章：工具系统——Agent 的双手 | Qing's Blog</title><meta name="description" content="第四章：工具系统——Agent 的双手  Agent 循环是大脑，工具系统就是双手。LLM 只能&quot;想&quot;，是工具让它能&quot;做&quot;。 本章深入 Tool.ts、tools.ts、toolExecution.ts、StreamingToolExecutor.ts 等核心文件， 拆解工具从定义、注册、发现、权限检查、执行到结果回传的完整生命周期。    目录  4.1"><meta name="keywords" content="Claude Code, 工具调用, MCP"><meta name="author" content="qingbo,qingbo1011@163.com"><meta name="copyright" content="qingbo"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="dns-prefetch" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="dns-prefetch" href="https://fonts.googleapis.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="dns-prefetch" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="第四章：工具系统——Agent 的双手"><meta name="twitter:description" content="第四章：工具系统——Agent 的双手  Agent 循环是大脑，工具系统就是双手。LLM 只能&quot;想&quot;，是工具让它能&quot;做&quot;。 本章深入 Tool.ts、tools.ts、toolExecution.ts、StreamingToolExecutor.ts 等核心文件， 拆解工具从定义、注册、发现、权限检查、执行到结果回传的完整生命周期。    目录  4.1"><meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><meta property="og:type" content="article"><meta property="og:title" content="第四章：工具系统——Agent 的双手"><meta property="og:url" content="https://www.qingbo1011.top/2026/05/04/chapter-04-tool-system/"><meta property="og:site_name" content="Qing's Blog"><meta property="og:description" content="第四章：工具系统——Agent 的双手  Agent 循环是大脑，工具系统就是双手。LLM 只能&quot;想&quot;，是工具让它能&quot;做&quot;。 本章深入 Tool.ts、tools.ts、toolExecution.ts、StreamingToolExecutor.ts 等核心文件， 拆解工具从定义、注册、发现、权限检查、执行到结果回传的完整生命周期。    目录  4.1"><meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><meta property="article:published_time" content="2026-05-04T04:20:00.000Z"><meta property="article:modified_time" content="2026-05-05T07:06:20.512Z"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="https://www.qingbo1011.top/2026/05/04/chapter-04-tool-system/"><link rel="prev" title="第五章：权限与安全——信任的边界" href="https://www.qingbo1011.top/2026/05/05/chapter-05-permission-security/"><link rel="next" title="第三章：Agent 循环——大脑如何思考与行动" href="https://www.qingbo1011.top/2026/05/03/chapter-03-agent-loop/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://xxx/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: true,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'false',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: true
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.1"></head><body><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230440.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">95</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">87</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">16</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#第四章工具系统agent-的双手"><span class="toc-number">1.</span> <span class="toc-text"> 第四章：工具系统——Agent 的双手</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#目录"><span class="toc-number">1.1.</span> <span class="toc-text"> 目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#41-工具系统是什么"><span class="toc-number">1.2.</span> <span class="toc-text"> 4.1 工具系统是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-核心文件关系图"><span class="toc-number">1.3.</span> <span class="toc-text"> 4.2 核心文件关系图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#43-tool-类型定义一个工具长什么样"><span class="toc-number">1.4.</span> <span class="toc-text"> 4.3 Tool 类型定义：一个工具长什么样？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#核心身份"><span class="toc-number">1.4.1.</span> <span class="toc-text"> 核心身份</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生命周期方法"><span class="toc-number">1.4.2.</span> <span class="toc-text"> 生命周期方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#分类方法"><span class="toc-number">1.4.3.</span> <span class="toc-text"> 分类方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#渲染方法"><span class="toc-number">1.4.4.</span> <span class="toc-text"> 渲染方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#44-buildtool安全默认值工厂"><span class="toc-number">1.5.</span> <span class="toc-text"> 4.4 buildTool：安全默认值工厂</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#45-工具注册表toolsts"><span class="toc-number">1.6.</span> <span class="toc-text"> 4.5 工具注册表：tools.ts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#三层工具获取"><span class="toc-number">1.6.1.</span> <span class="toc-text"> 三层工具获取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getallbasetools全量工具清单"><span class="toc-number">1.6.2.</span> <span class="toc-text"> getAllBaseTools()：全量工具清单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#assembletoolpool合并-排序"><span class="toc-number">1.6.3.</span> <span class="toc-text"> assembleToolPool()：合并 + 排序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#46-工具目录结构微模块化"><span class="toc-number">1.7.</span> <span class="toc-text"> 4.6 工具目录结构：微模块化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#简单工具filereadtool5-个文件~70kb"><span class="toc-number">1.7.1.</span> <span class="toc-text"> 简单工具：FileReadTool（5 个文件，~70KB）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#复杂工具bashtool20-个文件~640kb"><span class="toc-number">1.7.2.</span> <span class="toc-text"> 复杂工具：BashTool（20 个文件，~640KB）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#47-工具执行管线从-llm-输出到工具结果"><span class="toc-number">1.8.</span> <span class="toc-text"> 4.7 工具执行管线：从 LLM 输出到工具结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#核心函数checkpermissionsandcalltool"><span class="toc-number">1.8.1.</span> <span class="toc-text"> 核心函数：checkPermissionsAndCallTool()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#48-streamingtoolexecutor边流式边执行"><span class="toc-number">1.9.</span> <span class="toc-text"> 4.8 StreamingToolExecutor：边流式边执行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#状态机"><span class="toc-number">1.9.1.</span> <span class="toc-text"> 状态机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#核心类结构"><span class="toc-number">1.9.2.</span> <span class="toc-text"> 核心类结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#与-queryts-的集成时序"><span class="toc-number">1.9.3.</span> <span class="toc-text"> 与 query.ts 的集成时序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键设计结果按原始顺序交付"><span class="toc-number">1.9.4.</span> <span class="toc-text"> 关键设计：结果按原始顺序交付</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#49-工具编排的备选方案toolorchestrationts"><span class="toc-number">1.10.</span> <span class="toc-text"> 4.9 工具编排的备选方案：toolOrchestration.ts</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#410-并发控制哪些工具可以并行"><span class="toc-number">1.11.</span> <span class="toc-text"> 4.10 并发控制：哪些工具可以并行？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#streamingtoolexecutor-的并发判定"><span class="toc-number">1.11.1.</span> <span class="toc-text"> StreamingToolExecutor 的并发判定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#411-错误级联bash-错误取消兄弟工具"><span class="toc-number">1.12.</span> <span class="toc-text"> 4.11 错误级联：Bash 错误取消兄弟工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#412-中断行为用户新消息时怎么办"><span class="toc-number">1.13.</span> <span class="toc-text"> 4.12 中断行为：用户新消息时怎么办？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#413-权限系统概览"><span class="toc-number">1.14.</span> <span class="toc-text"> 4.13 权限系统概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#414-工具钩子prepost-扩展点"><span class="toc-number">1.15.</span> <span class="toc-text"> 4.14 工具钩子：Pre&#x2F;Post 扩展点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#415-mcp-工具动态扩展边界"><span class="toc-number">1.16.</span> <span class="toc-text"> 4.15 MCP 工具：动态扩展边界</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mcp-工具的创建过程"><span class="toc-number">1.16.1.</span> <span class="toc-text"> MCP 工具的创建过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#416-toolsearch延迟加载大量工具"><span class="toc-number">1.17.</span> <span class="toc-text"> 4.16 ToolSearch：延迟加载大量工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#417-子-agent-的工具限制"><span class="toc-number">1.18.</span> <span class="toc-text"> 4.17 子 Agent 的工具限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#418-工具结果处理大结果持久化"><span class="toc-number">1.19.</span> <span class="toc-text"> 4.18 工具结果处理：大结果持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#419-工具分类体系"><span class="toc-number">1.20.</span> <span class="toc-text"> 4.19 工具分类体系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#搜索读取分类ui-折叠"><span class="toc-number">1.20.1.</span> <span class="toc-text"> 搜索&#x2F;读取分类（UI 折叠）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#420-典型工具剖析filereadtool-vs-bashtool"><span class="toc-number">1.21.</span> <span class="toc-text"> 4.20 典型工具剖析：FileReadTool vs BashTool</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#filereadtool简洁的只读工具"><span class="toc-number">1.21.1.</span> <span class="toc-text"> FileReadTool：简洁的只读工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bashtool最复杂的工具"><span class="toc-number">1.21.2.</span> <span class="toc-text"> BashTool：最复杂的工具</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#421-关键工程思想总结"><span class="toc-number">1.22.</span> <span class="toc-text"> 4.21 关键工程思想总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-1工具即数据tool-as-data"><span class="toc-number">1.22.1.</span> <span class="toc-text"> 思想 1：工具即数据（Tool as Data）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-2fail-closed-默认值"><span class="toc-number">1.22.2.</span> <span class="toc-text"> 思想 2：Fail-Closed 默认值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-3投机并行speculative-parallelism"><span class="toc-number">1.22.3.</span> <span class="toc-text"> 思想 3：投机并行（Speculative Parallelism）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-4有选择的错误级联"><span class="toc-number">1.22.4.</span> <span class="toc-text"> 思想 4：有选择的错误级联</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-5分区排序保证缓存稳定"><span class="toc-number">1.22.5.</span> <span class="toc-text"> 思想 5：分区排序保证缓存稳定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-6延迟加载减少-token-消耗"><span class="toc-number">1.22.6.</span> <span class="toc-text"> 思想 6：延迟加载减少 Token 消耗</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-7渲染与执行同源"><span class="toc-number">1.22.7.</span> <span class="toc-text"> 思想 7：渲染与执行同源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-8钩子不可绕过安全规则"><span class="toc-number">1.22.8.</span> <span class="toc-text"> 思想 8：钩子不可绕过安全规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-9统一接口消除内外差异"><span class="toc-number">1.22.9.</span> <span class="toc-text"> 思想 9：统一接口消除内外差异</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#思想-10微模块化组织"><span class="toc-number">1.22.10.</span> <span class="toc-text"> 思想 10：微模块化组织</span></a></li></ol></li></ol></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">Qing's Blog</a></span><span class="pull_right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fa fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">第四章：工具系统——Agent 的双手</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2026-05-04 12:20:00"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2026-05-04</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2026-05-05 15:06:20"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2026-05-05</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/AI%E5%BA%94%E7%94%A8/">AI应用</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="post-meta__icon fa fa-file-word-o" aria-hidden="true"></i><span>字数总计:</span><span class="word-count">6.9k</span><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-clock-o" aria-hidden="true"></i><span>阅读时长: 27 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-comment-o" aria-hidden="true"></i><span>评论数:</span><a href="/2026/05/04/chapter-04-tool-system/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/2026/05/04/chapter-04-tool-system/" itemprop="commentCount"></span></a></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="第四章工具系统agent-的双手"><a class="markdownIt-Anchor" href="#第四章工具系统agent-的双手"></a> 第四章：工具系统——Agent 的双手</h1>
+<blockquote>
+<p>Agent 循环是大脑，工具系统就是双手。LLM 只能&quot;想&quot;，是工具让它能&quot;做&quot;。<br />
+本章深入 <code>Tool.ts</code>、<code>tools.ts</code>、<code>toolExecution.ts</code>、<code>StreamingToolExecutor.ts</code> 等核心文件，<br />
+拆解工具从定义、注册、发现、权限检查、执行到结果回传的完整生命周期。</p>
+</blockquote>
+<hr />
+<h2 id="目录"><a class="markdownIt-Anchor" href="#目录"></a> 目录</h2>
+<ul>
+<li><a href="#41-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%E6%98%AF%E4%BB%80%E4%B9%88">4.1 工具系统是什么？</a></li>
+<li><a href="#42-%E6%A0%B8%E5%BF%83%E6%96%87%E4%BB%B6%E5%85%B3%E7%B3%BB%E5%9B%BE">4.2 核心文件关系图</a></li>
+<li><a href="#43-tool-%E7%B1%BB%E5%9E%8B%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E5%B7%A5%E5%85%B7%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7">4.3 Tool 类型定义：一个工具长什么样？</a></li>
+<li><a href="#44-buildtool%E5%AE%89%E5%85%A8%E9%BB%98%E8%AE%A4%E5%80%BC%E5%B7%A5%E5%8E%82">4.4 buildTool：安全默认值工厂</a></li>
+<li><a href="#45-%E5%B7%A5%E5%85%B7%E6%B3%A8%E5%86%8C%E8%A1%A8toolsts">4.5 工具注册表：tools.ts</a></li>
+<li><a href="#46-%E5%B7%A5%E5%85%B7%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84%E5%BE%AE%E6%A8%A1%E5%9D%97%E5%8C%96">4.6 工具目录结构：微模块化</a></li>
+<li><a href="#47-%E5%B7%A5%E5%85%B7%E6%89%A7%E8%A1%8C%E7%AE%A1%E7%BA%BF%E4%BB%8E-llm-%E8%BE%93%E5%87%BA%E5%88%B0%E5%B7%A5%E5%85%B7%E7%BB%93%E6%9E%9C">4.7 工具执行管线：从 LLM 输出到工具结果</a></li>
+<li><a href="#48-streamingtoolexecutor%E8%BE%B9%E6%B5%81%E5%BC%8F%E8%BE%B9%E6%89%A7%E8%A1%8C">4.8 StreamingToolExecutor：边流式边执行</a></li>
+<li><a href="#49-%E5%B7%A5%E5%85%B7%E7%BC%96%E6%8E%92%E7%9A%84%E5%A4%87%E9%80%89%E6%96%B9%E6%A1%88toolorchestrationts">4.9 工具编排的备选方案：toolOrchestration.ts</a></li>
+<li><a href="#410-%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E5%93%AA%E4%BA%9B%E5%B7%A5%E5%85%B7%E5%8F%AF%E4%BB%A5%E5%B9%B6%E8%A1%8C">4.10 并发控制：哪些工具可以并行？</a></li>
+<li><a href="#411-%E9%94%99%E8%AF%AF%E7%BA%A7%E8%81%94bash-%E9%94%99%E8%AF%AF%E5%8F%96%E6%B6%88%E5%85%84%E5%BC%9F%E5%B7%A5%E5%85%B7">4.11 错误级联：Bash 错误取消兄弟工具</a></li>
+<li><a href="#412-%E4%B8%AD%E6%96%AD%E8%A1%8C%E4%B8%BA%E7%94%A8%E6%88%B7%E6%96%B0%E6%B6%88%E6%81%AF%E6%97%B6%E6%80%8E%E4%B9%88%E5%8A%9E">4.12 中断行为：用户新消息时怎么办？</a></li>
+<li><a href="#413-%E6%9D%83%E9%99%90%E7%B3%BB%E7%BB%9F%E6%A6%82%E8%A7%88">4.13 权限系统概览</a></li>
+<li><a href="#414-%E5%B7%A5%E5%85%B7%E9%92%A9%E5%AD%90prepost-%E6%89%A9%E5%B1%95%E7%82%B9">4.14 工具钩子：Pre/Post 扩展点</a></li>
+<li><a href="#415-mcp-%E5%B7%A5%E5%85%B7%E5%8A%A8%E6%80%81%E6%89%A9%E5%B1%95%E8%BE%B9%E7%95%8C">4.15 MCP 工具：动态扩展边界</a></li>
+<li><a href="#416-toolsearch%E5%BB%B6%E8%BF%9F%E5%8A%A0%E8%BD%BD%E5%A4%A7%E9%87%8F%E5%B7%A5%E5%85%B7">4.16 ToolSearch：延迟加载大量工具</a></li>
+<li><a href="#417-%E5%AD%90-agent-%E7%9A%84%E5%B7%A5%E5%85%B7%E9%99%90%E5%88%B6">4.17 子 Agent 的工具限制</a></li>
+<li><a href="#418-%E5%B7%A5%E5%85%B7%E7%BB%93%E6%9E%9C%E5%A4%84%E7%90%86%E5%A4%A7%E7%BB%93%E6%9E%9C%E6%8C%81%E4%B9%85%E5%8C%96">4.18 工具结果处理：大结果持久化</a></li>
+<li><a href="#419-%E5%B7%A5%E5%85%B7%E5%88%86%E7%B1%BB%E4%BD%93%E7%B3%BB">4.19 工具分类体系</a></li>
+<li><a href="#420-%E5%85%B8%E5%9E%8B%E5%B7%A5%E5%85%B7%E5%89%96%E6%9E%90filereadtool-vs-bashtool">4.20 典型工具剖析：FileReadTool vs BashTool</a></li>
+<li><a href="#421-%E5%85%B3%E9%94%AE%E5%B7%A5%E7%A8%8B%E6%80%9D%E6%83%B3%E6%80%BB%E7%BB%93">4.21 关键工程思想总结</a></li>
+</ul>
+<hr />
+<h2 id="41-工具系统是什么"><a class="markdownIt-Anchor" href="#41-工具系统是什么"></a> 4.1 工具系统是什么？</h2>
+<p>在 Agent 架构中，LLM 本身只能生成文本。要让它真正与外部世界交互——读文件、执行命令、搜索代码——就需要<strong>工具（Tools）</strong>。</p>
+<div class="mermaid">
+flowchart LR
+    LLM["LLM 思考<br/>生成 tool_use 块"] --> ToolSys["工具系统"]
+    ToolSys --> Read["Read<br/>读文件"]
+    ToolSys --> Edit["Edit<br/>编辑文件"]
+    ToolSys --> Bash["Bash<br/>执行命令"]
+    ToolSys --> Grep["Grep<br/>搜索内容"]
+    ToolSys --> Agent["Agent<br/>启动子Agent"]
+    ToolSys --> MCP["MCP 工具<br/>外部扩展"]
+    Read --> Result["工具结果<br/>返回给 LLM"]
+    Edit --> Result
+    Bash --> Result
+    Grep --> Result
+    Agent --> Result
+    MCP --> Result
+</div>
+<p>Claude Code 的工具系统有三个关键设计原则：</p>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>工具即数据</strong></td>
+<td>每个工具不是一个&quot;类&quot;，而是一个符合 <code>Tool</code> 接口的普通对象</td>
+</tr>
+<tr>
+<td><strong>安全默认</strong></td>
+<td>默认假设工具不可并发、会写入、需要权限检查（fail-closed）</td>
+</tr>
+<tr>
+<td><strong>统一接口</strong></td>
+<td>内置工具和 MCP 外部工具共用同一个 <code>Tool</code> 接口，对 LLM 一视同仁</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="42-核心文件关系图"><a class="markdownIt-Anchor" href="#42-核心文件关系图"></a> 4.2 核心文件关系图</h2>
+<div class="mermaid">
+flowchart TD
+    subgraph Definition["定义层"]
+        ToolTs["Tool.ts<br/>★ Tool 类型定义<br/>buildTool() 工厂"]
+        ToolsTs["tools.ts<br/>工具注册表<br/>getAllBaseTools()"]
+    end
+
+    subgraph Implementation["实现层 (tools/)"]
+        FR["FileReadTool/"]
+        FE["FileEditTool/"]
+        FW["FileWriteTool/"]
+        BT["BashTool/<br/>★ 最复杂 (640KB)"]
+        GT["GrepTool/"]
+        GL["GlobTool/"]
+        AT["AgentTool/<br/>子 Agent 生成"]
+        WF["WebFetchTool/"]
+        SK["SkillTool/"]
+        More["... 40+ 工具"]
+    end
+
+    subgraph Execution["执行层 (services/tools/)"]
+        TE["toolExecution.ts<br/>runToolUse()<br/>checkPermissionsAndCallTool()"]
+        STE["StreamingToolExecutor.ts<br/>★ 流式并发执行器"]
+        TO["toolOrchestration.ts<br/>备选批量执行器"]
+        TH["toolHooks.ts<br/>Pre/Post 工具钩子"]
+    end
+
+    subgraph External["外部扩展"]
+        MCPTool["MCPTool/<br/>MCP 工具模板"]
+        MCPClient["services/mcp/client.ts<br/>动态工具发现"]
+    end
+
+    ToolTs --> ToolsTs
+    ToolsTs --> TE
+    Implementation --> TE
+    TE --> STE
+    TE --> TO
+    TH --> TE
+    MCPClient --> MCPTool
+    MCPTool --> ToolsTs
+</div>
+<hr />
+<h2 id="43-tool-类型定义一个工具长什么样"><a class="markdownIt-Anchor" href="#43-tool-类型定义一个工具长什么样"></a> 4.3 Tool 类型定义：一个工具长什么样？</h2>
+<p><code>Tool</code> 类型定义在 <code>src/Tool.ts:362</code>，是一个泛型类型 <code>Tool&lt;Input, Output, P&gt;</code>，约 330 行。可以按职责分为四组：</p>
+<h3 id="核心身份"><a class="markdownIt-Anchor" href="#核心身份"></a> 核心身份</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/Tool.ts:362</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> Tool&lt;Input, Output, P&gt; = &#123;</span><br><span class="line">  readonly name: <span class="built_in">string</span>              <span class="comment">// 唯一标识，如 "Bash", "Read", "Edit"</span></span><br><span class="line">  aliases?: <span class="built_in">string</span>[]                 <span class="comment">// 向后兼容的别名</span></span><br><span class="line">  searchHint?: <span class="built_in">string</span>                <span class="comment">// ToolSearch 关键词匹配提示</span></span><br><span class="line">  readonly inputSchema: Input        <span class="comment">// Zod schema，输入参数校验</span></span><br><span class="line">  readonly inputJSONSchema?: ToolInputJSONSchema  <span class="comment">// MCP 工具的 JSON Schema</span></span><br><span class="line">  outputSchema?: z.ZodType&lt;unknown&gt;  <span class="comment">// 输出 schema</span></span><br><span class="line">  maxResultSizeChars: <span class="built_in">number</span>         <span class="comment">// 结果超过此大小则持久化到磁盘</span></span><br><span class="line">  readonly shouldDefer?: <span class="built_in">boolean</span>     <span class="comment">// 是否延迟加载（需 ToolSearch 激活）</span></span><br><span class="line">  readonly alwaysLoad?: <span class="built_in">boolean</span>      <span class="comment">// 永远不延迟加载</span></span><br><span class="line">  isMcp?: <span class="built_in">boolean</span>                    <span class="comment">// 是否为 MCP 工具</span></span><br><span class="line">  readonly strict?: <span class="built_in">boolean</span>          <span class="comment">// 严格模式（API 更严格遵守 schema）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="生命周期方法"><a class="markdownIt-Anchor" href="#生命周期方法"></a> 生命周期方法</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="comment">// 执行工具</span></span><br><span class="line">  call(args, context, canUseTool, parentMessage, onProgress?): <span class="built_in">Promise</span>&lt;ToolResult&lt;Output&gt;&gt;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 生成描述（告诉 LLM 这个工具干什么）</span></span><br><span class="line">  description(input, options): <span class="built_in">Promise</span>&lt;<span class="built_in">string</span>&gt;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 系统提示词中关于此工具的说明</span></span><br><span class="line">  prompt(options): <span class="built_in">Promise</span>&lt;<span class="built_in">string</span>&gt;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 自定义输入校验</span></span><br><span class="line">  validateInput?(input, context): <span class="built_in">Promise</span>&lt;ValidationResult&gt;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 权限检查</span></span><br><span class="line">  checkPermissions(input, context): <span class="built_in">Promise</span>&lt;PermissionResult&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="分类方法"><a class="markdownIt-Anchor" href="#分类方法"></a> 分类方法</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  isConcurrencySafe(input): <span class="built_in">boolean</span>    <span class="comment">// 可以并行执行？</span></span><br><span class="line">  isEnabled(): <span class="built_in">boolean</span>                 <span class="comment">// 当前环境是否启用？</span></span><br><span class="line">  isReadOnly(input): <span class="built_in">boolean</span>           <span class="comment">// 只读操作？</span></span><br><span class="line">  isDestructive?(input): <span class="built_in">boolean</span>       <span class="comment">// 不可逆操作？</span></span><br><span class="line">  interruptBehavior?(): <span class="string">'cancel'</span> | <span class="string">'block'</span>  <span class="comment">// 用户中断时的行为</span></span><br><span class="line">  isSearchOrReadCommand?(input): &#123; isSearch, isRead, isList &#125;  <span class="comment">// UI 折叠分类</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="渲染方法"><a class="markdownIt-Anchor" href="#渲染方法"></a> 渲染方法</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  renderToolUseMessage(input, options): React.ReactNode      <span class="comment">// 工具调用时的 UI</span></span><br><span class="line">  renderToolResultMessage?(content, progress, options): React.ReactNode  <span class="comment">// 结果 UI</span></span><br><span class="line">  renderToolUseProgressMessage?(progress, options): React.ReactNode     <span class="comment">// 进度 UI</span></span><br><span class="line">  renderToolUseRejectedMessage?(input, options): React.ReactNode        <span class="comment">// 拒绝时 UI</span></span><br><span class="line">  renderToolUseErrorMessage?(result, options): React.ReactNode          <span class="comment">// 错误时 UI</span></span><br><span class="line">  renderGroupedToolUse?(toolUses, options): React.ReactNode | <span class="literal">null</span>      <span class="comment">// 分组渲染</span></span><br><span class="line">  mapToolResultToToolResultBlockParam(content, toolUseID): ToolResultBlockParam  <span class="comment">// 结果→API格式</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>设计洞察</strong>：一个 <code>Tool</code> 对象同时承担了&quot;执行引擎&quot;和&quot;UI 组件&quot;两重角色。这避免了把渲染逻辑分散到其他地方，但也让每个工具文件变得较大。</p>
+</blockquote>
+<hr />
+<h2 id="44-buildtool安全默认值工厂"><a class="markdownIt-Anchor" href="#44-buildtool安全默认值工厂"></a> 4.4 buildTool：安全默认值工厂</h2>
+<p><code>buildTool()</code> 是所有工具的&quot;出生证&quot;，定义在 <code>src/Tool.ts:757</code>。它接收一个 <code>ToolDef</code>（可以省略部分方法），补齐安全默认值后返回完整的 <code>Tool</code> 对象。</p>
+<div class="mermaid">
+flowchart LR
+    ToolDef["ToolDef<br/>(可省略部分方法)"] --> BuildTool["buildTool()"]
+    BuildTool --> CompleteTool["完整的 Tool 对象"]
+
+    subgraph Defaults["安全默认值 (fail-closed)"]
+        D1["isEnabled → true"]
+        D2["isConcurrencySafe → false<br/>（假设不安全）"]
+        D3["isReadOnly → false<br/>（假设会写入）"]
+        D4["isDestructive → false"]
+        D5["checkPermissions → allow<br/>（交给通用权限系统）"]
+        D6["toAutoClassifierInput → ''<br/>（跳过分类器）"]
+        D7["userFacingName → name"]
+    end
+
+    BuildTool -.-> Defaults
+</div>
+<p><strong>关键设计：fail-closed 默认值</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/Tool.ts:757</span></span><br><span class="line"><span class="keyword">const</span> TOOL_DEFAULTS = &#123;</span><br><span class="line">  isEnabled: <span class="function"><span class="params">()</span> =&gt;</span> <span class="literal">true</span>,</span><br><span class="line">  isConcurrencySafe: <span class="function">(<span class="params">_input?: unknown</span>) =&gt;</span> <span class="literal">false</span>,   <span class="comment">// ← 默认不可并发</span></span><br><span class="line">  isReadOnly: <span class="function">(<span class="params">_input?: unknown</span>) =&gt;</span> <span class="literal">false</span>,           <span class="comment">// ← 默认假设写入</span></span><br><span class="line">  isDestructive: <span class="function">(<span class="params">_input?: unknown</span>) =&gt;</span> <span class="literal">false</span>,</span><br><span class="line">  checkPermissions: <span class="function">(<span class="params">input</span>) =&gt;</span> <span class="built_in">Promise</span>.resolve(&#123; behavior: <span class="string">'allow'</span>, updatedInput: input &#125;),</span><br><span class="line">  toAutoClassifierInput: <span class="function">(<span class="params">_input?: unknown</span>) =&gt;</span> <span class="string">''</span>,</span><br><span class="line">  userFacingName: <span class="function">(<span class="params">_input?: unknown</span>) =&gt;</span> <span class="string">''</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为什么选择 fail-closed？</p>
+<ul>
+<li>如果一个新工具忘记实现 <code>isConcurrencySafe</code>，它会被当作<strong>不可并发</strong>处理 → 串行执行，宁可慢不可错</li>
+<li>如果忘记实现 <code>isReadOnly</code>，它会被当作<strong>写入工具</strong>处理 → 需要权限确认</li>
+<li>这避免了&quot;新工具上线后并发执行导致数据损坏&quot;的风险</li>
+</ul>
+<hr />
+<h2 id="45-工具注册表toolsts"><a class="markdownIt-Anchor" href="#45-工具注册表toolsts"></a> 4.5 工具注册表：tools.ts</h2>
+<p><code>src/tools.ts</code> 是工具的&quot;户口本&quot;，约 390 行。它管理工具的注册、过滤和组装：</p>
+<h3 id="三层工具获取"><a class="markdownIt-Anchor" href="#三层工具获取"></a> 三层工具获取</h3>
+<div class="mermaid">
+flowchart TD
+    GAB["getAllBaseTools()<br/>所有可能的工具（40+个）<br/>受 feature flag 和环境变量控制"]
+    GT["getTools(permContext)<br/>过滤后的可用工具<br/>移除 deny 规则匹配的工具<br/>移除 isEnabled()=false 的工具"]
+    ATP["assembleToolPool(permContext, mcpTools)<br/>最终工具池<br/>合并内置工具 + MCP 工具<br/>按名称去重（内置优先）<br/>分区排序保证缓存稳定"]
+
+    GAB --> GT --> ATP
+</div>
+<h3 id="getallbasetools全量工具清单"><a class="markdownIt-Anchor" href="#getallbasetools全量工具清单"></a> getAllBaseTools()：全量工具清单</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/tools.ts:193</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getAllBaseTools</span>(<span class="params"></span>): <span class="title">Tools</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> [</span><br><span class="line">    AgentTool,</span><br><span class="line">    TaskOutputTool,</span><br><span class="line">    BashTool,</span><br><span class="line">    <span class="comment">// 当有嵌入式搜索工具时，不加载独立的 Glob/Grep</span></span><br><span class="line">    ...(hasEmbeddedSearchTools() ? [] : [GlobTool, GrepTool]),</span><br><span class="line">    FileReadTool,</span><br><span class="line">    FileEditTool,</span><br><span class="line">    FileWriteTool,</span><br><span class="line">    <span class="comment">// ... 根据 feature flag 动态包含</span></span><br><span class="line">    ...(isTodoV2Enabled() ? [TaskCreateTool, TaskGetTool, ...] : []),</span><br><span class="line">    ...(isWorktreeModeEnabled() ? [EnterWorktreeTool, ExitWorktreeTool] : []),</span><br><span class="line">    <span class="comment">// ... 更多条件加载</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意工具的加载方式：</p>
+<table>
+<thead>
+<tr>
+<th>加载方式</th>
+<th>示例</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>静态 import</strong></td>
+<td><code>BashTool</code>, <code>FileReadTool</code></td>
+<td>核心工具，始终需要</td>
+</tr>
+<tr>
+<td><strong>条件 require()</strong></td>
+<td><code>REPLTool</code>, <code>SleepTool</code></td>
+<td>通过 <code>feature()</code> 门控，构建时可裁剪</td>
+</tr>
+<tr>
+<td><strong>懒加载 getter</strong></td>
+<td><code>getTeamCreateTool()</code></td>
+<td>打破循环依赖</td>
+</tr>
+<tr>
+<td><strong>环境变量控制</strong></td>
+<td><code>ConfigTool</code> (<code>USER_TYPE === 'ant'</code>)</td>
+<td>仅内部用户可用</td>
+</tr>
+</tbody>
+</table>
+<h3 id="assembletoolpool合并-排序"><a class="markdownIt-Anchor" href="#assembletoolpool合并-排序"></a> assembleToolPool()：合并 + 排序</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/tools.ts:345</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">assembleToolPool</span>(<span class="params">permissionContext, mcpTools</span>): <span class="title">Tools</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> builtInTools = getTools(permissionContext)</span><br><span class="line">  <span class="keyword">const</span> allowedMcpTools = filterToolsByDenyRules(mcpTools, permissionContext)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 分区排序：内置工具作为连续前缀，MCP 工具紧随其后</span></span><br><span class="line">  <span class="comment">// 这保证了 LLM 提示词缓存的稳定性</span></span><br><span class="line">  <span class="keyword">const</span> byName = <span class="function">(<span class="params">a, b</span>) =&gt;</span> a.name.localeCompare(b.name)</span><br><span class="line">  <span class="keyword">return</span> uniqBy(</span><br><span class="line">    [...builtInTools].sort(byName).concat(allowedMcpTools.sort(byName)),</span><br><span class="line">    <span class="string">'name'</span>,   <span class="comment">// 同名时内置工具优先</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>为什么分区排序很重要？</strong> API 服务端会在内置工具和 MCP 工具之间放置缓存断点。如果排序不稳定（MCP 工具插入到内置工具中间），每次 MCP 工具变化都会导致所有缓存失效。</p>
+<hr />
+<h2 id="46-工具目录结构微模块化"><a class="markdownIt-Anchor" href="#46-工具目录结构微模块化"></a> 4.6 工具目录结构：微模块化</h2>
+<p>每个工具是 <code>src/tools/</code> 下的一个独立目录：</p>
+<h3 id="简单工具filereadtool5-个文件~70kb"><a class="markdownIt-Anchor" href="#简单工具filereadtool5-个文件~70kb"></a> 简单工具：FileReadTool（5 个文件，~70KB）</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tools&#x2F;FileReadTool&#x2F;</span><br><span class="line">├── FileReadTool.ts      # 工具定义、call() 实现</span><br><span class="line">├── prompt.ts            # 提示词文本常量</span><br><span class="line">├── limits.ts            # 读取行数限制等配置</span><br><span class="line">├── imageProcessor.ts    # 图片处理逻辑</span><br><span class="line">└── UI.tsx               # 渲染组件</span><br></pre></td></tr></table></figure>
+<h3 id="复杂工具bashtool20-个文件~640kb"><a class="markdownIt-Anchor" href="#复杂工具bashtool20-个文件~640kb"></a> 复杂工具：BashTool（20 个文件，~640KB）</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">tools&#x2F;BashTool&#x2F;</span><br><span class="line">├── BashTool.tsx             # 工具定义、call() 实现（160KB）</span><br><span class="line">├── bashPermissions.ts       # 权限判断（98KB）</span><br><span class="line">├── bashSecurity.ts          # 安全分析——命令注入检测（102KB）</span><br><span class="line">├── readOnlyValidation.ts    # 只读命令识别（68KB）</span><br><span class="line">├── pathValidation.ts        # 路径校验（43KB）</span><br><span class="line">├── prompt.ts                # 提示词文本（21KB）</span><br><span class="line">├── UI.tsx                   # 渲染组件（25KB）</span><br><span class="line">├── BashToolResultMessage.tsx # 结果渲染（19KB）</span><br><span class="line">├── sedEditParser.ts         # sed 命令解析</span><br><span class="line">├── sedValidation.ts         # sed 命令安全校验</span><br><span class="line">├── shouldUseSandbox.ts      # 沙箱判断</span><br><span class="line">├── commandSemantics.ts      # 命令语义分析</span><br><span class="line">├── modeValidation.ts        # 模式校验</span><br><span class="line">├── bashCommandHelpers.ts    # 命令辅助函数</span><br><span class="line">├── destructiveCommandWarning.ts  # 危险命令警告</span><br><span class="line">├── commentLabel.ts          # 注释标签</span><br><span class="line">├── utils.ts                 # 工具函数</span><br><span class="line">└── toolName.ts              # 名称常量</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>对比启示</strong>：BashTool 的代码量是 FileReadTool 的 <strong>9 倍</strong>，因为它需要分析任意 Shell 命令的安全性。这说明&quot;执行任意命令&quot;的工具在 Agent 系统中是<strong>安全挑战最大</strong>的部分。</p>
+</blockquote>
+<hr />
+<h2 id="47-工具执行管线从-llm-输出到工具结果"><a class="markdownIt-Anchor" href="#47-工具执行管线从-llm-输出到工具结果"></a> 4.7 工具执行管线：从 LLM 输出到工具结果</h2>
+<p>当 LLM 返回一个 <code>tool_use</code> 块时，它经历以下 8 步处理：</p>
+<div class="mermaid">
+flowchart TD
+    LLM["LLM 返回 tool_use 块<br/>{name, id, input}"] --> A
+
+    A["① 查找工具<br/>findToolByName()"] --> B
+    B["② Zod Schema 校验<br/>inputSchema.safeParse(input)"] --> C
+    C["③ 自定义校验<br/>tool.validateInput()"] --> D
+    D["④ PreToolUse 钩子<br/>runPreToolUseHooks()"] --> E
+    E["⑤ 权限检查<br/>checkPermissions → canUseTool"] --> F
+    F["⑥ 执行工具<br/>tool.call(args, context, ...)"] --> G
+    G["⑦ PostToolUse 钩子<br/>runPostToolUseHooks()"] --> H
+    H["⑧ 结果映射<br/>mapToolResultToToolResultBlockParam()"]
+
+    B -- "校验失败" --> Err1["返回 InputValidationError"]
+    C -- "校验失败" --> Err2["返回自定义错误"]
+    D -- "钩子拒绝" --> Err3["返回钩子拒绝消息"]
+    E -- "权限拒绝" --> Err4["返回权限拒绝消息"]
+
+    style A fill:#e1f5fe
+    style F fill:#fff3e0
+    style H fill:#e8f5e9
+</div>
+<h3 id="核心函数checkpermissionsandcalltool"><a class="markdownIt-Anchor" href="#核心函数checkpermissionsandcalltool"></a> 核心函数：checkPermissionsAndCallTool()</h3>
+<p>这是 <code>src/services/tools/toolExecution.ts:599</code> 中约 700 行的函数，是工具执行的&quot;大脑&quot;：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">checkPermissionsAndCallTool</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  tool: Tool,</span></span></span><br><span class="line"><span class="function"><span class="params">  toolUseID: <span class="built_in">string</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  input: &#123; [key: <span class="built_in">string</span>]: <span class="built_in">boolean</span> | <span class="built_in">string</span> | <span class="built_in">number</span> &#125;,</span></span></span><br><span class="line"><span class="function"><span class="params">  toolUseContext: ToolUseContext,</span></span></span><br><span class="line"><span class="function"><span class="params">  canUseTool: CanUseToolFn,</span></span></span><br><span class="line"><span class="function"><span class="params">  assistantMessage: AssistantMessage,</span></span></span><br><span class="line"><span class="function"><span class="params">  <span class="comment">// ... more params</span></span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">Promise</span>&lt;<span class="title">MessageUpdateLazy</span>[]&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ① Zod schema 校验</span></span><br><span class="line">  <span class="keyword">const</span> parsedInput = tool.inputSchema.safeParse(input)</span><br><span class="line">  <span class="keyword">if</span> (!parsedInput.success) &#123;</span><br><span class="line">    <span class="keyword">return</span> [&#123; message: createErrorMessage(<span class="string">'InputValidationError'</span>, ...) &#125;]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ② 自定义校验</span></span><br><span class="line">  <span class="keyword">const</span> isValidCall = <span class="keyword">await</span> tool.validateInput?.(parsedInput.data, toolUseContext)</span><br><span class="line">  <span class="keyword">if</span> (isValidCall?.result === <span class="literal">false</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> [&#123; message: createErrorMessage(isValidCall.message) &#125;]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ③ 投机启动 Bash 安全分类器（并行预热）</span></span><br><span class="line">  <span class="keyword">if</span> (tool.name === <span class="string">'Bash'</span>) &#123;</span><br><span class="line">    startSpeculativeClassifierCheck(parsedInput.data.command, ...)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ④ 输入回填（给钩子和权限系统看的副本，不影响 call()）</span></span><br><span class="line">  <span class="keyword">const</span> observableInput = &#123; ...processedInput &#125;</span><br><span class="line">  tool.backfillObservableInput?.(observableInput)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ⑤ PreToolUse 钩子</span></span><br><span class="line">  <span class="keyword">const</span> hookResults = <span class="keyword">await</span> runPreToolUseHooks(...)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ⑥ 权限检查 → 交互式确认</span></span><br><span class="line">  <span class="keyword">const</span> permissionResult = <span class="keyword">await</span> resolveHookPermissionDecision(...)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ⑦ 调用工具</span></span><br><span class="line">  <span class="keyword">const</span> result = <span class="keyword">await</span> tool.call(callInput, context, canUseTool, assistantMessage, onProgress)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ⑧ PostToolUse 钩子</span></span><br><span class="line">  <span class="keyword">yield</span>* runPostToolUseHooks(...)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ⑨ 结果映射</span></span><br><span class="line">  <span class="keyword">return</span> tool.mapToolResultToToolResultBlockParam(result.data, toolUseID)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>一个精妙的细节</strong>：第 ③ 步的&quot;投机启动 Bash 安全分类器&quot;。当检测到是 Bash 工具调用时，立即在后台启动安全分类，这样它可以<strong>与钩子执行和权限对话框并行</strong>，而不是串行等待。</p>
+<hr />
+<h2 id="48-streamingtoolexecutor边流式边执行"><a class="markdownIt-Anchor" href="#48-streamingtoolexecutor边流式边执行"></a> 4.8 StreamingToolExecutor：边流式边执行</h2>
+<p><code>StreamingToolExecutor</code>（<code>src/services/tools/StreamingToolExecutor.ts</code>，531 行）是工具执行的<strong>主引擎</strong>。它的核心创新是：<strong>LLM 还在流式输出时，已完成解析的工具就开始执行了</strong>。</p>
+<h3 id="状态机"><a class="markdownIt-Anchor" href="#状态机"></a> 状态机</h3>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> queued : addTool()
+    queued --> executing : processQueue()<br/>并发条件满足
+    executing --> completed : tool.call() 完成
+    completed --> yielded : getCompletedResults()<br/>按原始顺序交付
+
+    queued --> completed : 已被中止<br/>(sibling_error/<br/>user_interrupted)
+    executing --> completed : 执行中被中止
+
+    note right of queued : 等待并发条件
+    note right of executing : tool 正在运行
+    note right of completed : 结果已就绪
+    note right of yielded : 已交付给 query()
+</div>
+<h3 id="核心类结构"><a class="markdownIt-Anchor" href="#核心类结构"></a> 核心类结构</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/services/tools/StreamingToolExecutor.ts:40</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> StreamingToolExecutor &#123;</span><br><span class="line">  <span class="keyword">private</span> tools: TrackedTool[] = []           <span class="comment">// 工具队列</span></span><br><span class="line">  <span class="keyword">private</span> hasErrored = <span class="literal">false</span>                   <span class="comment">// Bash 错误标记</span></span><br><span class="line">  <span class="keyword">private</span> siblingAbortController: AbortController  <span class="comment">// 兄弟工具取消控制器</span></span><br><span class="line">  <span class="keyword">private</span> discarded = <span class="literal">false</span>                    <span class="comment">// 流式回退标记</span></span><br><span class="line">  <span class="keyword">private</span> progressAvailableResolve?: <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">void</span>  <span class="comment">// 进度通知信号</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 添加工具到队列，立即尝试执行</span></span><br><span class="line">  addTool(block: ToolUseBlock, assistantMessage: AssistantMessage): <span class="built_in">void</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 非阻塞获取已完成的结果</span></span><br><span class="line">  *getCompletedResults(): Generator&lt;MessageUpdate, <span class="built_in">void</span>&gt;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 等待所有工具完成并交付结果</span></span><br><span class="line">  <span class="keyword">async</span> *getRemainingResults(): AsyncGenerator&lt;MessageUpdate, <span class="built_in">void</span>&gt;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 丢弃所有待执行工具（流式回退时）</span></span><br><span class="line">  discard(): <span class="built_in">void</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="与-queryts-的集成时序"><a class="markdownIt-Anchor" href="#与-queryts-的集成时序"></a> 与 query.ts 的集成时序</h3>
+<div class="mermaid">
+sequenceDiagram
+    participant Q as query.ts
+    participant STE as StreamingToolExecutor
+    participant API as LLM API (流式)
+    participant T1 as Tool A (并发安全)
+    participant T2 as Tool B (并发安全)
+    participant T3 as Tool C (非并发)
+
+    Q->>API: 发送请求
+    API-->>Q: stream: tool_use A (开始)
+    Q->>STE: addTool(A)
+    STE->>T1: 开始执行 A
+
+    API-->>Q: stream: tool_use B (开始)
+    Q->>STE: addTool(B)
+    STE->>T2: 开始执行 B（与 A 并行）
+
+    Q->>STE: getCompletedResults()
+    Note over STE: A 未完成，先交付进度消息
+
+    API-->>Q: stream: tool_use C (开始)
+    Q->>STE: addTool(C)
+    Note over STE: C 不可并发，排队等待
+
+    T1-->>STE: A 完成
+    Q->>STE: getCompletedResults()
+    STE-->>Q: A 的结果
+
+    API-->>Q: stream end
+    Q->>STE: getRemainingResults()
+
+    T2-->>STE: B 完成
+    STE-->>Q: B 的结果
+
+    STE->>T3: A/B 都完成，开始 C
+    T3-->>STE: C 完成
+    STE-->>Q: C 的结果
+</div>
+<h3 id="关键设计结果按原始顺序交付"><a class="markdownIt-Anchor" href="#关键设计结果按原始顺序交付"></a> 关键设计：结果按原始顺序交付</h3>
+<p>即使 Tool B 比 Tool A 先完成，结果也会<strong>按 LLM 输出的顺序</strong>交付：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/services/tools/StreamingToolExecutor.ts:412</span></span><br><span class="line">*getCompletedResults(): Generator&lt;MessageUpdate, <span class="built_in">void</span>&gt; &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> tool of <span class="keyword">this</span>.tools) &#123;</span><br><span class="line">    <span class="comment">// 进度消息立即交付，不受顺序约束</span></span><br><span class="line">    <span class="keyword">while</span> (tool.pendingProgress.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">yield</span> &#123; message: tool.pendingProgress.shift()! &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (tool.status === <span class="string">'completed'</span> &amp;&amp; tool.results) &#123;</span><br><span class="line">      tool.status = <span class="string">'yielded'</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">const</span> message of tool.results) &#123;</span><br><span class="line">        <span class="keyword">yield</span> &#123; message &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tool.status === <span class="string">'executing'</span> &amp;&amp; !tool.isConcurrencySafe) &#123;</span><br><span class="line">      <span class="keyword">break</span>  <span class="comment">// 非并发工具阻塞后续交付</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="49-工具编排的备选方案toolorchestrationts"><a class="markdownIt-Anchor" href="#49-工具编排的备选方案toolorchestrationts"></a> 4.9 工具编排的备选方案：toolOrchestration.ts</h2>
+<p>当流式工具执行被禁用时，系统回退到 <code>src/services/tools/toolOrchestration.ts</code>（189 行）的批量执行器：</p>
+<div class="mermaid">
+flowchart TD
+    Input["LLM 返回的 tool_use 列表"] --> Partition["partitionToolCalls()<br/>按并发安全性分批"]
+
+    Partition --> Batch1["批次 1: [Read, Grep, Glob]<br/>并发安全 → 并行执行"]
+    Partition --> Batch2["批次 2: [Edit]<br/>非并发 → 串行执行"]
+    Partition --> Batch3["批次 3: [Read, Read]<br/>并发安全 → 并行执行"]
+
+    Batch1 --> Run1["runToolsConcurrently()<br/>Promise.race, 最大并发 10"]
+    Batch2 --> Run2["runToolsSerially()<br/>逐个执行"]
+    Batch3 --> Run3["runToolsConcurrently()"]
+</div>
+<p>分批规则（<code>partitionToolCalls</code>）：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/services/tools/toolOrchestration.ts:91</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">partitionToolCalls</span>(<span class="params">toolUseMessages, toolUseContext</span>): <span class="title">Batch</span>[] </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> toolUseMessages.reduce(<span class="function">(<span class="params">acc, toolUse</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> isConcurrencySafe = tool?.isConcurrencySafe(parsedInput.data) ?? <span class="literal">false</span></span><br><span class="line">    <span class="comment">// 连续的并发安全工具合并为一批</span></span><br><span class="line">    <span class="keyword">if</span> (isConcurrencySafe &amp;&amp; acc[acc.length - <span class="number">1</span>]?.isConcurrencySafe) &#123;</span><br><span class="line">      acc[acc.length - <span class="number">1</span>].blocks.push(toolUse)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      acc.push(&#123; isConcurrencySafe, blocks: [toolUse] &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最大并发数通过环境变量 <code>CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY</code> 控制，默认 <strong>10</strong>。</p>
+<hr />
+<h2 id="410-并发控制哪些工具可以并行"><a class="markdownIt-Anchor" href="#410-并发控制哪些工具可以并行"></a> 4.10 并发控制：哪些工具可以并行？</h2>
+<div class="mermaid">
+flowchart TD
+    TC["工具调用到达"] --> Check{"isConcurrencySafe(input)?"}
+
+    Check -- "true" --> CS["并发安全工具"]
+    Check -- "false" --> NCS["非并发工具"]
+
+    CS --> Rule1["可与其他并发安全工具并行"]
+    NCS --> Rule2["必须独占执行"]
+
+    subgraph ConcurrentSafe["并发安全工具示例"]
+        direction LR
+        G1["GlobTool ✓"]
+        G2["GrepTool ✓"]
+        G3["FileReadTool ✓"]
+        G4["WebFetchTool ✓"]
+        G5["WebSearchTool ✓"]
+        G6["MCP (readOnlyHint) ✓"]
+    end
+
+    subgraph NotConcurrent["非并发工具示例"]
+        direction LR
+        N1["BashTool (写命令) ✗"]
+        N2["FileEditTool ✗"]
+        N3["FileWriteTool ✗"]
+        N4["AgentTool ✗"]
+        N5["NotebookEditTool ✗"]
+    end
+
+    CS -.-> ConcurrentSafe
+    NCS -.-> NotConcurrent
+</div>
+<p><strong>特殊情况：BashTool 的动态判断</strong></p>
+<p>BashTool 的 <code>isConcurrencySafe</code> 不是固定的，而是根据命令内容动态判断：</p>
+<ul>
+<li><code>git status</code>、<code>ls -la</code>、<code>cat file.txt</code> → <strong>可并发</strong>（只读命令）</li>
+<li><code>npm install</code>、<code>rm -rf</code>、<code>git commit</code> → <strong>不可并发</strong>（写入命令）</li>
+</ul>
+<p>判断逻辑在 <code>readOnlyValidation.ts</code>（68KB）中，通过解析 Shell 命令的 AST 实现。</p>
+<h3 id="streamingtoolexecutor-的并发判定"><a class="markdownIt-Anchor" href="#streamingtoolexecutor-的并发判定"></a> StreamingToolExecutor 的并发判定</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/services/tools/StreamingToolExecutor.ts:129</span></span><br><span class="line"><span class="keyword">private</span> canExecuteTool(isConcurrencySafe: <span class="built_in">boolean</span>): <span class="built_in">boolean</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> executingTools = <span class="keyword">this</span>.tools.filter(<span class="function"><span class="params">t</span> =&gt;</span> t.status === <span class="string">'executing'</span>)</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    executingTools.length === <span class="number">0</span> ||  <span class="comment">// 无工具执行中 → 任何工具可启动</span></span><br><span class="line">    (isConcurrencySafe &amp;&amp; executingTools.every(<span class="function"><span class="params">t</span> =&gt;</span> t.isConcurrencySafe))</span><br><span class="line">    <span class="comment">// 只有当前执行的全是并发安全的，且新工具也是并发安全的，才能并行</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="411-错误级联bash-错误取消兄弟工具"><a class="markdownIt-Anchor" href="#411-错误级联bash-错误取消兄弟工具"></a> 4.11 错误级联：Bash 错误取消兄弟工具</h2>
+<p>当多个工具并行执行时，如果一个 Bash 工具出错，会触发<strong>兄弟取消</strong>：</p>
+<div class="mermaid">
+sequenceDiagram
+    participant STE as StreamingToolExecutor
+    participant BashA as Bash: mkdir /tmp/a
+    participant BashB as Bash: cd /tmp/a && npm init
+    participant Read as Read: file.txt
+
+    STE->>BashA: 开始执行
+    STE->>BashB: 开始执行
+    STE->>Read: 开始执行
+
+    BashA--xSTE: 错误: 权限拒绝
+    Note over STE: hasErrored = true<br/>siblingAbortController.abort()
+
+    STE--xBashB: 收到 abort 信号，取消
+    Note over STE: BashB 收到合成错误:<br/>"Cancelled: parallel tool call<br/>Bash(mkdir /tmp/a…) errored"
+
+    Read-->>STE: 正常完成
+    Note over Read: Read 是非 Bash 工具<br/>不会被 Bash 错误级联取消
+</div>
+<p><strong>为什么只有 Bash 错误会级联？</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/services/tools/StreamingToolExecutor.ts:359</span></span><br><span class="line"><span class="keyword">if</span> (tool.block.name === BASH_TOOL_NAME) &#123;</span><br><span class="line">  <span class="keyword">this</span>.hasErrored = <span class="literal">true</span></span><br><span class="line">  <span class="keyword">this</span>.erroredToolDescription = <span class="keyword">this</span>.getToolDescription(tool)</span><br><span class="line">  <span class="keyword">this</span>.siblingAbortController.abort(<span class="string">'sibling_error'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Bash 命令常有<strong>隐式依赖链</strong>（mkdir 失败 → 后续 cd 无意义），而 Read、WebFetch 等工具是独立的，一个失败不影响其他。</p>
+<hr />
+<h2 id="412-中断行为用户新消息时怎么办"><a class="markdownIt-Anchor" href="#412-中断行为用户新消息时怎么办"></a> 4.12 中断行为：用户新消息时怎么办？</h2>
+<p>当工具正在执行时用户提交了新消息，每个工具可以声明自己的中断行为：</p>
+<table>
+<thead>
+<tr>
+<th>行为</th>
+<th>含义</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'cancel'</code></td>
+<td>停止工具，丢弃结果，接收合成错误消息</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>'block'</code></td>
+<td>继续运行，用户新消息排队等待</td>
+<td><strong>是</strong>（默认）</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/services/tools/StreamingToolExecutor.ts:210</span></span><br><span class="line"><span class="keyword">private</span> getAbortReason(tool): <span class="string">'sibling_error'</span> | <span class="string">'user_interrupted'</span> | <span class="string">'streaming_fallback'</span> | <span class="literal">null</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.discarded) <span class="keyword">return</span> <span class="string">'streaming_fallback'</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.hasErrored) <span class="keyword">return</span> <span class="string">'sibling_error'</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.toolUseContext.abortController.signal.aborted) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.toolUseContext.abortController.signal.reason === <span class="string">'interrupt'</span>) &#123;</span><br><span class="line">      <span class="comment">// 只取消声明了 'cancel' 行为的工具</span></span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.getToolInterruptBehavior(tool) === <span class="string">'cancel'</span></span><br><span class="line">        ? <span class="string">'user_interrupted'</span></span><br><span class="line">        : <span class="literal">null</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'user_interrupted'</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="413-权限系统概览"><a class="markdownIt-Anchor" href="#413-权限系统概览"></a> 4.13 权限系统概览</h2>
+<p>权限系统是工具执行管线中的&quot;安全闸门&quot;，详细内容将在后续章节深入。这里先给出整体架构：</p>
+<div class="mermaid">
+flowchart TD
+    ToolCall["工具调用请求"] --> Step1
+
+    Step1["① 全局 Deny 规则<br/>getDenyRuleForTool()"] -- 匹配 --> Deny["拒绝"]
+    Step1 -- 不匹配 --> Step2
+
+    Step2["② 全局 Ask 规则<br/>getAskRuleForTool()"] -- 匹配 --> Ask["询问用户"]
+    Step2 -- 不匹配 --> Step3
+
+    Step3["③ 工具特定权限<br/>tool.checkPermissions()"] --> Step4
+
+    Step4["④ 规则匹配<br/>checkRuleBasedPermissions()"] --> Step5
+
+    Step5["⑤ 权限模式判断"]
+    Step5 -- "bypassPermissions" --> Allow["放行"]
+    Step5 -- "plan" --> PlanCheck{"只读工具?"}
+    PlanCheck -- "是" --> Allow
+    PlanCheck -- "否" --> Ask
+    Step5 -- "default" --> Ask
+    Step5 -- "auto" --> Classifier["AI 安全分类器"]
+    Classifier --> Allow
+    Classifier --> Ask
+</div>
+<p>五种权限模式：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>行为</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>default</code></td>
+<td>危险操作询问用户</td>
+<td>日常使用</td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>只读自动通过，写入需确认</td>
+<td>规划阶段</td>
+</tr>
+<tr>
+<td><code>acceptEdits</code></td>
+<td>文件编辑自动通过，Shell 仍询问</td>
+<td>信任文件修改</td>
+</tr>
+<tr>
+<td><code>bypassPermissions</code></td>
+<td>全部放行</td>
+<td>完全信任（CI/自动化）</td>
+</tr>
+<tr>
+<td><code>auto</code></td>
+<td>AI 分类器自动判断</td>
+<td>实验性功能</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="414-工具钩子prepost-扩展点"><a class="markdownIt-Anchor" href="#414-工具钩子prepost-扩展点"></a> 4.14 工具钩子：Pre/Post 扩展点</h2>
+<p>工具钩子（<code>src/services/tools/toolHooks.ts</code>）提供了三个扩展点：</p>
+<div class="mermaid">
+flowchart LR
+    Pre["PreToolUse 钩子<br/>───────────<br/>· 允许/拒绝/询问<br/>· 修改输入<br/>· 添加上下文<br/>· 阻止执行"] --> Exec["tool.call()<br/>执行工具"]
+    Exec --> Post["PostToolUse 钩子<br/>───────────<br/>· 阻止后续循环<br/>· 修改 MCP 输出<br/>· 添加上下文"]
+    Exec -- "失败" --> PostFail["PostToolUseFailure 钩子<br/>───────────<br/>· 记录失败信息<br/>· 清理副作用"]
+</div>
+<p><strong>钩子与权限的交互规则</strong>（<code>resolveHookPermissionDecision</code>）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">钩子说 allow + 规则说 deny  →  deny 胜出（安全优先）</span><br><span class="line">钩子说 deny               →  立即拒绝</span><br><span class="line">钩子说 ask                →  传递给交互式对话框</span><br><span class="line">钩子无意见                →  走标准权限流程</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这个&quot;deny 总是胜出&quot;的设计确保了：即使第三方钩子试图绕过安全规则，系统也能保持安全。</p>
+</blockquote>
+<hr />
+<h2 id="415-mcp-工具动态扩展边界"><a class="markdownIt-Anchor" href="#415-mcp-工具动态扩展边界"></a> 4.15 MCP 工具：动态扩展边界</h2>
+<p>MCP（Model Context Protocol）让 Claude Code 可以<strong>动态接入外部工具服务</strong>：</p>
+<div class="mermaid">
+flowchart TD
+    subgraph MCPServer["MCP 服务器（外部进程）"]
+        S1["GitHub MCP Server"]
+        S2["Jira MCP Server"]
+        S3["自定义 MCP Server"]
+    end
+
+    subgraph ClaudeCode["Claude Code"]
+        Client["MCP Client<br/>services/mcp/client.ts"]
+        Template["MCPTool 模板<br/>tools/MCPTool/MCPTool.ts"]
+        Fetch["fetchToolsForClient()<br/>发现并创建工具"]
+        Pool["assembleToolPool()<br/>合并到工具池"]
+    end
+
+    S1 --> Client
+    S2 --> Client
+    S3 --> Client
+    Client --> Fetch
+    Fetch --> Template
+    Template --> Pool
+
+    Pool --> LLM["传给 LLM 选择"]
+</div>
+<h3 id="mcp-工具的创建过程"><a class="markdownIt-Anchor" href="#mcp-工具的创建过程"></a> MCP 工具的创建过程</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/services/mcp/client.ts (fetchToolsForClient)</span></span><br><span class="line"><span class="comment">// 1. 调用 MCP 服务器的 tools/list</span></span><br><span class="line"><span class="keyword">const</span> serverTools = <span class="keyword">await</span> client.listTools()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 为每个服务器工具创建 Tool 对象</span></span><br><span class="line"><span class="keyword">const</span> mcpTool = &#123;</span><br><span class="line">  ...MCPTool,  <span class="comment">// 展开模板</span></span><br><span class="line">  name: <span class="string">`mcp__<span class="subst">$&#123;serverName&#125;</span>__<span class="subst">$&#123;toolName&#125;</span>`</span>,  <span class="comment">// 命名规则</span></span><br><span class="line">  mcpInfo: &#123; serverName, toolName &#125;,</span><br><span class="line">  isConcurrencySafe: <span class="function"><span class="params">()</span> =&gt;</span> annotations.readOnlyHint ?? <span class="literal">false</span>,</span><br><span class="line">  isReadOnly: <span class="function"><span class="params">()</span> =&gt;</span> annotations.readOnlyHint ?? <span class="literal">false</span>,</span><br><span class="line">  isDestructive: <span class="function"><span class="params">()</span> =&gt;</span> annotations.destructiveHint ?? <span class="literal">false</span>,</span><br><span class="line">  inputJSONSchema: serverTool.inputSchema,  <span class="comment">// 直接用 JSON Schema</span></span><br><span class="line">  checkPermissions: <span class="function"><span class="params">()</span> =&gt;</span> (&#123; behavior: <span class="string">'passthrough'</span> &#125;),</span><br><span class="line">  call: <span class="keyword">async</span> (args) =&gt; callMCPToolWithRetry(...)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>命名规则：<code>mcp__&lt;服务器名&gt;__&lt;工具名&gt;</code>，例如 <code>mcp__github__create_pr</code>、<code>mcp__jira__list_issues</code>。</p>
+<hr />
+<h2 id="416-toolsearch延迟加载大量工具"><a class="markdownIt-Anchor" href="#416-toolsearch延迟加载大量工具"></a> 4.16 ToolSearch：延迟加载大量工具</h2>
+<p>当工具数量很多（内置 + MCP 可能超过 50 个）时，把所有工具的完整 schema 放入提示词会浪费 token。ToolSearch 实现了<strong>延迟加载</strong>：</p>
+<div class="mermaid">
+flowchart TD
+    Start["LLM 第一轮<br/>只看到核心工具 + ToolSearch"]
+    Start --> Need{"需要特定工具?"}
+    Need -- "是" --> Search["调用 ToolSearch<br/>query: 'select:NotebookEdit'<br/>或关键词搜索"]
+    Search --> Load["加载完整 schema<br/>加入 discovered 集合"]
+    Load --> Use["下一轮可以使用该工具"]
+    Need -- "否" --> Direct["直接用已加载的工具"]
+</div>
+<p>延迟加载的工具标记了 <code>shouldDefer: true</code>。当 LLM 试图直接调用一个延迟工具（未先通过 ToolSearch 发现），系统会返回一个友好的错误提示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">This tool&#39;s schema was not sent to the API — it was not in the discovered-tool set.</span><br><span class="line">Without the schema, typed parameters get emitted as strings and the parser rejects them.</span><br><span class="line">Load the tool first: call ToolSearch with query &quot;select:NotebookEdit&quot;, then retry.</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="417-子-agent-的工具限制"><a class="markdownIt-Anchor" href="#417-子-agent-的工具限制"></a> 4.17 子 Agent 的工具限制</h2>
+<p>当 AgentTool 启动子 Agent 时，子 Agent <strong>不能使用所有工具</strong>：</p>
+<div class="mermaid">
+flowchart TD
+    subgraph Main["主 Agent 工具池"]
+        direction LR
+        All["全部 40+ 工具"]
+    end
+
+    subgraph SubAgent["子 Agent（同步）工具池"]
+        direction LR
+        Sub["主工具池 - 禁用工具"]
+    end
+
+    subgraph AsyncAgent["子 Agent（异步）工具池"]
+        direction LR
+        Async["仅白名单工具"]
+    end
+
+    subgraph Coordinator["协调者模式工具池"]
+        direction LR
+        Coord["Agent + TaskStop<br/>+ SendMessage<br/>+ SyntheticOutput"]
+    end
+
+    Main --> SubAgent
+    Main --> AsyncAgent
+    Main --> Coordinator
+</div>
+<p>三种工具限制集：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/constants/tools.ts</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 所有子 Agent 都禁用的工具</span></span><br><span class="line">ALL_AGENT_DISALLOWED_TOOLS = [</span><br><span class="line">  TaskOutput, ExitPlanMode, EnterPlanMode,</span><br><span class="line">  AskUserQuestion, TaskStop,</span><br><span class="line">  Agent  <span class="comment">// 防递归（ant 用户除外）</span></span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 异步 Agent 允许的工具（白名单）</span></span><br><span class="line">ASYNC_AGENT_ALLOWED_TOOLS = [</span><br><span class="line">  Read, WebSearch, TodoWrite, Grep, WebFetch, Glob,</span><br><span class="line">  Bash/PowerShell, Edit, Write, NotebookEdit,</span><br><span class="line">  Skill, ToolSearch, EnterWorktree, ExitWorktree</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 协调者模式允许的工具（仅管理类）</span></span><br><span class="line">COORDINATOR_MODE_ALLOWED_TOOLS = [</span><br><span class="line">  Agent, TaskStop, SendMessage, SyntheticOutput</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p><strong>设计原因</strong>：</p>
+<ul>
+<li>禁用 <code>Agent</code> 防止递归无限创建子 Agent</li>
+<li>禁用 <code>AskUserQuestion</code> 因为子 Agent 无法与用户交互</li>
+<li>禁用 <code>ExitPlanMode</code>、<code>EnterPlanMode</code> 因为计划模式是主线程的抽象</li>
+</ul>
+<hr />
+<h2 id="418-工具结果处理大结果持久化"><a class="markdownIt-Anchor" href="#418-工具结果处理大结果持久化"></a> 4.18 工具结果处理：大结果持久化</h2>
+<p>工具的输出可能非常大（比如 <code>cat</code> 一个大文件）。为了避免撑爆上下文窗口，系统有大结果持久化机制：</p>
+<div class="mermaid">
+flowchart TD
+    Result["工具返回结果"] --> Check{"结果大小 ><br/>maxResultSizeChars?"}
+    Check -- "否" --> Direct["直接放入对话消息"]
+    Check -- "是" --> Persist["持久化到磁盘文件"]
+    Persist --> Preview["返回预览 + 文件路径<br/>给 LLM 看摘要"]
+</div>
+<p>每个工具可以设置不同的 <code>maxResultSizeChars</code>：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>maxResultSizeChars</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FileReadTool</td>
+<td><code>Infinity</code></td>
+<td>永不持久化（自身已有行数限制）</td>
+</tr>
+<tr>
+<td>BashTool</td>
+<td><code>100_000</code></td>
+<td>Shell 输出可能很大</td>
+</tr>
+<tr>
+<td>GrepTool</td>
+<td><code>100_000</code></td>
+<td>搜索结果可能很多</td>
+</tr>
+<tr>
+<td>一般工具</td>
+<td><code>100_000</code></td>
+<td>默认值</td>
+</tr>
+</tbody>
+</table>
+<p>FileReadTool 设为 <code>Infinity</code> 有特殊原因：如果持久化 Read 的结果到文件，LLM 可能会试图 Read 那个持久化文件，形成 <strong>Read → file → Read 循环</strong>。</p>
+<hr />
+<h2 id="419-工具分类体系"><a class="markdownIt-Anchor" href="#419-工具分类体系"></a> 4.19 工具分类体系</h2>
+<p>Claude Code 从多个维度对工具进行分类，每个维度影响不同的行为：</p>
+<div class="mermaid">
+flowchart TD
+    Tool["一个工具"] --> D1["并发安全性<br/>isConcurrencySafe()"]
+    Tool --> D2["读写性<br/>isReadOnly()"]
+    Tool --> D3["破坏性<br/>isDestructive()"]
+    Tool --> D4["搜索/读取分类<br/>isSearchOrReadCommand()"]
+    Tool --> D5["加载策略<br/>shouldDefer / alwaysLoad"]
+    Tool --> D6["中断行为<br/>interruptBehavior()"]
+
+    D1 --> E1["影响：并行 vs 串行执行"]
+    D2 --> E2["影响：权限检查严格程度"]
+    D3 --> E3["影响：MCP 工具标注"]
+    D4 --> E4["影响：UI 折叠/分组显示"]
+    D5 --> E5["影响：是否需要 ToolSearch"]
+    D6 --> E6["影响：用户中断时的处理"]
+</div>
+<h3 id="搜索读取分类ui-折叠"><a class="markdownIt-Anchor" href="#搜索读取分类ui-折叠"></a> 搜索/读取分类（UI 折叠）</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">isSearchOrReadCommand?(input): &#123;</span><br><span class="line">  isSearch: <span class="built_in">boolean</span>  <span class="comment">// grep、find、rg → 搜索操作</span></span><br><span class="line">  isRead: <span class="built_in">boolean</span>    <span class="comment">// cat、head、tail → 读取操作</span></span><br><span class="line">  isList?: <span class="built_in">boolean</span>   <span class="comment">// ls、tree、du → 目录列举</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个分类决定了 UI 中工具调用的<strong>折叠显示</strong>行为——连续的多个搜索/读取操作可以合并为一个紧凑的条目，避免刷屏。</p>
+<hr />
+<h2 id="420-典型工具剖析filereadtool-vs-bashtool"><a class="markdownIt-Anchor" href="#420-典型工具剖析filereadtool-vs-bashtool"></a> 4.20 典型工具剖析：FileReadTool vs BashTool</h2>
+<h3 id="filereadtool简洁的只读工具"><a class="markdownIt-Anchor" href="#filereadtool简洁的只读工具"></a> FileReadTool：简洁的只读工具</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/tools/FileReadTool/FileReadTool.ts（简化）</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> FileReadTool = buildTool(&#123;</span><br><span class="line">  name: <span class="string">'Read'</span>,</span><br><span class="line">  maxResultSizeChars: <span class="literal">Infinity</span>,  <span class="comment">// 永不持久化</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">get</span> inputSchema() &#123;</span><br><span class="line">    <span class="keyword">return</span> z.strictObject(&#123;</span><br><span class="line">      file_path: z.string().describe(<span class="string">'绝对路径'</span>),</span><br><span class="line">      offset: z.number().optional().describe(<span class="string">'起始行号'</span>),</span><br><span class="line">      limit: z.number().optional().describe(<span class="string">'读取行数'</span>),</span><br><span class="line">      pages: z.string().optional().describe(<span class="string">'PDF 页码范围'</span>),</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  isConcurrencySafe: <span class="function"><span class="params">()</span> =&gt;</span> <span class="literal">true</span>,   <span class="comment">// ← 并发安全</span></span><br><span class="line">  isReadOnly: <span class="function"><span class="params">()</span> =&gt;</span> <span class="literal">true</span>,           <span class="comment">// ← 只读</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> call(args, context) &#123;</span><br><span class="line">    <span class="keyword">const</span> content = <span class="keyword">await</span> readFileInRange(args.file_path, args.offset, args.limit)</span><br><span class="line">    <span class="keyword">return</span> &#123; data: addLineNumbers(content) &#125;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> checkPermissions(input, context) &#123;</span><br><span class="line">    <span class="keyword">return</span> checkReadPermissionForTool(input.file_path, context)</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>FileReadTool 的特点：<strong>简单、安全、可并发</strong>。</p>
+<h3 id="bashtool最复杂的工具"><a class="markdownIt-Anchor" href="#bashtool最复杂的工具"></a> BashTool：最复杂的工具</h3>
+<p>BashTool（160KB）的复杂性来自它需要处理<strong>任意 Shell 命令</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">BashTool 的内部分层：</span><br><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│ 命令解析层 (bashCommandHelpers.ts)   │</span><br><span class="line">│   解析 Shell AST，识别命令类型       │</span><br><span class="line">├──────────────────────────────────────┤</span><br><span class="line">│ 安全分析层 (bashSecurity.ts, 102KB)  │</span><br><span class="line">│   命令注入检测、危险模式识别         │</span><br><span class="line">├──────────────────────────────────────┤</span><br><span class="line">│ 只读判断层 (readOnlyValidation.ts)   │</span><br><span class="line">│   判断命令是否只读（影响并发策略）   │</span><br><span class="line">├──────────────────────────────────────┤</span><br><span class="line">│ 路径校验层 (pathValidation.ts)       │</span><br><span class="line">│   确保不操作工作目录外的文件         │</span><br><span class="line">├──────────────────────────────────────┤</span><br><span class="line">│ 权限判断层 (bashPermissions.ts)      │</span><br><span class="line">│   结合规则和分类器判断是否允许       │</span><br><span class="line">├──────────────────────────────────────┤</span><br><span class="line">│ 沙箱层 (shouldUseSandbox.ts)         │</span><br><span class="line">│   决定是否在沙箱中执行               │</span><br><span class="line">├──────────────────────────────────────┤</span><br><span class="line">│ 执行层 (BashTool.tsx)                │</span><br><span class="line">│   spawn 子进程、超时控制、输出捕获   │</span><br><span class="line">├──────────────────────────────────────┤</span><br><span class="line">│ sed 特殊处理 (sedEditParser.ts)      │</span><br><span class="line">│   将 sed 编辑转换为可审查的 diff     │</span><br><span class="line">└──────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<p>BashTool 的 <code>isConcurrencySafe</code> 是<strong>动态的</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">isConcurrencySafe(input) &#123;</span><br><span class="line">  <span class="comment">// 解析命令，判断是否只读</span></span><br><span class="line">  <span class="keyword">return</span> isReadOnlyCommand(input.command)</span><br><span class="line">  <span class="comment">// "git status" → true</span></span><br><span class="line">  <span class="comment">// "npm install" → false</span></span><br><span class="line">  <span class="comment">// "ls -la | grep foo" → true</span></span><br><span class="line">  <span class="comment">// "echo hi &gt; file.txt" → false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="421-关键工程思想总结"><a class="markdownIt-Anchor" href="#421-关键工程思想总结"></a> 4.21 关键工程思想总结</h2>
+<h3 id="思想-1工具即数据tool-as-data"><a class="markdownIt-Anchor" href="#思想-1工具即数据tool-as-data"></a> 思想 1：工具即数据（Tool as Data）</h3>
+<p>工具不是类实例，而是符合接口的普通对象。这让工具的注册、过滤、排序、序列化都很简单：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 过滤只读工具</span></span><br><span class="line">tools.filter(<span class="function"><span class="params">t</span> =&gt;</span> t.isReadOnly(input))</span><br><span class="line"></span><br><span class="line"><span class="comment">// 按名称排序（缓存稳定性）</span></span><br><span class="line">tools.sort(<span class="function">(<span class="params">a, b</span>) =&gt;</span> a.name.localeCompare(b.name))</span><br><span class="line"></span><br><span class="line"><span class="comment">// 按名称去重（内置优先于 MCP）</span></span><br><span class="line">uniqBy(tools, <span class="string">'name'</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="思想-2fail-closed-默认值"><a class="markdownIt-Anchor" href="#思想-2fail-closed-默认值"></a> 思想 2：Fail-Closed 默认值</h3>
+<p>新工具忘记声明并发安全性时，系统假设它<strong>不安全</strong>。宁可降低性能（串行执行），不冒数据风险。</p>
+<h3 id="思想-3投机并行speculative-parallelism"><a class="markdownIt-Anchor" href="#思想-3投机并行speculative-parallelism"></a> 思想 3：投机并行（Speculative Parallelism）</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Bash 工具调用到达</span><br><span class="line">  ├── 立即启动安全分类器（后台）</span><br><span class="line">  ├── 同时执行 PreToolUse 钩子</span><br><span class="line">  ├── 同时准备权限对话框</span><br><span class="line">  └── 全部完成后，分类器结果已就绪</span><br></pre></td></tr></table></figure>
+<p>安全分类器的启动不等待前序步骤，而是<strong>投机并行</strong>运行，减少用户等待时间。</p>
+<h3 id="思想-4有选择的错误级联"><a class="markdownIt-Anchor" href="#思想-4有选择的错误级联"></a> 思想 4：有选择的错误级联</h3>
+<p>只有 Bash 错误取消兄弟工具，因为 Bash 命令常有隐式依赖链。而 Read、Grep 等独立工具的错误不影响其他。这是<strong>对领域知识的编码</strong>——不是所有错误都一样严重。</p>
+<h3 id="思想-5分区排序保证缓存稳定"><a class="markdownIt-Anchor" href="#思想-5分区排序保证缓存稳定"></a> 思想 5：分区排序保证缓存稳定</h3>
+<p>工具列表的排序策略（内置工具连续排列在前，MCP 工具在后）不是为了好看，而是为了 <strong>LLM 提示词缓存的命中率</strong>。如果排序不稳定，每次 MCP 配置变化都会让所有用户的缓存失效。</p>
+<h3 id="思想-6延迟加载减少-token-消耗"><a class="markdownIt-Anchor" href="#思想-6延迟加载减少-token-消耗"></a> 思想 6：延迟加载减少 Token 消耗</h3>
+<p>ToolSearch 机制让 LLM 首轮只看到核心工具，需要时再加载其他工具。这在工具数量很多时（40+ 内置 + N 个 MCP）显著节省了提示词的 token 消耗。</p>
+<h3 id="思想-7渲染与执行同源"><a class="markdownIt-Anchor" href="#思想-7渲染与执行同源"></a> 思想 7：渲染与执行同源</h3>
+<p>每个工具自带渲染方法（<code>renderToolUseMessage</code>、<code>renderToolResultMessage</code> 等）。这避免了&quot;在一个地方加工具，在另一个地方加 UI&quot;的分裂，但也意味着每个工具需要同时理解 React 和业务逻辑。</p>
+<h3 id="思想-8钩子不可绕过安全规则"><a class="markdownIt-Anchor" href="#思想-8钩子不可绕过安全规则"></a> 思想 8：钩子不可绕过安全规则</h3>
+<p>PreToolUse 钩子可以 allow/deny/ask，但 <strong>deny 规则总是胜出</strong>。即使第三方插件的钩子返回 allow，如果安全规则说 deny，最终结果还是 deny。安全策略是不可商量的。</p>
+<h3 id="思想-9统一接口消除内外差异"><a class="markdownIt-Anchor" href="#思想-9统一接口消除内外差异"></a> 思想 9：统一接口消除内外差异</h3>
+<p>内置工具和 MCP 工具共用同一个 <code>Tool</code> 接口。对 LLM 来说，<code>Read</code> 和 <code>mcp__github__create_pr</code> 没有本质区别——都是可以调用的工具。这种统一让工具池的管理、排序、权限检查都只需一套逻辑。</p>
+<h3 id="思想-10微模块化组织"><a class="markdownIt-Anchor" href="#思想-10微模块化组织"></a> 思想 10：微模块化组织</h3>
+<p>每个工具是独立的目录，内部按职责拆分文件（定义、权限、安全、UI、提示词）。这让不同的工具可以<strong>独立发展</strong>，一个工具的修改不影响其他。BashTool 可以有 20 个文件 640KB，FileReadTool 只需 5 个文件 70KB，各取所需。</p>
+<hr />
+<blockquote>
+<p><strong>下一章预告</strong>：第五章将深入权限与安全系统——Claude Code 如何在&quot;让 Agent 自由行动&quot;和&quot;保护用户安全&quot;之间找到平衡。</p>
+</blockquote>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:qingbo1011@163.com">qingbo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://www.qingbo1011.top/2026/05/04/chapter-04-tool-system/">https://www.qingbo1011.top/2026/05/04/chapter-04-tool-system/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://www.qingbo1011.top" target="_blank">Qing's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Claude-Code/">Claude Code</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a></div><div class="post_share"><div class="social-share" data-image="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination_post" id="pagination"><div class="prev-post pull_left"><a href="/2026/05/05/chapter-05-permission-security/"><img class="prev_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">第五章：权限与安全——信任的边界</div></div></a></div><div class="next-post pull_right"><a href="/2026/05/03/chapter-03-agent-loop/"><img class="next_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" onerror="onerror=null;src='https://gitee.com/qingyu1011/blog_img/raw/master/img/20201006230435.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">第三章：Agent 循环——大脑如何思考与行动</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2026/05/01/chapter-01-project-overview/" title="第一章：项目全景——目录结构与模块划分"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-01</div><div class="relatedPosts_title">第一章：项目全景——目录结构与模块划分</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/03/chapter-03-agent-loop/" title="第三章：Agent 循环——大脑如何思考与行动"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-03</div><div class="relatedPosts_title">第三章：Agent 循环——大脑如何思考与行动</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/02/chapter-02-startup-flow/" title="第二章：启动流程——从敲下命令到界面就绪"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-02</div><div class="relatedPosts_title">第二章：启动流程——从敲下命令到界面就绪</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/05/chapter-05-permission-security/" title="第五章：权限与安全——信任的边界"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-05</div><div class="relatedPosts_title">第五章：权限与安全——信任的边界</div></div></a></div><div class="relatedPosts_item"><a href="/2026/04/30/claude-code-source-guide/" title="Claude Code 源码学习指南"><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-04-30</div><div class="relatedPosts_title">Claude Code 源码学习指南</div></div></a></div><div class="relatedPosts_item"><a href="/2026/05/06/chapter-06-terminal-ui/" title="第六章：终端 UI——在命令行里做"前端""><img class="relatedPosts_cover" src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2026-05-06</div><div class="relatedPosts_title">第六章：终端 UI——在命令行里做"前端"</div></div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail','link'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: 'oNS5Emx1qUL3wN5yvPLKol0W-gzGzoHsz',
+  appKey: 'ytbw0ho3DMX0FeoAOWa37lf9',
+  notify: false,
+  verify: false,
+  placeholder: 'Stay hungry,stay foolish~',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-CN',
+  recordIP: false,
+  serverURLs: '',
+  emojiCDN: 'https://',
+  emojiMaps: {"欢呼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100836.gif","笑眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100849.gif","花心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100907.gif","吐舌":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100937.gif","疑问":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502100951.gif","滑稽":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101004.gif","太开心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101017.gif","酷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101029.gif","怒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101044.gif","阴险":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101100.gif","委屈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101116.gif","乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101129.gif","你懂的":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101204.gif","小乖":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101215.gif","突然兴奋":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101228.gif","喷":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101241.gif","哈哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101255.gif","喝酒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101305.gif","汗":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101323.gif","笑尿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102004.gif","嘿嘿嘿":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102018.gif","真棒":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102047.gif","托腮":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102108.gif","微笑":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/e3/2018new_weixioa02_org.png","礼貌":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/09/2018new_keai_org.png","笑哭":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/4a/2018new_xiaoku_thumb.png","无奈":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/83/2018new_kuxiao_org.png","爱你":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f6/2018new_aini_org.png","吃瓜":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/01/2018new_chigua_thumb.png","doge":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_doge02_org.png","dog":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/22/2018new_erha_org.png","cat":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7b/2018new_miaomiao_thumb.png","星星眼":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102225.png","酸了":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102240.png","大哭":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102254.png","傲娇":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102314.png","给心心":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102328.png","嘿哈":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102345.png","custom0":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101410.gif","custom1":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101424.webp","狗头":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101710.png","搬砖中":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502101744.png","忙到飞起":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102411.png","裂开":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102426.png","叹气":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102439.png","让我看看":"https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502102456.png","panda0":"https://bbs.res.meizu.com/static/image/smiley/panda/_000.png","panda1":"https://bbs.res.meizu.com/static/image/smiley/panda/_001.png","panda2":"https://bbs.res.meizu.com/static/image/smiley/panda/_002.png","panda3":"https://bbs.res.meizu.com/static/image/smiley/panda/_003.png","panda4":"https://bbs.res.meizu.com/static/image/smiley/panda/_004.png","panda5":"https://bbs.res.meizu.com/static/image/smiley/panda/_005.png","panda6":"https://bbs.res.meizu.com/static/image/smiley/panda/_006.png","panda7":"https://bbs.res.meizu.com/static/image/smiley/panda/_007.png","panda8":"https://bbs.res.meizu.com/static/image/smiley/panda/_008.png","panda9":"https://bbs.res.meizu.com/static/image/smiley/panda/_009.png","panda10":"https://bbs.res.meizu.com/static/image/smiley/panda/_010.png","panda11":"https://bbs.res.meizu.com/static/image/smiley/panda/_011.png","panda12":"https://bbs.res.meizu.com/static/image/smiley/panda/_012.png","panda13":"https://bbs.res.meizu.com/static/image/smiley/panda/_013.png","panda14":"https://bbs.res.meizu.com/static/image/smiley/panda/_014.png","panda15":"https://bbs.res.meizu.com/static/image/smiley/panda/_015.png","panda16":"https://bbs.res.meizu.com/static/image/smiley/panda/_016.png","panda17":"https://bbs.res.meizu.com/static/image/smiley/panda/_017.png","panda18":"https://bbs.res.meizu.com/static/image/smiley/panda/_018.png","panda19":"https://bbs.res.meizu.com/static/image/smiley/panda/_019.png","panda20":"https://bbs.res.meizu.com/static/image/smiley/panda/_020.png","panda21":"https://bbs.res.meizu.com/static/image/smiley/panda/_021.png","panda22":"https://bbs.res.meizu.com/static/image/smiley/panda/_022.png","panda23":"https://bbs.res.meizu.com/static/image/smiley/panda/_023.png","panda24":"https://bbs.res.meizu.com/static/image/smiley/panda/_024.png","panda25":"https://bbs.res.meizu.com/static/image/smiley/panda/_025.png","panda26":"https://bbs.res.meizu.com/static/image/smiley/panda/_026.png","panda27":"https://bbs.res.meizu.com/static/image/smiley/panda/_027.png","panda28":"https://bbs.res.meizu.com/static/image/smiley/panda/_028.png","panda29":"https://bbs.res.meizu.com/static/image/smiley/panda/_029.png"},
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" style="background-image: url(https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By qingbo</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div><div class="footer_custom_text">宇宙很大，生活更大</div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="/js/search/local-search.js"></script><script>if (document.getElementsByClassName('mermaid').length) {
+  loadScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',function () {
+    mermaid.initialize({
+      theme: 'default',
+  })
+})
+}</script></body></html>
