@@ -1,0 +1,391 @@
+.article-content img[data-media-viewer-target],
+.article-content .mermaid[data-media-viewer-target] {
+  cursor: zoom-in;
+}
+
+.article-content img[data-media-viewer-target] {
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.article-content img[data-media-viewer-target]:hover {
+  border-color: var(--lab-accent);
+  box-shadow: 0 0 0 3px var(--lab-accent-soft);
+}
+
+.mermaid-panel {
+  position: relative;
+  margin: 32px 0;
+}
+
+.article-content .mermaid-panel .mermaid {
+  margin: 0;
+  padding: 44px 22px 22px;
+  background: var(--lab-diagram-paper);
+  transition: border-color .16s ease, background-color .16s ease;
+}
+
+.article-content .mermaid-panel .mermaid:hover {
+  border-color: var(--lab-accent);
+}
+
+.mermaid-panel__actions {
+  position: absolute;
+  z-index: 3;
+  top: 9px;
+  right: 9px;
+  display: flex;
+  gap: 3px;
+}
+
+.mermaid-panel__action {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: var(--lab-faint);
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lab-diagram-paper) 90%, transparent);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: color .16s ease, background-color .16s ease, transform .16s ease;
+}
+
+.mermaid-panel__action:hover,
+.mermaid-panel__action:focus-visible {
+  color: var(--lab-ink);
+  background: var(--lab-diagram-paper);
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.mermaid-panel__action svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mermaid-panel__action::after {
+  content: attr(data-label);
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  width: max-content;
+  max-width: 180px;
+  padding: 5px 8px;
+  color: var(--lab-bg);
+  font: 9px/1.4 var(--lab-font-sans);
+  white-space: nowrap;
+  border-radius: 3px;
+  background: var(--lab-ink);
+  box-shadow: 0 6px 18px rgba(8, 14, 17, .16);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition: opacity .14s ease, transform .14s ease;
+}
+
+.mermaid-panel__action:hover::after,
+.mermaid-panel__action:focus-visible::after,
+.mermaid-panel__action[data-copy-state]::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mermaid-panel__action[data-copy-state="done"] {
+  color: var(--lab-accent);
+}
+
+.mermaid-panel__action[data-copy-state="error"] {
+  color: var(--lab-signal);
+}
+
+body.media-viewer-open {
+  overflow: hidden;
+}
+
+.media-viewer {
+  --viewer-ink: #f2f5f6;
+  --viewer-muted: #9aa6ab;
+  --viewer-control-bg: rgba(248, 250, 250, .95);
+  --viewer-control-ink: #172026;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  color: var(--viewer-ink);
+  border: 0;
+  background: rgba(5, 9, 11, .94);
+  overflow: hidden;
+}
+
+.media-viewer[open] {
+  display: block;
+}
+
+.media-viewer::backdrop {
+  background: rgba(3, 6, 8, .78);
+  backdrop-filter: blur(12px);
+}
+
+.media-viewer__surface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.media-viewer__identity,
+.media-viewer__caption,
+.media-viewer__hint {
+  position: absolute;
+  z-index: 3;
+  margin: 0;
+  pointer-events: none;
+}
+
+.media-viewer__identity {
+  top: 25px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--viewer-ink);
+  font: 9px/1 var(--lab-font-mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.media-viewer__identity span:last-child {
+  color: var(--viewer-muted);
+}
+
+.media-viewer__corner-actions {
+  position: absolute;
+  z-index: 4;
+  top: 17px;
+  right: 18px;
+  display: flex;
+  gap: 8px;
+}
+
+.media-viewer__corner-actions button,
+.media-viewer__corner-actions a,
+.media-viewer__zoom button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--viewer-control-ink);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.media-viewer__corner-actions button,
+.media-viewer__corner-actions a {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--viewer-control-bg);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .2);
+  transition: transform .16s ease, background-color .16s ease;
+}
+
+.media-viewer__corner-actions button[hidden],
+.media-viewer__corner-actions a[hidden] {
+  display: none;
+}
+
+.media-viewer__corner-actions button:hover,
+.media-viewer__corner-actions button:focus-visible,
+.media-viewer__corner-actions a:hover,
+.media-viewer__corner-actions a:focus-visible {
+  background: #fff;
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.media-viewer__corner-actions svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.media-viewer__stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  outline: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.media-viewer__stage:focus-visible {
+  box-shadow: inset 0 0 0 1px rgba(120, 169, 184, .48);
+}
+
+.media-viewer__stage.is-dragging {
+  cursor: grabbing;
+}
+
+.media-viewer__canvas {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.media-viewer__canvas img,
+.media-viewer__canvas svg {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.media-viewer[data-media-kind="diagram"] .media-viewer__canvas {
+  overflow: hidden;
+  background: var(--lab-diagram-paper);
+  border-radius: 10px;
+  box-shadow: 0 26px 90px rgba(0, 0, 0, .38), 0 0 0 1px rgba(255, 255, 255, .12);
+}
+
+.media-viewer[data-media-kind="image"] .media-viewer__canvas img {
+  border-radius: 5px;
+  box-shadow: 0 26px 90px rgba(0, 0, 0, .42), 0 0 0 1px rgba(255, 255, 255, .12);
+}
+
+.media-viewer__zoom {
+  position: absolute;
+  z-index: 4;
+  bottom: 18px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--viewer-control-bg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .28);
+  transform: translateX(-50%);
+}
+
+.media-viewer__zoom button {
+  min-width: 38px;
+  height: 38px;
+  font: 16px var(--lab-font-sans);
+  border-radius: 50%;
+  transition: background-color .14s ease;
+}
+
+.media-viewer__zoom button:hover,
+.media-viewer__zoom button:focus-visible {
+  background: rgba(23, 32, 38, .08);
+  outline: 0;
+}
+
+.media-viewer__zoom .media-viewer__scale {
+  min-width: 62px;
+  padding: 0 8px;
+  font: 12px var(--lab-font-mono);
+  border-radius: 18px;
+}
+
+.media-viewer__caption {
+  right: calc(50% + 96px);
+  bottom: 30px;
+  left: 28px;
+  color: var(--viewer-ink);
+  font: 10px/1.5 var(--lab-font-sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-viewer__caption:empty::before {
+  content: "Qingbo Lab / Media";
+  color: var(--viewer-muted);
+}
+
+.media-viewer__hint {
+  right: 28px;
+  bottom: 30px;
+  color: var(--viewer-muted);
+  font: 9px/1.5 var(--lab-font-mono);
+  letter-spacing: .03em;
+}
+
+@media (max-width: 720px) {
+  .article-content .mermaid-panel .mermaid {
+    padding: 42px 12px 16px;
+  }
+
+  .mermaid-panel__actions {
+    top: 7px;
+    right: 7px;
+  }
+
+  .media-viewer__identity,
+  .media-viewer__caption,
+  .media-viewer__hint {
+    display: none;
+  }
+
+  .media-viewer__corner-actions {
+    top: 12px;
+    right: 12px;
+    gap: 6px;
+  }
+
+  .media-viewer__corner-actions button,
+  .media-viewer__corner-actions a {
+    width: 38px;
+    height: 38px;
+  }
+
+  .media-viewer__zoom {
+    bottom: 14px;
+  }
+
+  .media-viewer__zoom button {
+    min-width: 36px;
+    height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mermaid-panel__action,
+  .mermaid-panel__action::after,
+  .media-viewer__corner-actions button,
+  .media-viewer__zoom button {
+    transition: none;
+  }
+}
+
+@media print {
+  .mermaid-panel__actions,
+  .media-viewer { display: none !important; }
+}

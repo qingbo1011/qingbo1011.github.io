@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>汇编语言基础（一） · Quinn</title>
+<meta name="description" content="汇编语言基础（一） 汇编笔记是根据 C语言中文网完成的 汇编语言以隐晦难懂而著名，但是本教程从另一个角度来看它—— 它是一种几乎提供了全部信息的语言。程序员可以看到正在发生的所有事情，甚至包括 CPU 中的寄存器和标志！ 本章侧重于 Mic…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2020/11/16/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="汇编语言基础（一） · Quinn" />
+<meta property="og:description" content="汇编语言基础（一） 汇编笔记是根据 C语言中文网完成的 汇编语言以隐晦难懂而著名，但是本教程从另一个角度来看它—— 它是一种几乎提供了全部信息的语言。程序员可以看到正在发生的所有事情，甚至包括 CPU 中的寄存器和标志！ 本章侧重于 Mic…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2020/11/16/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502155025.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502155025.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        课程学习笔记 · 2020.11.16
+      
+    </p>
+    <h1>汇编语言基础（一）</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">课程学习笔记</a>
+  
+  <span class="post-meta__item">7 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">#课程学习笔记</a>
+      
+        <a href="/tags/%E6%B1%87%E7%BC%96/">#汇编</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p><strong>汇编笔记是根据<a href="http://c.biancheng.net/asm/10/" target="_blank" rel="noopener">C语言中文网完成的</a></strong></p>
+<p>汇编语言以隐晦难懂而著名，但是本教程从另一个角度来看它——<strong>它是一种几乎提供了全部信息的语言。程序员可以看到正在发生的所有事情，甚至包括 CPU 中的寄存器和标志！</strong></p>
+<p>本章侧重于 Microsoft MASM 汇编程序的基本组成部分。通过学习将会了解到如何定义常数和变量，数字和字符常量的标准格式，以及怎样汇编并运行你的第一个程序。</p>
+<h2 id="第一个汇编语言程序"><a class="markdownIt-Anchor" href="#第一个汇编语言程序"></a> 第一个汇编语言程序</h2>
+<p>汇编语言是一种几乎提供了全部信息的语言。程序员可以看到正在发生的所有事情，甚至包括 CPU 中的寄存器和标志！</p>
+<p>但是，在拥有这种能力的同时，程序员必须负责处理数据表示的细节和指令的格式。程序员工作在一个具有大量详细信息的层次。现在以一个简单的汇编语言程序为例，来了解其工作过程。</p>
+<p>程序执行两个数相加，并将结果保存在寄存器中。程序名称为 AddTwo：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">main PROC</span><br><span class="line">    mov eax, 5               ;将数字 5 送入 eax 寄存器</span><br><span class="line">    add eax, 6               ;eax 寄存器加 6</span><br><span class="line">    INVOKE ExitProcess, 0    ;程序结束</span><br><span class="line">main ENDP</span><br></pre></td></tr></table></figure>
+<p>现在按照一次一行代码的方法来仔细查看这段程序：</p>
+<ul>
+<li>第 1 行开始 main 程序（主程序），即程序的入口；</li>
+<li>第 2 行将数字 5 送入 eax 寄存器；</li>
+<li>第 3 行把 6 加到 EAX 的值上，得到新值 11；</li>
+<li>第 5 行调用 Windows 服务（也被称为函数）ExitProcess 停止程序，并将控制权交还给操作系统；</li>
+<li>第 6 行是主程序结束的标记。</li>
+</ul>
+<p>程序中包含的<strong>注释，它总是用分号开头</strong>。程序的顶部省略了一些声明，稍后会予以说明，不过从本质上说，这是一个可以用的程序。</p>
+<h3 id="添加一个变量"><a class="markdownIt-Anchor" href="#添加一个变量"></a> 添加一个变量</h3>
+<p>现在让这个程序变得有趣些，将加法运算的结果保存在变量 sum 中。要实现这一点，需要增加一些标记，或声明，用来标识程序的<strong>代码</strong>和<strong>数据区</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.data                          ;此为数据区</span><br><span class="line">sum DWORD 0                    ;定义名为sum的变量</span><br><span class="line">.code                          ;此为代码区</span><br><span class="line">main PROC</span><br><span class="line">    mov eax,5                  ;将数字5送入而eax寄存器</span><br><span class="line">    add eax,6                  ;eax寄存器加6</span><br><span class="line">    mox sum,eax				   ;将eax寄存器中的值传给sum变量</span><br><span class="line">    INVOKE ExitProcess,0       ;结束程序</span><br><span class="line">main ENDP</span><br></pre></td></tr></table></figure>
+<p><strong>变量 sum 在第 2 行进行了声明，其大小为 32 位</strong>，使用了==<strong>关键字 DWORD</strong>==。<strong>汇编语言中有很多这样的大小关键字，其作用或多或少与数据类型一样</strong>。</p>
+<p>但是与程序员可能熟悉的类型相比它们没有那么具体，比如 int、double、float 等等。**这些关键字只限制大小，并不检查变量中存放的内容。**记住，程序员拥有完全控制权。</p>
+<p>顺便说一下，那些<strong>被 .code 和 .data 伪指令标记的代码和数据区，被称为段</strong>。即，程序有<strong>代码段</strong>和<strong>数据段</strong>。</p>
+<h2 id="汇编语言常量"><a class="markdownIt-Anchor" href="#汇编语言常量"></a> 汇编语言常量</h2>
+<p>常量（constant）是程序中使用的一个确定数值，在汇编阶段就可以确定，直接编码于指令代码中，不是保存在存储器中可变的变量，因为是编码在指令中的量，和指令一起存储了，所以不用单独开辟主存空间，所以也就没法动态改变它了，这也正是高级语言常量无法修改的原因。</p>
+<h3 id="整数常量"><a class="markdownIt-Anchor" href="#整数常量"></a> 整数常量</h3>
+<p>整数常量（integer literal）（又称为整型常量（integer constant））由一个<strong>可选前置符号</strong>、<strong>一个或多个数字</strong>，以及<strong>一个指明其基数的可选基数字符</strong>构成。</p>
+<p>比如 26 就是一个有效的整数常量。它没有基数，所以假设其是十进制形式。如果想要表示十六进制数 26，就将其写为 26h。同样，数字 1101 可以被看做是十进制值，除非在其末尾添加“b”，使其成为 1101b （二进制）。下表列出了可能的基数值：</p>
+<table>
+<thead>
+<tr>
+<th>h</th>
+<th>十六进制</th>
+<th>r</th>
+<th>编码实数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>q/o</td>
+<td>八进制</td>
+<td>t</td>
+<td>十进制（备用）</td>
+</tr>
+<tr>
+<td>d</td>
+<td>十进制</td>
+<td>y</td>
+<td>二进制（备用）</td>
+</tr>
+<tr>
+<td>b</td>
+<td>二进制</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>下面这些整数常量声明了各种基数。每行都有注释：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">26         ;十进制</span><br><span class="line">26d        ;十进制</span><br><span class="line">11010011b  ;二进制</span><br><span class="line">42q        ;八进制</span><br><span class="line">42o        ;八进制</span><br><span class="line">1Ah        ;十六进制</span><br><span class="line">0A3h       ;十六进制</span><br></pre></td></tr></table></figure>
+<p><strong>以字母开头的十六进制数必须加个前置 0，以防汇编器将其解释为标识符。</strong></p>
+<h3 id="整型常量表达式"><a class="markdownIt-Anchor" href="#整型常量表达式"></a> 整型常量表达式</h3>
+<p>整型常量表达式 (constant integer expression) 是一种算术表达式，它包含了<strong>整数常量</strong>和<strong>算术运算符</strong>。每个表达式的计算结果必须是一个整数，并可用 <strong>32 位</strong> (从 0 到 FFFFFFFFh) 来存放。</p>
+<p>下表列出了算术运算符，并按照从高 (1) 到低 (4) 的顺序给出了它们的优先级。对整型常量表达式而言很重要的是，要意识到它们只在汇编时计算。这里将它们简称为 整数表达式。</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>名称</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>()</td>
+<td>圆括号</td>
+<td>1</td>
+</tr>
+<tr>
+<td>+,-</td>
+<td>一元加、减</td>
+<td>2</td>
+</tr>
+<tr>
+<td>*, /</td>
+<td>乘、除</td>
+<td>3</td>
+</tr>
+<tr>
+<td>MOD</td>
+<td>取模</td>
+<td>3</td>
+</tr>
+<tr>
+<td>+, -</td>
+<td>加、减</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p><strong>在表达式中使用圆括号来表明操作顺序，那么就不用去死记运算符优先级。</strong></p>
+<h3 id="实数常量"><a class="markdownIt-Anchor" href="#实数常量"></a> 实数常量</h3>
+<p>实数常量（real number literal）（又称为<strong>浮点数常量</strong>（floating-point literal））用于表示十进制实数和编码（十六进制）实数。十进制实数包含<strong>一个可选符号</strong>，其后跟随<strong>一个整数</strong>，<strong>一个十进制小数点</strong>，<strong>一个可选的表示小数部分的整数</strong>，和<strong>一个可选的指数</strong>。</p>
+<p>下面是一些有效的十进制实数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2.</span><br><span class="line">+3.0</span><br><span class="line">-44.2E+05</span><br><span class="line">26.E5</span><br></pre></td></tr></table></figure>
+<p>至少需要<strong>一个数字</strong>和一<strong>个十进制小数点</strong>。</p>
+<h3 id="字符常量"><a class="markdownIt-Anchor" href="#字符常量"></a> 字符常量</h3>
+<p>字符常量 (character literal) 是指，用<strong>单引号或双引号</strong>包含的一个字符。汇编器在内存中保存的是该字符二进制 ASCII 码的数值。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#39;A&#39;</span><br><span class="line">&quot;d&quot;</span><br></pre></td></tr></table></figure>
+<p>表明字符常量在内部保存为整数，使用的是 ASCII 编码序列。因此，当编写字符常量“A”时，它在内存中存放的形式为<strong>数字 65</strong> ( 或 <strong>41H</strong>)。</p>
+<h3 id="字符串常量"><a class="markdownIt-Anchor" href="#字符串常量"></a> 字符串常量</h3>
+<p>字符串常量 (string literal) 是用<strong>单引号或双引号</strong>包含的一个字符 ( 含空格符 ) 序列：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#39;ABC&#39;</span><br><span class="line">&#39;X&#39;</span><br><span class="line">&quot;Good night, Gracie&quot;</span><br><span class="line">&#39;40961</span><br></pre></td></tr></table></figure>
+<p>嵌套引号也是被允许的，使用方法如下例所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot;This isn&#39;t a test&quot;</span><br><span class="line">&#39;Say &quot;Good night,&quot; Gracie&#39;</span><br></pre></td></tr></table></figure>
+<p>和字符常量以整数形式存放一样，<strong>字符串常量在内存中的保存形式为整数字节数值序列</strong>。例如，<strong>字符串常量“ABCD”就包含四个字节 41H、42H、43H、44H</strong>。</p>
+<h2 id="汇编语言保留字"><a class="markdownIt-Anchor" href="#汇编语言保留字"></a> 汇编语言保留字</h2>
+<p>**保留字（reserved words）**有特殊意义并且只能在其正确的上下文中使用。默认情况下，<strong>保留字是没有大小写之分的</strong>。比如，MOV 与 mov、Mov 是相同的。</p>
+<p>==<strong>保留字</strong>==有不同的类型：</p>
+<ul>
+<li>指令助记符，如 MOV、ADD 和 MUL。</li>
+<li>寄存器名称。</li>
+<li>伪指令，告诉汇编器如何汇编程序。</li>
+<li>属性，提供变量和操作数的大小与使用信息。例如 BYTE 和 WORD。</li>
+<li>运算符，在常量表达式中使用。</li>
+<li>预定义符号，比如 @data，它在汇编时返回常量的整数值。</li>
+</ul>
+<p>下表是常用的保留字列表：</p>
+<table>
+<thead>
+<tr>
+<th>$</th>
+<th>PARITY?</th>
+<th>DWORD</th>
+<th>STDCALL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>?</td>
+<td>PASCAL</td>
+<td>FAR</td>
+<td>SWORD</td>
+</tr>
+<tr>
+<td>@B</td>
+<td>QWORD</td>
+<td>FAR16</td>
+<td>SYSCALL</td>
+</tr>
+<tr>
+<td>@F</td>
+<td>REAL4</td>
+<td>FORTRAN</td>
+<td>TBYTE</td>
+</tr>
+<tr>
+<td>ADDR</td>
+<td>REAL8</td>
+<td>FWORD</td>
+<td>VARARG</td>
+</tr>
+<tr>
+<td>BASIC</td>
+<td>REAL10</td>
+<td>NEAR</td>
+<td>WORD</td>
+</tr>
+<tr>
+<td>BYTE</td>
+<td>SBYTE</td>
+<td>NEAR16</td>
+<td>ZERO?</td>
+</tr>
+<tr>
+<td>C</td>
+<td>SDORD</td>
+<td>OVERFLOW?</td>
+<td></td>
+</tr>
+<tr>
+<td>CARRY?</td>
+<td>SIGN?</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="汇编语言标识符及其命名规则"><a class="markdownIt-Anchor" href="#汇编语言标识符及其命名规则"></a> 汇编语言标识符及其命名规则</h2>
+<p>标识符（identifier）是由程序员选择的名称，它用于标识变量、常数、子程序和代码标签。</p>
+<p>标识符的形成有一些规则：</p>
+<ul>
+<li>可以包含 1 到 247 个字符。</li>
+<li>不区分大小写。</li>
+<li>第一个字符必须为字母 (A—Z, a—z) A 下划线 (_)、@、? 或 $。其后的字符也可以是数字。</li>
+<li>标识符不能与汇编器保留字相同。</li>
+</ul>
+<p>一般情况下，应避免用符号 @ 和下划线作为第一个字符，因为它们既用于汇编器，也用于高级语言编译器。</p>
+<h2 id="汇编语言伪指令"><a class="markdownIt-Anchor" href="#汇编语言伪指令"></a> 汇编语言伪指令</h2>
+<p><strong>伪指令 (directive)</strong> 是嵌入源代码中的命令，由汇编器识别和执行。<strong>伪指令不在运行时执行，但是它们可以定义变量、宏和子程序；为内存段分配名称，执行许多其他与汇编器相关的日常任务</strong>。</p>
+<p>默认情况下，伪指令不区分大小写。例如，.data，.DATA 和 .Data 是相同的。</p>
+<p>下面的例子有助于说明伪指令和指令的区别。<strong>DWORD 伪指令告诉汇编器在程序中为一个双字变量保留空间</strong>。另一方面，<strong>MOV 指令在运行时执行，将 myVar 的内容复制到 EAX 寄存器中</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myVar DWORD 26</span><br><span class="line">mov eax,myVar</span><br></pre></td></tr></table></figure>
+<p>尽管 Intel 处理器所有的汇编器使用相同的指令集，但是通常它们有着不同的伪指令。比如，Microsoft 汇编器的 REPT 伪指令对其他一些汇编器就是无法识别的。</p>
+<h3 id="定义段"><a class="markdownIt-Anchor" href="#定义段"></a> 定义段</h3>
+<p><strong>汇编器伪指令的一个重要功能是定义程序区段，也称为<mark>段 (segment)</mark></strong>。程序中的段具有不同的作用。如下面的例子，<strong>一个段可以用于定义变量，并用==.DATA== 伪指令进行标识</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.data</span><br></pre></td></tr></table></figure>
+<p><strong><mark>.CODE</mark> 伪指令标识的程序区段包含了可执行的指令</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.code</span><br></pre></td></tr></table></figure>
+<p><strong><mark>.STACK</mark> 伪指令标识的程序区段定义了运行时堆栈，并设置了其大小</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.stack 100h</span><br></pre></td></tr></table></figure>
+<h2 id="汇编语言指令详解"><a class="markdownIt-Anchor" href="#汇编语言指令详解"></a> 汇编语言指令详解</h2>
+<p>指令（instruction）是一种语句，它在程序汇编编译时变得可执行。汇编器将指令翻译为机器语言字节，并且在运行时由 CPU 加载和执行。</p>
+<p><strong>一条指令有四个组成部分：</strong></p>
+<ul>
+<li>标号（可选）</li>
+<li>指令助记符（必需）</li>
+<li>操作数（通常是必需的）</li>
+<li>注释（可选）</li>
+</ul>
+<h3 id="1标号"><a class="markdownIt-Anchor" href="#1标号"></a> 1.标号</h3>
+<p><strong>标号（label）是一种标识符，是指令和数据的位置标记</strong>。<strong>标号位于指令的前端，表示指令的地址</strong>。同样，<strong>标号也位于变量的前端，表示变量的地址</strong>。标号有两种类型：<strong>数据标号</strong>和<strong>代码标号</strong>。</p>
+<p>==<strong>数据标号</strong>==标识变量的位置，<strong>它提供了一种方便的手段在代码中引用该变量</strong>。比如，下面定义了一个名为 count 的变量：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">count DWORD 100</span><br></pre></td></tr></table></figure>
+<p><strong>汇编器为每个标号分配一个数字地址。可以在一个标号后面定义多个数据项</strong>。在下面的例子中，array 定义了第一个数字（1024）的位置，<strong>其他数字在内存中的位置紧随其后</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array DWORD 1024, 2048</span><br><span class="line">      DWORD 4096, 8192</span><br></pre></td></tr></table></figure>
+<p><strong>程序代码区（CODES SEGMENT，指令所在区段）的标号必须用冒号（:）结束</strong>。<strong>代码标号用作跳转和循环指令的目标</strong>。例如，下面的 JMP 指令创建一个循环，将程序控制传递给标号 target 标识的位置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">target:</span><br><span class="line">        mov ax,bx</span><br><span class="line">        ...</span><br><span class="line">        jmp target</span><br></pre></td></tr></table></figure>
+<p>**<mark>代码标号</mark>**可以与指令在同一行上，也可以自己独立一行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">L1: mov ax, bx</span><br><span class="line">L2 :</span><br></pre></td></tr></table></figure>
+<p>标号命名规则要求，只要每个标号在其封闭子程序页中是唯一的，那么就可以<strong>多次使用相同的标号</strong>。</p>
+<h3 id="2指令助记符"><a class="markdownIt-Anchor" href="#2指令助记符"></a> 2.指令助记符</h3>
+<p><strong>指令助记符（instruction mnemonic）是标记一条指令的短单词</strong>。在英语中，助记符是帮助记忆的方法。相似地，<strong>汇编语言指令助记符，如 mov, add 和 sub，给出了指令执行操作类型的线索</strong>。<strong><mark>下面是一些指令助记符的例子</mark></strong>：</p>
+<table>
+<thead>
+<tr>
+<th>助记符</th>
+<th>说明</th>
+<th>助记符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MOV</td>
+<td>传送（分配）数值</td>
+<td>MUL</td>
+<td>两个数值相乘</td>
+</tr>
+<tr>
+<td>ADD</td>
+<td>两个数值相加</td>
+<td>JMP</td>
+<td>跳转到一个新位置</td>
+</tr>
+<tr>
+<td>SUB</td>
+<td>从一个数值中减去另一个数值</td>
+<td>CALL</td>
+<td>调用一个子程序</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3操作数"><a class="markdownIt-Anchor" href="#3操作数"></a> 3.操作数</h3>
+<p><strong>操作数是指令输入输出的数值</strong>。汇编语言指令操作数的个数范围是 0〜3 个，每个操作数可以是<strong>寄存器</strong>、<strong>内存操作数</strong>、<strong>整数表达式</strong>和<strong>输入输岀端口</strong>。</p>
+<p>生成内存操作数有不同的方法，比如，使用变量名、带方括号的寄存器等。变量名暗示了变量地址，并指示计算机使用给定地址的内存内容。下表列出了一些操作数示例：</p>
+<table>
+<thead>
+<tr>
+<th>示例</th>
+<th>操作数类型</th>
+<th>示例</th>
+<th>操作数类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>96</td>
+<td>整数常量</td>
+<td>eax</td>
+<td>寄存器</td>
+</tr>
+<tr>
+<td>2+4</td>
+<td>整数表达式</td>
+<td>count</td>
+<td>内存</td>
+</tr>
+</tbody>
+</table>
+<p>现在来考虑一些包含不同个数操作数的汇编语言指令示例。比如，STC 指令没有操作数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stc                    ;进位标志位置 1</span><br></pre></td></tr></table></figure>
+<p>INC 指令有一个操作数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">inc eax                ;EAX 加 1</span><br></pre></td></tr></table></figure>
+<p>MOV 指令有两个操作数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mov count, ebx         ;将 EBX 传送给变量 count</span><br></pre></td></tr></table></figure>
+<p>操作数有固有顺序。当指令有多个操作数时，通常<strong>第一个操作数被称为目的操作数</strong>，<strong>第二个操作数被称为源操作数（source operand）</strong>。</p>
+<p>一般情况下，目的操作数的内容由指令修改。比如，在 mov 指令中，数据就是从源操作数复制到目的操作数。</p>
+<p>IMUL 指令有三个操作数，第一个是目的操作数，第二个和第三个是进行乘法的源操作数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">imul eax,ebx,5		;EBX 与 5 相乘，结果存放在 EAX 寄存器中。</span><br></pre></td></tr></table></figure>
+<h3 id="4注释"><a class="markdownIt-Anchor" href="#4注释"></a> 4.注释</h3>
+<p>注释有两种指定方法：</p>
+<ul>
+<li>单行注释，用分号（;）开始。汇编器将忽略在同一行上分号之后的所有字符。</li>
+<li>块注释，用 COMMENT 伪指令和一个用户定义的符号开始。汇编器将忽略其后所有的文本行，直到相同的用户定义符号出现为止。</li>
+</ul>
+<p>块注释例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">COMMENT !</span><br><span class="line">        This line is a comment.</span><br><span class="line">        This line is also a comment.</span><br><span class="line">!</span><br></pre></td></tr></table></figure>
+<p>其他符号也可以使用，只要该符号不出现在注释行中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">COMMENT &amp;</span><br><span class="line">        This line is a comment.</span><br><span class="line">        This line is also a comment.</span><br><span class="line">&amp;</span><br></pre></td></tr></table></figure>
+<p><strong>汇编笔记是根据<a href="http://c.biancheng.net/asm/10/" target="_blank" rel="noopener">C语言中文网完成的</a></strong></p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#第一个汇编语言程序"><span class="toc-text"> 第一个汇编语言程序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#添加一个变量"><span class="toc-text"> 添加一个变量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#汇编语言常量"><span class="toc-text"> 汇编语言常量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#整数常量"><span class="toc-text"> 整数常量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#整型常量表达式"><span class="toc-text"> 整型常量表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实数常量"><span class="toc-text"> 实数常量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符常量"><span class="toc-text"> 字符常量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串常量"><span class="toc-text"> 字符串常量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#汇编语言保留字"><span class="toc-text"> 汇编语言保留字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#汇编语言标识符及其命名规则"><span class="toc-text"> 汇编语言标识符及其命名规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#汇编语言伪指令"><span class="toc-text"> 汇编语言伪指令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#定义段"><span class="toc-text"> 定义段</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#汇编语言指令详解"><span class="toc-text"> 汇编语言指令详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1标号"><span class="toc-text"> 1.标号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2指令助记符"><span class="toc-text"> 2.指令助记符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3操作数"><span class="toc-text"> 3.操作数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4注释"><span class="toc-text"> 4.注释</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2020/11/20/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/">
+            <span class="related-notes__meta">
+              <time datetime="2020-11-20T09:02:11.000Z">2020.11.20</time>
+              <span>#课程学习笔记 · #汇编</span>
+            </span>
+            <strong>汇编语言基础（二）</strong>
+          </a>
+        
+          <a href="/2020/11/14/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/">
+            <span class="related-notes__meta">
+              <time datetime="2020-11-14T08:18:03.000Z">2020.11.14</time>
+              <span>#课程学习笔记 · #汇编</span>
+            </span>
+            <strong>x86处理器架构</strong>
+          </a>
+        
+          <a href="/2020/11/13/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E7%AE%80%E4%BB%8B/">
+            <span class="related-notes__meta">
+              <time datetime="2020-11-13T09:18:03.000Z">2020.11.13</time>
+              <span>#课程学习笔记 · #汇编</span>
+            </span>
+            <strong>汇编语言基本概念简介</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2020/11/20/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%8C%EF%BC%89/"><span>上一篇</span><strong>汇编语言基础（二）</strong></a>
+    <a href="/2020/11/14/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/"><span>下一篇</span><strong>x86处理器架构</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

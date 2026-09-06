@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>C-sharp方法、数组和字符串 · Quinn</title>
+<meta name="description" content="C-sharp方法、数组和字符串 方法 相关文章 方法的定义和调用 例子： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 3…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/03/07/C-sharp%E6%96%B9%E6%B3%95%E3%80%81%E6%95%B0%E7%BB%84%E5%92%8C%E5%AD%97%E7%AC%A6%E4%B8%B2/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="C-sharp方法、数组和字符串 · Quinn" />
+<meta property="og:description" content="C-sharp方法、数组和字符串 方法 相关文章 方法的定义和调用 例子： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 3…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/03/07/C-sharp%E6%96%B9%E6%B3%95%E3%80%81%E6%95%B0%E7%BB%84%E5%92%8C%E5%AD%97%E7%AC%A6%E4%B8%B2/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091937.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091937.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        课程学习笔记 · 2021.03.07
+      
+    </p>
+    <h1>C-sharp方法、数组和字符串</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">课程学习笔记</a>
+  
+  <span class="post-meta__item">13 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/C-sharp/">#C-sharp</a>
+      
+        <a href="/tags/%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">#课程学习笔记</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="方法"><a class="markdownIt-Anchor" href="#方法"></a> 方法</h2>
+<p><a href="https://www.w3cschool.cn/csharp/csharp-methods.html" target="_blank" rel="noopener">相关文章</a></p>
+<h3 id="方法的定义和调用"><a class="markdownIt-Anchor" href="#方法的定义和调用"></a> 方法的定义和调用</h3>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo06</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        public static int GetMax(int a,int b)  &#x2F;&#x2F; 求最大值函数</span><br><span class="line">        &#123;</span><br><span class="line">            if (a&gt;b)</span><br><span class="line">            &#123;</span><br><span class="line">                return a;</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                return b;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        public static void Add(int a, int b)    &#x2F;&#x2F; 求两数之和</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;&#123;0&#125;+&#123;1&#125;&#x3D;&#123;2&#125;&quot;, a, b, a + b);</span><br><span class="line">        &#125;</span><br><span class="line">        public static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int x &#x3D; 2, y &#x3D; 3;</span><br><span class="line">            Add(x, y);</span><br><span class="line">            Console.WriteLine(&quot;&#123;0&#125;和&#123;1&#125;中的最大值为&#123;2&#125;&quot;, x, y, GetMax(x, y));</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="参数传递"><a class="markdownIt-Anchor" href="#参数传递"></a> 参数传递</h3>
+<p>当调用带有参数的方法时，需要向方法传递参数。在 C# 中，有三种向方法传递参数的方式：</p>
+<ul>
+<li>值参数</li>
+<li><strong>引用参数</strong></li>
+<li><strong>输出参数</strong></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091949.png" alt="" /></p>
+<h4 id="值参数"><a class="markdownIt-Anchor" href="#值参数"></a> 值参数</h4>
+<p><strong>值参数是参数传递的默认方式</strong>。这种方式下，当调用一个方法时，会为每个值参数创建一个新的存储位置。</p>
+<p>实际参数的值会复制给形参，实参和形参使用的是两个不同内存中的值。所以<strong>当形参的值发生改变时，不会影响实参的值</strong>，从而保证了实参数据的安全。</p>
+<p>上述例子即为值参数传递：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo06</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        public static int GetMax(int a,int b)  &#x2F;&#x2F; 求最大值函数</span><br><span class="line">        &#123;</span><br><span class="line">            if (a&gt;b)</span><br><span class="line">            &#123;</span><br><span class="line">                return a;</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                return b;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        public static void Add(int a, int b)    &#x2F;&#x2F; 求两数之和</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;&#123;0&#125;+&#123;1&#125;&#x3D;&#123;2&#125;&quot;, a, b, a + b);</span><br><span class="line">        &#125;</span><br><span class="line">        public static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int x &#x3D; 2, y &#x3D; 3;</span><br><span class="line">            Add(x, y);</span><br><span class="line">            Console.WriteLine(&quot;&#123;0&#125;和&#123;1&#125;中的最大值为&#123;2&#125;&quot;, x, y, GetMax(x, y));</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="引用参数"><a class="markdownIt-Anchor" href="#引用参数"></a> <mark>引用参数</mark></h4>
+<p><strong>引用参数是对变量的内存位置的引用</strong>。当按引用传递参数时，与值参数不同的是，它不会为这些参数创建一个新的存储位置。<strong>引用参数表示和提供给方法的实际参数具有相同的内存位置</strong>。</p>
+<p><strong>在C#中，使用<code>ref</code>关键字声明引用参数</strong>。</p>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo07</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        public static void swap(ref int a, ref int b)   &#x2F;&#x2F; 声明交换函数</span><br><span class="line">        &#123;</span><br><span class="line">            int temp;</span><br><span class="line">            temp &#x3D; a;</span><br><span class="line">            a &#x3D; b;</span><br><span class="line">            b &#x3D; temp;</span><br><span class="line">        &#125; </span><br><span class="line"></span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int x &#x3D; 10, y &#x3D; 20;</span><br><span class="line">            swap(ref x, ref y);</span><br><span class="line">            Console.WriteLine(&quot;x&#x3D;&#123;0&#125;,y&#x3D;&#123;1&#125;&quot;, x, y);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="输出参数"><a class="markdownIt-Anchor" href="#输出参数"></a> <mark>输出参数</mark></h4>
+<p>return语句可用于只从函数返回一个值。但是，<strong>可以使用输出参数来从函数中返回两个甚至多个值</strong>。</p>
+<p><strong>输出参数会把方法输出的数据赋值给自己</strong>，其他方面和引用参数相似（<strong>即<code>out</code>和<code>ref</code>一样，也是传递的指针</strong>）。</p>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo08</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        public static void Getvalue(out int x)</span><br><span class="line">        &#123;</span><br><span class="line">            int temp &#x3D; 666;</span><br><span class="line">            x &#x3D; temp;</span><br><span class="line">        &#125;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int a &#x3D; 100;</span><br><span class="line">            Console.WriteLine(&quot;在方法调用前a的值为：&#123;0&#125;&quot;, a);</span><br><span class="line">            Getvalue(out a);</span><br><span class="line">            Console.WriteLine(&quot;在方法调用后a的值为：&#123;0&#125;&quot;, a);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>提供给输出参数的变量不需要赋值。当参数需要从一个没有指定初始值的方法中返回值时，输出参数特别有用。</strong></p>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo08</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        public static void Getvalues(out int x,out int y)</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;请输入第一个值：&quot;);</span><br><span class="line">            x &#x3D; Convert.ToInt32(Console.ReadLine());    &#x2F;&#x2F; 将字符串转成int类型</span><br><span class="line">            Console.WriteLine(&quot;请输入第二个值：&quot;);</span><br><span class="line">            y &#x3D; Convert.ToInt32(Console.ReadLine());    &#x2F;&#x2F; 将字符串转成int类型</span><br><span class="line">        &#125;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int a, b;</span><br><span class="line">            Getvalues(out a, out b);</span><br><span class="line">            Console.WriteLine(&quot;方法调用后a的值：&#123;0&#125;&quot;, a);</span><br><span class="line">            Console.WriteLine(&quot;方法调用后a的值：&#123;0&#125;&quot;, b);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码执行后，输出的a和b的值取决于用户输入。</p>
+<p><strong><mark>ref和out的区别：</mark></strong></p>
+<ul>
+<li><strong>ref 是有进有出，即能将参数传进去，函数里对变量的改变在函数结束时会改变值，因此需要在传递进去前初始化。</strong></li>
+<li><strong>out 是只出不进，即将参数传进去时值是无效的，out会把参数清空，所以无法将一个值从 out 传递进去。</strong></li>
+</ul>
+<p><strong>ref的变量初始化了, out的变量不需初始化</strong></p>
+<h4 id="params参数"><a class="markdownIt-Anchor" href="#params参数"></a> params参数</h4>
+<p><a href="https://www.runoob.com/csharp/csharp-param-arrays.html" target="_blank" rel="noopener">菜鸟教程</a>，<a href="https://blog.csdn.net/heyangyi_19940703/article/details/52084937" target="_blank" rel="noopener">相关文章</a></p>
+<p>使用params修饰符来指定数组参数。</p>
+<p>当方法参数中既有其他参数类型，又有params修饰的数组参数时，<strong>params参数必须放在最后面。只能有一个使用params修饰的数组参数。</strong></p>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo08</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        public static void GetSum(string name,params int[] scores)</span><br><span class="line">        &#123;</span><br><span class="line">            int sum &#x3D; 0;</span><br><span class="line">            for (int i &#x3D; 0; i &lt; scores.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                sum &#x3D; sum+scores[i];</span><br><span class="line">            &#125;</span><br><span class="line">            Console.WriteLine(&quot;&#123;0&#125;的&#123;1&#125;门课总成绩为：&#123;2&#125;&quot;, name, scores.Length, sum);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">            </span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            GetSum(&quot;张三&quot;, 76, 78, 89, 67, 89, 69);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="数组"><a class="markdownIt-Anchor" href="#数组"></a> 数组</h2>
+<p><a href="https://www.runoob.com/csharp/csharp-array.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<p>数组是一组具有相同数据类型的数据组成的集合。</p>
+<ul>
+<li>一维数组</li>
+<li>多维数组</li>
+<li>锯齿数组</li>
+</ul>
+<p>一维数组中的每个数据都只有一个元素。</p>
+<p>一维数组声明形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">数据类型[] 数组名;		&#x2F;&#x2F; 仅声明名字，并未分配内存空间</span><br><span class="line">数据类型[] 数组名 &#x3D; new 数据类型[长度];	&#x2F;&#x2F; 分配内存空间，用默认值初始化</span><br><span class="line">数据类型[] 数组名 &#x3D; &#123;元素列表&#125;;	&#x2F;&#x2F; 直接使用初始值来创建数组</span><br><span class="line">数据类型[] 数组名 &#x3D; new 数据类型[长度]&#123;元素列表&#125;;	&#x2F;&#x2F; 最完整的一维数组声明形式</span><br></pre></td></tr></table></figure>
+<p>二维数组声明形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">数据类型[,] 数组名;	&#x2F;&#x2F; 仅声明名字，并未分配内存空间</span><br><span class="line">数据类型[,] 数组名 &#x3D; new 数据类型[第一维长度,第二维长度];	&#x2F;&#x2F; 分配内存空间，用默认值初始化</span><br><span class="line">数据类型[,] 数组名 &#x3D; &#123;&#123;元素列表&#125;,&#123;元素列表&#125;,&#123;元素列表&#125;...&#125;; &#x2F;&#x2F; 直接用初始值来创建数组</span><br><span class="line">数据类型[,] 数组名 &#x3D; new 数据类型[第一维长度,第二维长度]&#123;元素列表&#125;;</span><br></pre></td></tr></table></figure>
+<p>锯齿数组：当一个一维数组的每个元素也是数组，且每个数组长度不同时，这样形成的数组统称为锯齿数组。（<a href="https://www.runoob.com/csharp/csharp-jagged-arrays.html" target="_blank" rel="noopener">相关教程</a>）</p>
+<h3 id="数组练习"><a class="markdownIt-Anchor" href="#数组练习"></a> 数组练习</h3>
+<p>数组的赋值和输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo01</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int[] arr &#x3D; &#123; 1, 2, 3, 4, 5, 666 &#125;;</span><br><span class="line">            arr[2] &#x3D; 33;    &#x2F;&#x2F; 数组的赋值</span><br><span class="line">            foreach (var item in arr)   &#x2F;&#x2F; 数组的输出，这里使用foreach循环</span><br><span class="line">            &#123;</span><br><span class="line">                Console.WriteLine(item);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>计算并输出一个数组的最大值、最小值、总和、平均值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo01</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int[] arr &#x3D; &#123; 1, 2, 3, 4, 5, 666 &#125;;</span><br><span class="line">            int max&#x3D;arr[0], min &#x3D; arr[0], sum&#x3D;0;</span><br><span class="line">            double avg&#x3D;0;</span><br><span class="line"></span><br><span class="line">            foreach (var item in arr)   </span><br><span class="line">            &#123;</span><br><span class="line">                if (item&gt;max)</span><br><span class="line">                &#123;</span><br><span class="line">                    max &#x3D; item;</span><br><span class="line">                &#125;</span><br><span class="line">                if (item &lt; min)</span><br><span class="line">                &#123;</span><br><span class="line">                    min &#x3D; item;</span><br><span class="line">                &#125;</span><br><span class="line">                sum &#x3D; sum + item;</span><br><span class="line">            &#125;</span><br><span class="line">            avg &#x3D; (double)sum &#x2F; arr.Length;</span><br><span class="line">            Console.WriteLine(&quot;最大值是&#123;0&#125;，最小值是&#123;1&#125;，总和是&#123;2&#125;，平均值是&#123;3&#125;&quot;, max, min, sum, avg);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意：数组间的赋值，是赋予地址值。</p>
+<h3 id="数组作为方法的参数"><a class="markdownIt-Anchor" href="#数组作为方法的参数"></a> 数组作为方法的参数</h3>
+<p>可以使用params关键字，也可以直接使用数组作为方法形参（因为传递到形参是地址值，所以改变的还是原数组）</p>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo02</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        &#x2F;&#x2F; 定义一个方法，将一个一维整型数组的全部元素都+3</span><br><span class="line">        public static void Add3(int[] arr)</span><br><span class="line">        &#123;</span><br><span class="line">            for (int i &#x3D; 0; i &lt; arr.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                arr[i] &#x3D; arr[i] + 3;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        &#x2F;&#x2F; 定义一个方法，输出一个一维整型数组的全部内容</span><br><span class="line">        public static void PrintArr(int[] arr)</span><br><span class="line">        &#123;</span><br><span class="line">            foreach (var item in arr)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.WriteLine(item);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            int[] a &#x3D; &#123; 1, 2, 3, 4, 5, 666 &#125;;</span><br><span class="line">            Console.WriteLine(&quot;+3前数组为：&quot;);</span><br><span class="line">            PrintArr(a);</span><br><span class="line">            Add3(a);</span><br><span class="line">            Console.WriteLine(&quot;+3后数组为：&quot;);</span><br><span class="line">            PrintArr(a);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="字符串"><a class="markdownIt-Anchor" href="#字符串"></a> 字符串</h2>
+<p>字符串是一种特殊的引用类型。</p>
+<h3 id="字符串常用方法"><a class="markdownIt-Anchor" href="#字符串常用方法"></a> 字符串常用方法</h3>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo03</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            string str &#x3D; &quot;helloworld&quot;;</span><br><span class="line">            &#x2F;&#x2F; 1.Length属性，求字符串长度</span><br><span class="line">            Console.WriteLine(str.Length);</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 2.字符串和字符、字符数组之间的转换</span><br><span class="line">            char ch1 &#x3D; str[2];  &#x2F;&#x2F; 字符串转字符</span><br><span class="line">            Console.WriteLine(ch1);</span><br><span class="line"></span><br><span class="line">            string str2 &#x3D; &#39;a&#39;.ToString();   &#x2F;&#x2F; 字符转字符串</span><br><span class="line"></span><br><span class="line">            char[] arr &#x3D; str.ToCharArray(); &#x2F;&#x2F; 字符串转字符数组</span><br><span class="line">            foreach (var item in arr)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.WriteLine(item);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            char[] arr2 &#x3D; &#123; &#39;x&#39;, &#39;y&#39;, &#39;z&#39; &#125;;</span><br><span class="line">            string str3 &#x3D; new string(arr2); &#x2F;&#x2F; 字符数组转字符串（通过string构造函数）</span><br><span class="line">            Console.WriteLine(str3);</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 3.查找指定字符或字符串在已知字符串中的位置</span><br><span class="line">            int i1 &#x3D; str.IndexOf(&#39;o&#39;);  &#x2F;&#x2F; IndexOf()可以有三个参数，具体可自行查看</span><br><span class="line">            int i2 &#x3D; str.IndexOf(&quot;ll&quot;);</span><br><span class="line">            Console.WriteLine(i1);</span><br><span class="line">            Console.WriteLine(i2);</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 4.插入、替换、删除、截取字符串</span><br><span class="line">            string str4 &#x3D; &quot;abcde&quot;;</span><br><span class="line">            string str4_1 &#x3D; str4.Insert(1, &quot;123&quot;);  &#x2F;&#x2F; 插入</span><br><span class="line">            Console.WriteLine(str4_1);  &#x2F;&#x2F; a123bcde</span><br><span class="line"></span><br><span class="line">            string str4_2 &#x3D; str4.Replace(&quot;de&quot;, &quot;22&quot;);   &#x2F;&#x2F; 替换</span><br><span class="line">            Console.WriteLine(str4_2);  &#x2F;&#x2F; abc22</span><br><span class="line"></span><br><span class="line">            string str4_3 &#x3D; str4.Remove(1, 2);   &#x2F;&#x2F; 删除（2表示索引位数，3表示删除个数）</span><br><span class="line">            Console.WriteLine(str4_3);  &#x2F;&#x2F; ade</span><br><span class="line"></span><br><span class="line">            string str4_4 &#x3D; str4.Substring(1, 3);   &#x2F;&#x2F;截取</span><br><span class="line">            Console.WriteLine(str4_4);  &#x2F;&#x2F; bcd</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 5.分离字符串（字符串切割，Split）</span><br><span class="line">            string str5 &#x3D; &quot;I have a dream&quot;;</span><br><span class="line">            string[] str5_1 &#x3D; str5.Split(&#39; &#39;);  &#x2F;&#x2F; 字符串以空格切割(Split有一个重载方法可用于删除所有空格，可自行查找)</span><br><span class="line">            foreach (var item in str5_1)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.WriteLine(item);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 6.去除字符串两端的空格</span><br><span class="line">            string str6 &#x3D; &quot;  hello   world    &quot;;</span><br><span class="line">            string str6_1 &#x3D; str6.Trim();</span><br><span class="line">            Console.WriteLine(str6_1);  &#x2F;&#x2F; hello   world </span><br><span class="line"></span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="字符串与其他类型的转换"><a class="markdownIt-Anchor" href="#字符串与其他类型的转换"></a> 字符串与其他类型的转换</h3>
+<ol>
+<li><strong>使用<code>parse</code>方法。简单类型有一个共同的方法<code>parse</code>，可以将字符串转换为需要的简单类型。</strong></li>
+<li>**使用<code>Convert</code>类。**Conver类中包含了若干个方法，可以实现数据类型之间的转换。</li>
+</ol>
+<p>注意：使用这两种方法，都要保证被转换的字符串可以正确转换成目标简单类型。</p>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo04</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            string str &#x3D; &quot;666&quot;;</span><br><span class="line">            &#x2F;&#x2F; 1.使用parse方法</span><br><span class="line">            int i &#x3D; int.Parse(str);</span><br><span class="line">            Console.WriteLine(i + 1);   &#x2F;&#x2F; 转成数字了，667</span><br><span class="line">            bool b1 &#x3D; bool.Parse(&quot;true&quot;);   &#x2F;&#x2F; 其他类型的转换同理</span><br><span class="line">            Console.WriteLine(b1);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 2.使用Convert类</span><br><span class="line">            int i2 &#x3D; Convert.ToInt32(str);</span><br><span class="line">            Console.WriteLine(i + 2);   &#x2F;&#x2F; 转成数字了，668</span><br><span class="line">            bool b2 &#x3D; Convert.ToBoolean(&quot;false&quot;);   &#x2F;&#x2F; 其他类型的转换同理</span><br><span class="line">            Console.WriteLine(b2);</span><br><span class="line"></span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>补充<code>TryParse</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">string s &#x3D; &quot;123&quot;;</span><br><span class="line">int result &#x3D; -1;</span><br><span class="line">bool b &#x3D; int.TryParse(s,out result)</span><br></pre></td></tr></table></figure>
+<p>（<strong>result作为输出值，如果转换失败则输出值为0</strong>）具体用法可自行转换</p>
+<h3 id="字符串的赋值"><a class="markdownIt-Anchor" href="#字符串的赋值"></a> 字符串的赋值</h3>
+<p>字符串是一种特殊的引用类型。字符串中的内容是不可变的，当执行<code>string str = &quot;abc&quot;; str = &quot;cdd&quot;</code>时，并没有改变原来堆内存的数据（即&quot;abc&quot;），而是<strong>另外开辟一块新的堆内存空间保存新值（“cdd”），并将字符串变量在栈内存上的地址引用修改为新的堆内存地址（&quot;cdd&quot;所在地址）</strong></p>
+<p>当程序中需要较多次字符串拼接操作时，可以使用StringBuilder操作。（具体可自行查找）</p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#方法"><span class="toc-text"> 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#方法的定义和调用"><span class="toc-text"> 方法的定义和调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参数传递"><span class="toc-text"> 参数传递</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数组"><span class="toc-text"> 数组</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数组练习"><span class="toc-text"> 数组练习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数组作为方法的参数"><span class="toc-text"> 数组作为方法的参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#字符串"><span class="toc-text"> 字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串常用方法"><span class="toc-text"> 字符串常用方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串与其他类型的转换"><span class="toc-text"> 字符串与其他类型的转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串的赋值"><span class="toc-text"> 字符串的赋值</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/03/12/C-sharp%E5%A7%94%E6%89%98%E5%92%8C%E4%BA%8B%E4%BB%B6%E3%80%81%E9%9B%86%E5%90%88/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-12T00:47:03.000Z">2021.03.12</time>
+              <span>#C-sharp · #课程学习笔记</span>
+            </span>
+            <strong>C-sharp委托和事件、集合</strong>
+          </a>
+        
+          <a href="/2021/03/09/C-sharp%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-09T00:47:03.000Z">2021.03.09</time>
+              <span>#C-sharp · #课程学习笔记</span>
+            </span>
+            <strong>C-sharp面向对象</strong>
+          </a>
+        
+          <a href="/2021/03/06/C-sharp%EF%BC%88%E4%B8%80%EF%BC%89/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-06T00:47:03.000Z">2021.03.06</time>
+              <span>#C-sharp · #课程学习笔记</span>
+            </span>
+            <strong>C-sharp（一）</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/03/09/C-sharp%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/"><span>上一篇</span><strong>C-sharp面向对象</strong></a>
+    <a href="/2021/03/06/C-sharp%EF%BC%88%E4%B8%80%EF%BC%89/"><span>下一篇</span><strong>C-sharp（一）</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

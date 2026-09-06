@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Tomcat · Quinn</title>
+<meta name="description" content="Tomcat Web相关概念 软件架构： C/S：客户端/服务器端 B/S：浏览器/服务器端 资源分类： 静态资源：所有用户访问后，得到的结果都是一样的，称为静态资源。静态资源可以直接被浏览器解析 如：html，css，js 动态资源：每个…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/03/29/Tomcat/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Tomcat · Quinn" />
+<meta property="og:description" content="Tomcat Web相关概念 软件架构： C/S：客户端/服务器端 B/S：浏览器/服务器端 资源分类： 静态资源：所有用户访问后，得到的结果都是一样的，称为静态资源。静态资源可以直接被浏览器解析 如：html，css，js 动态资源：每个…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/03/29/Tomcat/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090514.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090514.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        JavaWeb · 2021.03.29
+      
+    </p>
+    <h1>Tomcat</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/JavaWeb/">JavaWeb</a>
+  
+  <span class="post-meta__item">10 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/JavaWeb/">#JavaWeb</a>
+      
+        <a href="/tags/Tomcat/">#Tomcat</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="web相关概念"><a class="markdownIt-Anchor" href="#web相关概念"></a> Web相关概念</h2>
+<p>软件架构：</p>
+<ul>
+<li>C/S：客户端/服务器端</li>
+<li>B/S：浏览器/服务器端</li>
+</ul>
+<p>资源分类：</p>
+<ul>
+<li>静态资源：所有用户访问后，得到的结果都是一样的，称为静态资源。静态资源可以直接被浏览器解析
+<ul>
+<li>如：html，css，js</li>
+</ul>
+</li>
+<li>动态资源：每个用户访问相同资源后，得到的结果可能不一样，称为动态资源。动态资源被访问后，需要先转换成静态资源，再返回给浏览器
+<ul>
+<li>如：servlet/jsp，php，asp</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090529.bmp" alt="" /></p>
+<p>网络通信三要素：</p>
+<ul>
+<li><strong>IP：电子设备（计算机）在网络中的唯一标识</strong></li>
+<li><strong>端口：应用程序在计算机中的唯一标识（端口范围：0~65536）</strong></li>
+<li><strong>传输协议：规定了数据传输的规则。基础协议有：</strong>
+<ul>
+<li><strong>TCP：安全协议。三次握手，速度稍慢</strong></li>
+<li><strong>UDP：不安全协议。速度快</strong></li>
+</ul>
+</li>
+</ul>
+<h2 id="tomcatweb服务器软件"><a class="markdownIt-Anchor" href="#tomcatweb服务器软件"></a> Tomcat：Web服务器软件</h2>
+<p>Web服务器软件：</p>
+<ul>
+<li><strong>服务器：安装了服务器软件的计算机</strong></li>
+<li>服务器软件：接受用户的请求，处理请求，做出响应</li>
+<li>Web服务器软件：接受用户的请求，处理请求，做出响应
+<ul>
+<li>在web服务器软件中，可以部署web项目，让用户通过浏览器来访问这些项目（也被称为web容器）</li>
+</ul>
+</li>
+</ul>
+<p>常见的java相关的web服务器软件：</p>
+<ul>
+<li>webLogic：oracle公司，大型的JavaEE服务器，支持所有的JavaEE规范，收费的。</li>
+<li>webSphere：IBM公司，大型的JavaEE服务器，支持所有的JavaEE规范，收费的。</li>
+<li>JBOSS：JBOSS公司的，大型的JavaEE服务器，支持所有的JavaEE规范，收费的。</li>
+<li><strong>Tomcat：Apache基金组织，中小型的JavaEE服务器，仅仅支持少量的JavaEE规范servlet/jsp。开源的，免费的。</strong></li>
+</ul>
+<p>接下来我们就开始Tomcat的使用</p>
+<ol>
+<li>
+<p>下载：官网下载地址：<a href="http://tomcat.apache.org/" target="_blank" rel="noopener">http://tomcat.apache.org/</a></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090541.png" alt="成功从官网下载tomcat" /></p>
+</li>
+<li>
+<p>安装：解压压缩包即可。<strong>注意：安装目录建议不要有中文和空格</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090554.png" alt="解压后的tomcat目录结构" /></p>
+<p>关于tomcat目录结构的<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=678" target="_blank" rel="noopener">视频讲解</a>。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090604.png" alt="tomcat目录结构" /></p>
+</li>
+<li>
+<p><strong>卸载：删除目录即可</strong></p>
+</li>
+<li>
+<p>启动：（关于tomcat的环境变量配置这里就不多说了）</p>
+<ul>
+<li>
+<p>要启动tomcat，我们双击bin目录下的startup.bat即可</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090647.png" alt="tomcat运行结果" /></p>
+</li>
+<li>
+<p>访问：浏览器输入：<a href="http://ip:80" target="_blank" rel="noopener">http://ip:80</a>      （如果是本地的话，http://localhost:80即可）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090700.png" alt="web端访问结果" /></p>
+</li>
+<li>
+<p><strong><mark>端口占用问题</mark></strong>，解决方案：</p>
+<ol>
+<li>
+<p>暴力（推荐）：找到占用的端口号，并且找到对应进程，杀死该进程（<a href="https://blog.csdn.net/qq_30715329/article/details/79352556" target="_blank" rel="noopener">杀死端口占用进程</a>）</p>
+<ul>
+<li>
+<p><code>netstat -ano</code>	查看端口占用情况，并找到先关进程的PID</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090713.png" alt="查看端口占用情况" /></p>
+</li>
+<li>
+<p><code>taskkill /f /t /im &quot;进程号或进程名&quot;</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>温柔：<strong>修改自身的端口号</strong></p>
+<ul>
+<li>
+<p>我们在conf目录下，修改server.xml文件</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090724.png" alt="修改tomcat端口号" /></p>
+</li>
+<li>
+<p>注意：<strong>一般我们将tomcat的端口号修改为80</strong>。因为8<strong>0端口号是http协议的默认端口号，在访问时就不用输入端口号了</strong>。</p>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p>关闭</p>
+<ol>
+<li>正常关闭：
+<ul>
+<li>双击bin目录下的shutdown.bat文件</li>
+<li><code>ctrl+c</code></li>
+</ul>
+</li>
+<li>强制关闭：
+<ul>
+<li>关闭tomcat窗口（点击窗口的×）</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p>配置：</p>
+<ul>
+<li>
+<p><strong><mark>部署项目的方式</mark></strong>：</p>
+<ol>
+<li>
+<p>直接将项目放到webapps目录下即可</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090739.png" alt="将现有的hello.html文件放到webapps/test目录下" /></p>
+<ul>
+<li>
+<p>浏览器访问：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090752.png" alt="Web端访问" /></p>
+</li>
+<li>
+<p><strong>/test：项目的访问路径（虚拟路径）</strong></p>
+</li>
+<li>
+<p><strong>简化部署：将项目打成一个war包，再将war包放置到webapps目录下</strong></p>
+</li>
+</ul>
+</li>
+<li>
+<p>配置conf/server.xml文件</p>
+<p>在<code>&lt;Host&gt;</code>标签体中配置：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Context</span> <span class="attr">docBase</span>=<span class="string">"D:\hello"</span> <span class="attr">path</span>=<span class="string">"/hehe"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>docBase:项目存放的路径</li>
+<li>path：虚拟目录</li>
+</ul>
+<p>3.在conf\Catalina\localhost创建任意名称的xml文件。在文件中编写</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Context</span> <span class="attr">docBase</span>=<span class="string">"D:\hello"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>虚拟目录：xml文件的名称</p>
+<p>（这种方式不需要重启tomcat）</p>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<p>其中第二种和第三种的部署方式：<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=681" target="_blank" rel="noopener">视频讲解</a></p>
+<hr />
+<h3 id="java动态项目的目录结构"><a class="markdownIt-Anchor" href="#java动态项目的目录结构"></a> Java动态项目的目录结构</h3>
+<blockquote>
+<p>静态项目和动态项目：静态项目里边只能放静态的资源，比如说html,css,JavaScript,图片、文本，音频、视频，那么动态项目里边不仅仅可以放静态资源，还可以放一些动态的资源，比如说servlet,jsp等等)</p>
+</blockquote>
+<p><a href="https://blog.csdn.net/w15977858408/article/details/100822636" target="_blank" rel="noopener">web的静态项目和动态项目目录结构上的区别</a></p>
+<p>Java动态项目目录结构：</p>
+<ul>
+<li>项目的根目录
+<ul>
+<li>WEB-INF目录
+<ul>
+<li>web.xml：web项目的核心配置文件</li>
+<li>classes目录：放置字节码文件的目录</li>
+<li>lib目录：放置依赖jar包的目录</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090805.png" alt="Java动态项目目录结构" /></p>
+<h3 id="tomcat集成到idea"><a class="markdownIt-Anchor" href="#tomcat集成到idea"></a> Tomcat集成到IDEA</h3>
+<p>在后续学习中，我们<strong>将tomcat集成到IDEA中，并创建JavaEE的项目，部署项目</strong></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=683" target="_blank" rel="noopener">视频讲解</a></p>
+<p>运行后的JavaEE项目目录为：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090817.png" alt="目录结构" /></p>
+<p>浏览器中访问：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090832.png" alt="world.html" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090847.png" alt="index.jsp" /></p>
+<hr />
+<h2 id="servlet"><a class="markdownIt-Anchor" href="#servlet"></a> <mark>Servlet</mark></h2>
+<blockquote>
+<p>Java Servlet 是运行在 Web 服务器或应用服务器上的程序，它是作为来自 Web 浏览器或其他 HTTP 客户端的请求和 HTTP 服务器上的数据库或应用程序之间的中间层。</p>
+</blockquote>
+<p>Servlet在JavaWeb中非常重要，这里先简单提一下。后续还会继续提到</p>
+<p>Servlet：server  applet（运行在服务器的小程序）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090859.bmp" alt="Servlet" /></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=684" target="_blank" rel="noopener">视频讲解</a></p>
+<p>Servlet就是一个接口，定义了Java类被浏览器访问的规则（被tomcat识别）：</p>
+<ul>
+<li>将来我们自定义一个类，实现Servlet接口，复写方法</li>
+</ul>
+<h3 id="servlet快速入门"><a class="markdownIt-Anchor" href="#servlet快速入门"></a> Servlet快速入门</h3>
+<ol>
+<li><strong>创建JavaEE项目</strong></li>
+<li><strong>定义一个类，实现Servlet接口</strong></li>
+<li><strong>实现接口中的抽象方法</strong></li>
+<li><strong>配置Servlet（在web.xml中配置）</strong></li>
+</ol>
+<p>例子：我们创建一个JavaEE项目，在src.srtvlet包下创建ServletDemo01类代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> servlet;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.servlet.*;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServletDemo01</span> <span class="keyword">implements</span> <span class="title">Servlet</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig servletConfig)</span> <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ServletConfig <span class="title">getServletConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 提供服务的方法</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Hello,Servlet"</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getServletInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后在web.xml中配置Servlet，配置内容如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--配置Servlet--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>demo01<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>servlet.ServletDemo01<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>demo01<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/demo01<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span>  <span class="comment">&lt;!--配置资源路径--&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>配置完成后完整的web.xml文件如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">"3.1"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--配置Servlet--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>demo01<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>servlet.ServletDemo01<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>demo01<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/demo01<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span>  <span class="comment">&lt;!--配置资源路径--&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">web-app</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>运行后访问：<a href="http://localhost:8080/demo01%EF%BC%8C%E4%BC%9A%E5%8F%91%E7%8E%B0%E5%9C%A8%E6%8E%A7%E5%88%B6%E5%8F%B0%E8%BE%93%E5%87%BA%E4%BA%86%E2%80%9CHello,Servlet%E2%80%9D%EF%BC%9A" target="_blank" rel="noopener">http://localhost:8080/demo01，会发现在控制台输出了“Hello,Servlet”：</a></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090912.png" alt="" /></p>
+<p>说明我们重写的service方法成功被执行</p>
+<p><strong>Servlet执行原理：</strong></p>
+<ol>
+<li><strong>当服务器接收到客户端浏览器请求后，会解析请求URL路径，获取访问的Servlet的资源路径</strong></li>
+<li><strong>查找web.xml文件，是否有对应的<code>&lt;url-pattern&gt;</code>标签体内容</strong></li>
+<li><strong>如果有，则再找到对应<code>&lt;servlet-class&gt;</code>的全类名</strong></li>
+<li><strong>tomcat会将字节码文件加载进内存，并且创建其对象</strong></li>
+<li><strong>调用其方法</strong></li>
+</ol>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090926.bmp" alt="Servlet执行原理" /></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=686" target="_blank" rel="noopener">视频讲解</a></p>
+<h3 id="servlet中的一些方法"><a class="markdownIt-Anchor" href="#servlet中的一些方法"></a> Servlet中的一些方法</h3>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=687" target="_blank" rel="noopener">视频讲解</a></p>
+<p>Servlet中的生命周期方法：</p>
+<ol>
+<li><code>public void init(ServletConfig servletConfig)</code>：被创建：执行init方法，只执行一次</li>
+</ol>
+<p>Servlet什么时候被创建？<strong>默认情况下，第一次被访问时，Servlet被创建</strong></p>
+<ul>
+<li>可以配置执行Servlet的创建时机：在<code>&lt;servlet&gt;</code>标签下配置
+<ul>
+<li>第一次被访问时创建：<code>&lt;load-on-startup&gt;</code>的值为负数</li>
+<li>在服务器启动时创建：<code>&lt;load-on-startup&gt;</code>的值为0或正整数</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>Servlet的init方法，只执行一次，说明一个Servlet在内存中只存在一个对象，Servlet是单例的</strong>
+<ul>
+<li><strong>多个用户同时访问时，可能存在线程安全问题。</strong></li>
+<li><strong>解决：尽量不要在Servlet中定义成员变量。即使定义了成员变量，也不要对修改值</strong></li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li>
+<p><code>public void service(ServletRequest servletRequest, ServletResponse servletResponse)</code>：提供服务：执行service方法，执行多次</p>
+<ul>
+<li>每次访问Servlet时，Service方法都会被调用一次。</li>
+</ul>
+</li>
+<li>
+<p><code>public void destroy()</code>：被销毁：执行destroy方法，只执行一次</p>
+</li>
+</ol>
+<ul>
+<li>Servlet被销毁时执行。服务器关闭时，Servlet被销毁</li>
+<li><strong>只有服务器正常关闭时，才会执行destroy方法。</strong></li>
+<li><strong>destroy方法在Servlet被销毁之前执行</strong>，一般用于释放资源</li>
+</ul>
+<p>相关代码注释如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServletDemo02</span> <span class="keyword">implements</span> <span class="title">Servlet</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 初始化方法。在Servlet被创建时执行。只会执行一次</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig servletConfig)</span> <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"init..."</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取ServletConfig对象（需要自行实现）</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ServletConfig <span class="title">getServletConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  提供服务方法。执行service方法，执行多次</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"service..."</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取Servlet的一些信息（版本、作者等）</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getServletInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 销毁方法。在服务器关闭时执行destroy方法，只执行一次</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"destroy..."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="servlet30注解配置"><a class="markdownIt-Anchor" href="#servlet30注解配置"></a> <mark>Servlet3.0注解配置</mark></h3>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=689" target="_blank" rel="noopener">视频讲解</a></p>
+<p>Servlet3.0：支持注解配置，可以不需要web.xml了。</p>
+<p>步骤：</p>
+<ol>
+<li><strong>创建JavaEE项目，选择Servlet的版本3.0以上，可以不创建web.xml</strong></li>
+<li><strong>定义一个类，实现Servlet接口</strong></li>
+<li><strong>复写方法</strong></li>
+<li><strong>在类上使用<code>@WebServlet</code>注解，进行配置</strong></li>
+</ol>
+<ul>
+<li><strong><code>@WebServlet(&quot;资源路径&quot;)</code></strong></li>
+</ul>
+<p>例子：我们创建ServletDemo01，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> web.servlet;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.servlet.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.WebServlet;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="comment">//@WebServlet(urlPatterns = "/demo01")    // 配置路径</span></span><br><span class="line"><span class="meta">@WebServlet</span>(<span class="string">"/demo01"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServletDemo01</span> <span class="keyword">implements</span> <span class="title">Servlet</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig servletConfig)</span> <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ServletConfig <span class="title">getServletConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Servlet3.0"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getServletInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>目录结构如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512090941.png" alt="没有web.xml的目录结构" /></p>
+<p>补充：<code>@WebServlet</code>注解中的内容如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> javax.servlet.annotation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Documented;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.ElementType;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Retention;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.RetentionPolicy;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Target;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Target</span>(&#123;ElementType.TYPE&#125;)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> WebServlet &#123;</span><br><span class="line">    <span class="function">String <span class="title">name</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line"></span><br><span class="line">    String[] value() <span class="keyword">default</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    String[] urlPatterns() <span class="keyword">default</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">loadOnStartup</span><span class="params">()</span> <span class="keyword">default</span> -1</span>;</span><br><span class="line"></span><br><span class="line">    WebInitParam[] initParams() <span class="keyword">default</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">asyncSupported</span><span class="params">()</span> <span class="keyword">default</span> <span class="keyword">false</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">String <span class="title">smallIcon</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">String <span class="title">largeIcon</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">String <span class="title">description</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">String <span class="title">displayName</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="idea和tomcat的相关配置"><a class="markdownIt-Anchor" href="#idea和tomcat的相关配置"></a> IDEA和Tomcat的相关配置</h2>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=690&amp;spm_id_from=pageDriver" target="_blank" rel="noopener">视频讲解</a></p>
+<ol>
+<li>
+<p>IDEA会为每一个tomcat部署的项目单独建立一份配置文件</p>
+<ul>
+<li>查看控制台的log：Using CATALINA_BASE:   <code>&quot;C:\Users\用户名\.IntelliJIdea2017.2\system\tomcat\Tomcat_8_5_61_J2EE-2_2&quot;</code></li>
+</ul>
+</li>
+<li>
+<p><strong>工作空间项目</strong>和<strong>tomcat部署的web项目</strong>（<strong>out目录下为tomcat部署的web项目</strong>）</p>
+<ul>
+<li>tomcat真正访问的是“tomcat部署的web项目”，“tomcat部署的web项目&quot;对应着&quot;工作空间项目” 的web目录下的所有资源</li>
+<li><strong>WEB-INF目录下的资源不能被浏览器直接访问</strong></li>
+</ul>
+</li>
+<li>
+<p>断点调试：使用&quot;小虫子&quot;启动 dubug 启动</p>
+</li>
+</ol>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#web相关概念"><span class="toc-text"> Web相关概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tomcatweb服务器软件"><span class="toc-text"> Tomcat：Web服务器软件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#java动态项目的目录结构"><span class="toc-text"> Java动态项目的目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tomcat集成到idea"><span class="toc-text"> Tomcat集成到IDEA</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#servlet"><span class="toc-text"> Servlet</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#servlet快速入门"><span class="toc-text"> Servlet快速入门</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#servlet中的一些方法"><span class="toc-text"> Servlet中的一些方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#servlet30注解配置"><span class="toc-text"> Servlet3.0注解配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#idea和tomcat的相关配置"><span class="toc-text"> IDEA和Tomcat的相关配置</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/04/11/Jedis/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-11T00:47:03.000Z">2021.04.11</time>
+              <span>#JavaWeb</span>
+            </span>
+            <strong>Jedis</strong>
+          </a>
+        
+          <a href="/2021/04/07/Filter&Listener/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-07T10:47:03.000Z">2021.04.07</time>
+              <span>#JavaWeb</span>
+            </span>
+            <strong>Filter&amp;Listener</strong>
+          </a>
+        
+          <a href="/2021/04/06/AJAX&JSON/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-06T10:47:03.000Z">2021.04.06</time>
+              <span>#JavaWeb</span>
+            </span>
+            <strong>AJAX&amp;JSON</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/04/03/Servlet/"><span>上一篇</span><strong>Servlet</strong></a>
+    <a href="/2021/03/28/XML/"><span>下一篇</span><strong>XML</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

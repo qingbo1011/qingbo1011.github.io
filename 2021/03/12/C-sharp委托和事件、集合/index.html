@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>C-sharp委托和事件、集合 · Quinn</title>
+<meta name="description" content="C-sharp委托和事件、集合 委托和事件 这里推荐一篇很好的入门文章： C# 中的委托和事件 委托 菜鸟教程 C# 中的委托（Delegate）类似于 C 或 C++ 中函数的指针。 委托（Delegate） 是存有对某个方法的引用的一种…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/03/12/C-sharp%E5%A7%94%E6%89%98%E5%92%8C%E4%BA%8B%E4%BB%B6%E3%80%81%E9%9B%86%E5%90%88/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="C-sharp委托和事件、集合 · Quinn" />
+<meta property="og:description" content="C-sharp委托和事件、集合 委托和事件 这里推荐一篇很好的入门文章： C# 中的委托和事件 委托 菜鸟教程 C# 中的委托（Delegate）类似于 C 或 C++ 中函数的指针。 委托（Delegate） 是存有对某个方法的引用的一种…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/03/12/C-sharp%E5%A7%94%E6%89%98%E5%92%8C%E4%BA%8B%E4%BB%B6%E3%80%81%E9%9B%86%E5%90%88/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512092026.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512092026.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        课程学习笔记 · 2021.03.12
+      
+    </p>
+    <h1>C-sharp委托和事件、集合</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“C# 中的委托（Delegate）类似于 C 或 C++ 中函数的指针。 委托（Delegate） 是存有对某个方法的引用的一种引用类型变量。引用可在运行时被改变。 委托（Delegate）特别用于实现事件和回调方法。所有的委托（Delegate）都派生自 System.Delegate 类。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">课程学习笔记</a>
+  
+  <span class="post-meta__item">10 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/C-sharp/">#C-sharp</a>
+      
+        <a href="/tags/%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">#课程学习笔记</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="委托和事件"><a class="markdownIt-Anchor" href="#委托和事件"></a> 委托和事件</h2>
+<p>这里推荐一篇很好的入门文章：<a href="https://www.cnblogs.com/jimmyzhang/archive/2007/09/23/903360.html" target="_blank" rel="noopener"><strong>C# 中的委托和事件</strong></a></p>
+<h3 id="委托"><a class="markdownIt-Anchor" href="#委托"></a> 委托</h3>
+<p><a href="https://www.runoob.com/csharp/csharp-delegate.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+
+<p>委托（delegate），是一种数据结构，也是一种引用数据类型。委托主要用于回调机制（CallBack）和事件处理。</p>
+<p><strong>使用delegate类型的步骤如下：</strong></p>
+<ol>
+<li><strong>声明delegate类型</strong></li>
+<li><strong>定义委托所要代表的方法</strong></li>
+<li><strong>创建委托实例，关联要代表的方法</strong></li>
+<li><strong>调用委托实例</strong></li>
+</ol>
+<p>多重委托（在上述入门文章中已经提到过了）</p>
+<p>例子，委托的基本操作：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo01</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F; 声明委托类型</span><br><span class="line">    public delegate void MyDelegate1();</span><br><span class="line">    public delegate void MyDelegate2(string msg);</span><br><span class="line">    public delegate int MyDelegate3(int n);</span><br><span class="line">    public delegate void MyDelegate4();</span><br><span class="line">    public delegate void MyDelegate5();</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        public static void M1()</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;M1：这是无参数无返回值的方法&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        public static void M2(string msg)</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;M2：这是有参数无返回值的方法，参数为&#123;0&#125;&quot;, msg);</span><br><span class="line">        &#125;</span><br><span class="line">        public static int M3(int n)</span><br><span class="line">        &#123;</span><br><span class="line">            int sum &#x3D; 0;</span><br><span class="line">            for (int i &#x3D; 0; i &lt;&#x3D; n; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                sum &#x3D; sum + i;</span><br><span class="line">            &#125;</span><br><span class="line">            Console.WriteLine(&quot;M3：这是有参数有返回值的方法，参数为&#123;0&#125;，返回值为&#123;1&#125;&quot;, n, sum);</span><br><span class="line">            return sum;</span><br><span class="line">        &#125;</span><br><span class="line">        public static void M4()</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;M4：这是无参数无返回值的方法&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        public static void M5()</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;M5：这是无参数无返回值的方法&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        public static void M6()</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;M6：这是无参数无返回值的方法&quot;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;下面是普通的委托与方法的绑定&quot;);</span><br><span class="line">            &#x2F;&#x2F; 委托与方法的绑定</span><br><span class="line">            MyDelegate1 myDelegate1 &#x3D; M1;  &#x2F;&#x2F; new MyDelegate1(M1);</span><br><span class="line">            myDelegate1();  &#x2F;&#x2F; 效果为调用了M1方法</span><br><span class="line"></span><br><span class="line">            MyDelegate2 myDelegate2 &#x3D; M2;</span><br><span class="line">            myDelegate2(&quot;Hello&quot;);   &#x2F;&#x2F; &#x2F;&#x2F; 效果为调用了M2方法,&quot;Hello&quot;为M2中的参数</span><br><span class="line"></span><br><span class="line">            MyDelegate3 myDelegate3 &#x3D; M3;</span><br><span class="line">            myDelegate3(5);   &#x2F;&#x2F; &#x2F;&#x2F; 效果为调用了M3方法,5为M3中的参数</span><br><span class="line"></span><br><span class="line">            Console.WriteLine(&quot;下面是多重委托的绑定&quot;);</span><br><span class="line">            &#x2F;&#x2F; 多重委托</span><br><span class="line">            MyDelegate4 myDelegate4 &#x3D; M4;   &#x2F;&#x2F; 第一个委托用 &#x3D;</span><br><span class="line">            myDelegate4 +&#x3D; M5;      &#x2F;&#x2F; 后面的多重委托用+&#x3D;</span><br><span class="line">            myDelegate4 +&#x3D; M6;      &#x2F;&#x2F; 后面的多重委托用+&#x3D;</span><br><span class="line">            myDelegate4();  &#x2F;&#x2F; 会按照绑定顺序依次执行M4，M5，M6</span><br><span class="line">            &#x2F;&#x2F; 多重委托的移除</span><br><span class="line">            myDelegate4 -&#x3D; M5;  &#x2F;&#x2F; 移除多重委托用-&#x3D;</span><br><span class="line">            myDelegate4();  &#x2F;&#x2F; 会按照绑定顺序依次执行M4，M6</span><br><span class="line"></span><br><span class="line">            Console.WriteLine(&quot;下面是使用Lambda表达式的委托&quot;);</span><br><span class="line">            &#x2F;&#x2F; 使用Lambda表达式的委托</span><br><span class="line">            &#x2F;&#x2F; Lambda表达式是一个可用于创建委托的匿名函数</span><br><span class="line">            &#x2F;&#x2F; 在lambda运算符 &#x3D;&gt; 的左侧指定输入参数，在右侧放置表达式或语句</span><br><span class="line">            MyDelegate5 myDelegate5 &#x3D; new MyDelegate5(()&#x3D;&gt;</span><br><span class="line">            &#123;</span><br><span class="line">                Console.WriteLine(&quot;Lambda：这是无参数无返回值的方法&quot;);</span><br><span class="line">            &#125;);</span><br><span class="line">            myDelegate5();</span><br><span class="line">            MyDelegate2 myDelegate2_1 &#x3D; new MyDelegate2((msg) &#x3D;&gt;</span><br><span class="line">              &#123;</span><br><span class="line">                  Console.WriteLine(&quot;Lambda：这是有参数无返回值的方法&quot;);</span><br><span class="line">  </span><br><span class="line">              &#125;);</span><br><span class="line">            myDelegate2_1(&quot;Lambda_Hello&quot;);</span><br><span class="line"></span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意上述的Lambda表达式。</p>
+<h4 id="内置委托"><a class="markdownIt-Anchor" href="#内置委托"></a> 内置委托</h4>
+<ul>
+<li><strong><code>Action</code>		 无参数无返回值的委托</strong></li>
+<li><strong><code>Action&lt;T&gt;</code>   有参数无返回值的委托（T为参数）</strong></li>
+<li><strong><code>Func&lt;T,T&gt;</code>   有参数有返回值的委托（前面的T为参数，最后一个T为返回值）</strong></li>
+</ul>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo02</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            &#x2F;&#x2F; 内置委托</span><br><span class="line">            Action action1 &#x3D; new Action(() &#x3D;&gt;</span><br><span class="line">              &#123;</span><br><span class="line">                  Console.WriteLine(&quot;这是无参数无返回值的方法&quot;);</span><br><span class="line">              &#125;);</span><br><span class="line">            action1();</span><br><span class="line"></span><br><span class="line">            Action&lt;string&gt; action2 &#x3D; new Action&lt;string&gt;((msg) &#x3D;&gt;</span><br><span class="line">              &#123;</span><br><span class="line">                  Console.WriteLine(&quot;这是有参数无返回值的方法，参数为&#123;0&#125;&quot;, msg);</span><br><span class="line">              &#125;);</span><br><span class="line">            action2(&quot;Hello&quot;);</span><br><span class="line"></span><br><span class="line">            Func&lt;int, int&gt; func &#x3D; new Func&lt;int, int&gt;((n) &#x3D;&gt;</span><br><span class="line">               &#123;</span><br><span class="line">                   int sum &#x3D; 0;</span><br><span class="line">                   for (int i &#x3D; 0; i &lt; n; i++)</span><br><span class="line">                   &#123;</span><br><span class="line">                       sum &#x3D; sum + i;</span><br><span class="line">                   &#125;</span><br><span class="line">                   Console.WriteLine(&quot;M3：这是有参数有返回值的方法，参数为&#123;0&#125;，返回值为&#123;1&#125;&quot;, n, sum);</span><br><span class="line">                   return sum;</span><br><span class="line">               &#125;);</span><br><span class="line">            func(10);</span><br><span class="line"></span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="事件"><a class="markdownIt-Anchor" href="#事件"></a> 事件</h3>
+<p><a href="https://www.runoob.com/csharp/csharp-event.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<blockquote>
+<p><strong>事件（Event）</strong> 基本上说是一个用户操作，如按键、点击、鼠标移动等等，或者是一些提示信息，如系统生成的通知。应用程序需要在事件发生时响应事件。例如，中断。</p>
+<p>C# 中使用事件机制实现线程间的通信。</p>
+</blockquote>
+<ul>
+<li>触发事件的对象——发送方</li>
+<li>被通知的对象——接收方</li>
+</ul>
+<p>事件是类的方法成员之一。<strong>在C#中事件通过委托来实现。</strong></p>
+<p>例子，模拟场景：听到铃声后、学生做好上课准备</p>
+<ol>
+<li><strong>声明委托类型</strong></li>
+<li><strong>声明事件的发布者</strong></li>
+<li><strong>声明事件的接受者</strong></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo03</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F; 声明委托类型</span><br><span class="line">    public delegate void MyDelegate(string msg);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 声明事件的发布者</span><br><span class="line">    class SchoolRing</span><br><span class="line">    &#123;</span><br><span class="line">        public event MyDelegate myEvent;</span><br><span class="line">        &#x2F;&#x2F; 自定义方法用于触发事件</span><br><span class="line">        public void Ring(string msg)</span><br><span class="line">        &#123;</span><br><span class="line">            myEvent(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 声明事件的接受者</span><br><span class="line">    class Student</span><br><span class="line">    &#123;</span><br><span class="line">        public void PerPare(string str)</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(&quot;听到&#123;0&#125;，同学准备上课了&quot;,str);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 模拟场景：听到铃声后、学生做好上课准备</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            SchoolRing schoolRing &#x3D; new SchoolRing();</span><br><span class="line">            Student student &#x3D; new Student();</span><br><span class="line">            schoolRing.myEvent +&#x3D; student.PerPare;  &#x2F;&#x2F; 将方法绑定到事件</span><br><span class="line">            schoolRing.Ring(&quot;上课铃响了&quot;);</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="集合"><a class="markdownIt-Anchor" href="#集合"></a> 集合</h2>
+<p><a href="https://www.runoob.com/csharp/csharp-collection.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<ul>
+<li>集合可以有效管理多个数据</li>
+<li>集合可以根据程序运行的需要进行动态地增长和收缩</li>
+<li>常用集合类：ArrayList、Hashtbale、Queue、Stack</li>
+</ul>
+<h3 id="arraylist"><a class="markdownIt-Anchor" href="#arraylist"></a> ArrayList</h3>
+<p>例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo04</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            ArrayList list &#x3D; new ArrayList();</span><br><span class="line">            &#x2F;&#x2F; 添加集合元素</span><br><span class="line">            list.Add(666);</span><br><span class="line">            list.Add(3.14);</span><br><span class="line">            list.Add(&quot;hello&quot;);</span><br><span class="line">            list.Add(true);</span><br><span class="line">            int[] arr &#x3D; &#123; 1, 2, 3, 4, 5 &#125;;</span><br><span class="line">            list.AddRange(arr);     &#x2F;&#x2F; 添加多个数据</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 插入集合元素</span><br><span class="line">            list.Insert(3, &quot;world&quot;);    &#x2F;&#x2F; 3表示插入索引位置</span><br><span class="line">            int[] arr2 &#x3D; &#123; 2, 3, 3 &#125;;</span><br><span class="line">            list.InsertRange(0,arr2);     &#x2F;&#x2F; 插入多个数据</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 修改集合元素</span><br><span class="line">            list[1] &#x3D; 222;</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 删除集合元素</span><br><span class="line">            list.Remove(true);    &#x2F;&#x2F; 从 ArrayList 中移除第一次出现的指定对象。</span><br><span class="line">            list.RemoveAt(1);     &#x2F;&#x2F; 移除 ArrayList 的指定索引处的元素</span><br><span class="line">            list.RemoveRange(3, 4); &#x2F;&#x2F; 3表示索引开始的位置，删除4个元素</span><br><span class="line">            &#x2F;&#x2F;list.Clear();       &#x2F;&#x2F; 从 ArrayList 中移除所有的元素。</span><br><span class="line"></span><br><span class="line">            Console.WriteLine(&quot;集合中元素的个数为&#123;0&#125;&quot;, list.Count);</span><br><span class="line">            &#x2F;&#x2F; 遍历集合</span><br><span class="line">            Console.Write(&quot;集合的元素为：&quot;);</span><br><span class="line">            for (int i &#x3D; 0; i &lt; list.Count; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.Write(list[i]+&quot;,&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体的相关方法<a href="https://www.runoob.com/csharp/csharp-arraylist.html" target="_blank" rel="noopener">菜鸟教程</a>中都有提到，可自行查看。</p>
+<h3 id="泛型集合"><a class="markdownIt-Anchor" href="#泛型集合"></a> 泛型集合</h3>
+<p><a href="https://www.cnblogs.com/adspark/p/11797387.html" target="_blank" rel="noopener">C#非泛型集合和泛型集合的超级详解（转）</a></p>
+<p>List，例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo05</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            List&lt;int&gt; list &#x3D; new List&lt;int&gt;() &#123; 3, 5, 1, 9, 7 &#125;;</span><br><span class="line">            Console.WriteLine(list.Max());</span><br><span class="line">            Console.WriteLine(list.Min());</span><br><span class="line">            Console.WriteLine(list.Average());</span><br><span class="line">            Console.WriteLine(list.Sum());</span><br><span class="line">            List&lt;int&gt; list1 &#x3D; list.Where(n &#x3D;&gt; n &gt; 5).ToList();  &#x2F;&#x2F; 获取list中大于5的列表（使用了Lambda表达式）</span><br><span class="line">            Console.Write(&quot;list1的元素为：&quot;);</span><br><span class="line">            foreach (var item in list1)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.Write(item + &quot;,&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            Console.Write(&quot;排序前list的元素为：&quot;);</span><br><span class="line">            foreach (var item in list)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.Write(item + &quot;,&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            Console.WriteLine();</span><br><span class="line">            list.Sort();</span><br><span class="line">            Console.Write(&quot;排序后list的元素为：&quot;);</span><br><span class="line">            foreach (var item in list)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.Write(item + &quot;,&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><a href="https://www.cnblogs.com/dyhao/p/9501479.html" target="_blank" rel="noopener">C# List用法 List介绍</a></p>
+<p>Dictionary，例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">using System;</span><br><span class="line">using System.Collections.Generic;</span><br><span class="line">using System.Linq;</span><br><span class="line">using System.Text;</span><br><span class="line">using System.Threading.Tasks;</span><br><span class="line"></span><br><span class="line">namespace demo06</span><br><span class="line">&#123;</span><br><span class="line">    class Program</span><br><span class="line">    &#123;</span><br><span class="line">        static void Main(string[] args)</span><br><span class="line">        &#123;</span><br><span class="line">            Dictionary&lt;string, int&gt; dic &#x3D; new Dictionary&lt;string, int&gt;();    &#x2F;&#x2F; 键值对</span><br><span class="line">            dic.Add(&quot;小明&quot;, 100);</span><br><span class="line">            dic.Add(&quot;小王&quot;, 70);</span><br><span class="line">            dic.Add(&quot;小红&quot;, 90);</span><br><span class="line">            &#x2F;&#x2F;dic.Add(&quot;小明&quot;, 90);  &#x2F;&#x2F; 程序运行报错</span><br><span class="line">            if (dic.ContainsKey(&quot;小明&quot;))  &#x2F;&#x2F; 先判断小明是否已存在</span><br><span class="line">            &#123;</span><br><span class="line">                Console.WriteLine(&quot;小明键已存在，无法添加！&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                dic.Add(&quot;小明&quot;, 98);</span><br><span class="line">            &#125;</span><br><span class="line">            &#x2F;&#x2F; 修改（通过键来索引值）</span><br><span class="line">            dic[&quot;小王&quot;] &#x3D; 80;</span><br><span class="line">            &#x2F;&#x2F; 遍历Dictionary集合的方法有三种，遍历键、遍历值、直接遍历键值对（和python类似）所以这里只给出直接遍历键值对</span><br><span class="line">            foreach (var item in dic)</span><br><span class="line">            &#123;</span><br><span class="line">                Console.WriteLine(&quot;键：&#123;0&#125;&#x3D;&#x3D;&gt;值&#123;1&#125;&quot;, item.Key, item.Value);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Console.ReadLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#委托和事件"><span class="toc-text"> 委托和事件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#委托"><span class="toc-text"> 委托</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件"><span class="toc-text"> 事件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#集合"><span class="toc-text"> 集合</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#arraylist"><span class="toc-text"> ArrayList</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#泛型集合"><span class="toc-text"> 泛型集合</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/03/09/C-sharp%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-09T00:47:03.000Z">2021.03.09</time>
+              <span>#C-sharp · #课程学习笔记</span>
+            </span>
+            <strong>C-sharp面向对象</strong>
+          </a>
+        
+          <a href="/2021/03/07/C-sharp%E6%96%B9%E6%B3%95%E3%80%81%E6%95%B0%E7%BB%84%E5%92%8C%E5%AD%97%E7%AC%A6%E4%B8%B2/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-07T00:47:03.000Z">2021.03.07</time>
+              <span>#C-sharp · #课程学习笔记</span>
+            </span>
+            <strong>C-sharp方法、数组和字符串</strong>
+          </a>
+        
+          <a href="/2021/03/06/C-sharp%EF%BC%88%E4%B8%80%EF%BC%89/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-06T00:47:03.000Z">2021.03.06</time>
+              <span>#C-sharp · #课程学习笔记</span>
+            </span>
+            <strong>C-sharp（一）</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/03/13/MySQL%EF%BC%88%E4%B8%80%EF%BC%89/"><span>上一篇</span><strong>MySQL（一）</strong></a>
+    <a href="/2021/03/09/C-sharp%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/"><span>下一篇</span><strong>C-sharp面向对象</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

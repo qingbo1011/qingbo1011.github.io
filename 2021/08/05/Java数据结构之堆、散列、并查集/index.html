@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Java数据结构之堆（优先队列）、散列（哈希表）和并查集 · Quinn</title>
+<meta name="description" content="Java数据结构之堆（优先队列）、散列（哈希表）和并查集 关于这三种的数据结构的代码实现还没写，后面再补。 堆（优先队列） OI-WiKi 堆 二叉堆：Java实现最大堆及堆排序 详解数据结构——堆 堆和优先队列 数据结构：堆（Heap） …" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/08/05/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E5%A0%86%E3%80%81%E6%95%A3%E5%88%97%E3%80%81%E5%B9%B6%E6%9F%A5%E9%9B%86/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Java数据结构之堆（优先队列）、散列（哈希表）和并查集 · Quinn" />
+<meta property="og:description" content="Java数据结构之堆（优先队列）、散列（哈希表）和并查集 关于这三种的数据结构的代码实现还没写，后面再补。 堆（优先队列） OI-WiKi 堆 二叉堆：Java实现最大堆及堆排序 详解数据结构——堆 堆和优先队列 数据结构：堆（Heap） …" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/08/05/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E5%A0%86%E3%80%81%E6%95%A3%E5%88%97%E3%80%81%E5%B9%B6%E6%9F%A5%E9%9B%86/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503132929.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503132929.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        数据结构与算法 · 2021.08.05
+      
+    </p>
+    <h1>Java数据结构之堆（优先队列）、散列（哈希表）和并查集</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“关于这三种的数据结构的代码实现还没写，后面再补。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/">数据结构与算法</a>
+  
+  <span class="post-meta__item">8 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Java/">#Java</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">#数据结构</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+
+<h1 id="堆优先队列"><a class="markdownIt-Anchor" href="#堆优先队列"></a> 堆（优先队列）</h1>
+<p><a href="https://oi-wiki.org/ds/heap/" target="_blank" rel="noopener">OI-WiKi 堆</a></p>
+<p><a href="https://juejin.cn/post/6877604705577467918#heading-0" target="_blank" rel="noopener">二叉堆：Java实现最大堆及堆排序</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/85518062" target="_blank" rel="noopener">详解数据结构——堆</a></p>
+<p><a href="https://segmentfault.com/a/1190000016753056" target="_blank" rel="noopener">堆和优先队列</a></p>
+<p><a href="https://www.jianshu.com/p/6b526aa481b1" target="_blank" rel="noopener">数据结构：堆（Heap）</a></p>
+<h2 id="堆的分类"><a class="markdownIt-Anchor" href="#堆的分类"></a> 堆的分类</h2>
+<p><strong>堆是一棵树</strong>，其每个节点都有一个键值，且每个节点的键值都大于等于(或小于等于)其父亲的键值。</p>
+<p>每个节点的键值都大于等于其父亲键值的堆叫做小根堆，否则叫做大根堆。</p>
+<ul>
+<li><strong>大根堆：大根堆就是无论在任何一棵（子）树中，父节点都是最大的</strong></li>
+<li><strong>小根堆：小根堆就是无论在任何一棵（子）树中，父节点都是最小的</strong></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142058.png" alt="" /></p>
+<p><strong>习惯上，不加限定提到“堆”时往往都指二叉堆。</strong></p>
+<h2 id="堆和普通树的区别"><a class="markdownIt-Anchor" href="#堆和普通树的区别"></a> 堆和普通树的区别</h2>
+<p><strong>堆并不能取代二叉搜索树</strong>，它们之间有相似之处也有一些不同。我们来看一下两者的主要差别：</p>
+<ul>
+<li>**节点的顺序。**在二叉搜索树中，左子节点必须比父节点小，右子节点必须必比父节点大。但是在堆中并非如此。在最大堆中两个子节点都必须比父节点小，而在最小堆中，它们都必须比父节点大。</li>
+<li>**内存占用。**普通树占用的内存空间比它们存储的数据要多。你必须为节点对象以及左/右子节点指针分配内存。堆仅仅使用一个数据来存储数组，且不使用指针。</li>
+<li><strong>平衡。<strong>二叉搜索树必须是“平衡”的情况下，其大部分操作的复杂度才能达到</strong>O(log n)</strong>。你可以按任意顺序位置插入/删除数据，或者使用 AVL 树或者红黑树，但是<strong>在堆中实际上不需要整棵树都是有序的</strong>。我们只需要满足堆属性即可，所以<strong>在堆中平衡不是问题</strong>。因为堆中数据的组织方式可以保证<strong>O(log n)</strong> 的性能。</li>
+<li>**搜索。**在二叉树中搜索会很快，但是在堆中搜索会很慢。<strong>在堆中搜索不是第一优先级，因为使用堆的目的是将最大（或者最小）的节点放在最前面</strong>，从而快速的进行相关插入、删除操作。</li>
+</ul>
+<h2 id="二叉堆"><a class="markdownIt-Anchor" href="#二叉堆"></a> 二叉堆</h2>
+<p><strong>二叉堆的结构一棵完全二叉树</strong>，每个结点中存有一个元素（或者说，有个权值）。</p>
+<p>在之前哈夫曼树的<a href="https://www.qingbo1011.top/2021/08/03/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E6%A0%91/#%E6%9C%80%E5%B0%8F%E5%A0%86%E5%8D%87%E5%BA%8F%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97">笔记</a>中，我们就用代码实现了小根堆。</p>
+<h3 id="用数组实现二叉堆"><a class="markdownIt-Anchor" href="#用数组实现二叉堆"></a> 用数组实现二叉堆</h3>
+<p>完全可以<strong>用数组来实现二叉堆</strong>。用数组来实现树相关的数据结构也许看起来有点古怪，但是它在时间和空间上都是很高效的。</p>
+<p>举个例子以下面这个大根堆为例：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142115.png" alt="" /></p>
+<p>这个数就可以用数组**[ 10, 7, 2, 5, 1 ]<strong>来存储。</strong><mark>数组实现的堆中</mark>，第N个结点的左孩子索引是(2N+1)，右孩子的索引是(2N+2)**。</p>
+<p>如果 <code>i</code> 是节点的索引，那么下面的公式就给出了它的父节点和子节点在数组中的位置：</p>
+<ul>
+<li><strong>parent(i) = （i-1）/2</strong></li>
+<li><strong>left(i)   = 2*i + 1</strong></li>
+<li><strong>right(i)  = 2*i + 2</strong></li>
+</ul>
+<blockquote>
+<p><strong>right(i) = left(i) + 1</strong>。<strong>左右节点总是处于相邻的位置。</strong></p>
+</blockquote>
+<p>在使用这些索引值的时候需要<strong>保证是有效的索引值</strong>。如果索引值无效，这说明该结点没有父结点（或子结点）</p>
+<p>在<strong>最大堆</strong>中，父节点的值总是要大于（或者等于）其子节点的值。这意味这个公式对数组中任意一个索引 <code>i</code>都成立：<code>array[parent(i)] &gt;= array[i]</code></p>
+<p>分析出了上面这些公式，我们就可以<strong>不使用指针就可以找到任何一个节点的父节点或者子节点</strong>。事情比简单的去掉指针要复杂，但这就是交易：我们<strong>节约了空间，但是要进行更多计算</strong>，幸好这些计算很快并且只需要**O(1)**的时间。</p>
+<p><strong>理解数组索引和节点位置之间的关系</strong>非常重要。这里再给一个最小堆的例子：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142130.png" alt="" /></p>
+<p>注意：图片中的数字不是节点的值，而是存储这个节点的数组索引！数组索引和树的层级之间的关系以及在图中给出了。</p>
+<p>还有一个要注意的点，<strong>在堆中，在当前层级所有的节点都已经填满之前不允许开始下一层的填充</strong>。所以堆总是像这样的形状：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142155.png" alt="" /></p>
+<blockquote>
+<p>当然可以使用普通树来模拟堆，但是那<strong>对空间是极大的浪费</strong>。</p>
+</blockquote>
+<p><strong>一个从低到高有序排列的数组是一个有效的最小堆，一个从高到低有序排列的数组是一个有效的最大堆。</strong></p>
+<p>我们以数组[ 10, 14, 25, 33, 81, 82, 99 ]为例，将其展开为堆结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142215.png" alt="" /></p>
+<p>可以发现是一个最小堆。</p>
+<blockquote>
+<p>**注意：**并不是每一个最小堆都是一个有序数组！要将堆转换成有序数组，需要使用堆排序。</p>
+</blockquote>
+<p>最后再补充一个数学公式，<strong>根据节点数（数组长度）来求堆的高度</strong>。<strong>树的高度是指从树的根节点到最低的叶节点所需要的步数</strong>，或者更正式的定义：高度是指节点之间的边的最大值。<strong>一个高度为 h 的堆有 h+1 层</strong>。</p>
+<p>举个例子，下面这个对的<strong>高度是3</strong>，所以它有4层：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142231.png" alt="" /></p>
+<p>了解了上面这些概念就很好求了，其实就是等比数列前n项和的问题。</p>
+<h3 id="堆的相关操作"><a class="markdownIt-Anchor" href="#堆的相关操作"></a> 堆的相关操作</h3>
+<p>堆有两个最基本的操作，用于<strong>保证插入或删除节点以后堆是一个有效的最大堆或者最小堆</strong>：</p>
+<ul>
+<li><code>shiftUp()</code>: 如果一个节点比它的父节点大（最大堆）或者小（最小堆），那么需要将它<strong>同父节点交换位置</strong>。（即我们之前写过的向上调整算法，代码中有<code>current = parent;</code>）</li>
+<li><code>shiftDown()</code>: 如果一个节点比它的子节点小（最大堆）或者大（最小堆），那么需要将它<strong>同左孩子交换位置</strong>（即我们之前写过的向下调整算法，代码中有<code>current = left;</code>）</li>
+</ul>
+<p><code>shiftUp()</code>和 <code>shiftDown()</code>是一个递归的过程，所以它的时间复杂度是 <strong>O(log n)</strong>。</p>
+<p>基于这两个基本操作就可以实现其他的操作：</p>
+<ul>
+<li><code>insert(value)</code>: 在<strong>堆的尾部添加一个新的元素</strong>，然后使用 <code>shiftUp</code> 来修复对。</li>
+<li><code>remove()</code>: 移除并返回最大值（最大堆）或者最小值（最小堆）。为了将这个节点删除后的空位填补上，需要<strong>将最后一个元素移到根节点的位置</strong>，然后使用 <code>shiftDown</code> 方法来修复堆。</li>
+<li><code>removeAtIndex(index)</code>: 和 <code>remove()</code> 一样，差别在于可以移除堆中任意节点，而不仅仅是根节点。当它与子节点比较位置无序时使用 <code>shiftDown()</code>，如果与父节点比较无序则使用 <code>shiftUp()</code>。</li>
+<li><code>replace(index, value)</code>：将一个更小的值（最小堆）或者更大的值（最大堆）赋值给一个节点。由于这个操作破坏了堆属性，所以需要使用 <code>shiftUp()</code> 来修复堆属性。</li>
+</ul>
+<p>上面所有的操作的时间复杂度都是 <strong>O(log n)</strong></p>
+<p>下面有一些时间复杂度更高的操作：</p>
+<ul>
+<li><code>search(value)</code>：堆不是为快速搜索而建立的，但是 <code>replace()</code> 和 <code>removeAtIndex()</code> 操作需要找到节点在数组中的index，所以你需要先找到这个index。时间复杂度：<strong>O(n)</strong>。</li>
+<li><code>buildHeap(array)</code>：通过反复调用 <code>insert()</code> 方法将一个（无序）数组转换成一个堆。如果你足够聪明，你可以在 <strong>O(n)</strong> 时间内完成。</li>
+<li><strong>堆排序：由于堆就是一个数组，我们可以使用它独特的属性将数组从低到高排序</strong>。时间复杂度：<strong>O(n lg n)</strong>。</li>
+</ul>
+<p><strong>堆最重要的功能还是插入和删除根节点</strong>，所以主要还是来看一下插入节点和删除根节点。</p>
+<h4 id="插入"><a class="markdownIt-Anchor" href="#插入"></a> 插入</h4>
+<p><code>insert(value)</code>: 在<strong>堆的尾部添加一个新的元素</strong>，然后使用 <code>shiftUp</code> 来修复对。</p>
+<p>我们通过一个插入例子来看看插入操作的细节。我们将数字 <code>16</code> 插入到这个最大堆中：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142256.png" alt="" /></p>
+<p>过程如下：</p>
+<ol>
+<li>
+<p>首先数组由[ 10, 7, 2, 5, 1 ]变成了[ 10, 7, 2, 5, 1, 16 ]，相应的树变成了：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142317.png" alt="" /></p>
+</li>
+<li>
+<p>由于最大堆的特性，父结点必须要比子结点大，所以<code>2</code>和<code>16</code>要互换位置：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142330.png" alt="" /></p>
+<p>此时还没有结束，因为 <code>10</code> 也比 <code>16</code> 小。我们继续交换我们的插入元素和它的父节点，直到它的父节点比它大或者我们到达树的顶部。这就是所谓的<code>shiftUp()</code>（向上调整法），每一次插入操作后都需要进行。它将一个太大或者太小的数字“浮起”到树的顶部。、</p>
+</li>
+<li>
+<p>最后我们得到的堆：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142342.png" alt="" /></p>
+<p>数组即变为了：[16,7,10,5,1,2]</p>
+</li>
+</ol>
+<h4 id="删除根节点"><a class="markdownIt-Anchor" href="#删除根节点"></a> 删除根节点</h4>
+<p><code>remove()</code>: 移除并返回最大值（最大堆）或者最小值（最小堆）。为了将这个节点删除后的空位填补上，需要<strong>将最后一个元素移到根节点的位置</strong>，然后使用 <code>shiftDown</code> 方法来修复堆。</p>
+<p>还是以这个堆为例：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142358.png" alt="" /></p>
+<p>我们将这个树中的 <code>(10)</code> 删除，过程如下：</p>
+<ol>
+<li>
+<p>删除根节点后，现在顶部有一个空的节点：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142410.png" alt="" /></p>
+<p>当插入节点的时候，我们将新的值返给数组的尾部。现在我们来做相反的事情：我们<strong>取出数组中的最后一个元素，将它放到树的顶部</strong>，然后再修复堆属性。如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142423.png" alt="" /></p>
+</li>
+<li>
+<p>接下来就需要进行<code>shiftDown()</code>操作了，即向下调整法。为了保持最大堆的堆属性，我们需要树的顶部是最大的数据。现在有两个数字可用于交换：7 和 2。我们<strong>选择这两者中的较大者</strong>为最大值放在树的顶部，所以交换 <code>7</code> 和 <code>1</code>，现在树变成了：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142441.png" alt="" /></p>
+<p>还没有结束，因为5也比1大，所以我们将<code>5</code>和<code>1</code>也互换位置：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142451.png" alt="" /></p>
+</li>
+<li>
+<p>这样我们就得到删除根节点后的堆了，数组也由[10, 7, 2, 5, 1]变成了[ 7,5,2,1 ]</p>
+</li>
+</ol>
+<h4 id="删除任意节点"><a class="markdownIt-Anchor" href="#删除任意节点"></a> 删除任意节点</h4>
+<p><code>removeAtIndex(index)</code>: 和 <code>remove()</code> 一样，差别在于可以移除堆中任意节点，而不仅仅是根节点。当它与子节点比较位置无序时使用 <code>shiftDown()</code>，如果与父节点比较无序则使用 <code>shiftUp()</code>。</p>
+<p>在绝大多数时候你需要删除的是堆的根节点，因为这就是堆的设计用途。但是，删除任意节点也很有用。这是 <code>remove()</code> 的通用版本，它可能会使用到 <code>shiftDown()</code> 和 <code>shiftUp()</code>。</p>
+<p>还是以上面这个堆为例：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220503142508.png" alt="" /></p>
+<p>大致思路就是：数组原本为：[10,7,2,5,1]，假如要删除7，那么先让7<code>和``1</code>互换位置，数组变为：[10,1,2,5,7]，然后删除堆的最后一个元素（即数组的最后一个元素）， <code>removeLast()</code> 操作。数组变为了[10,1,2,5]，接下来再根据最大堆的特性来选择执行 <code>shiftDown()</code> 和 <code>shiftUp()</code>，最后修复的堆数组为：            [10,5,2,1]。</p>
+<p>（<a href="https://github.com/raywenderlich/swift-algorithm-club/tree/master/Heap#removing-any-node" target="_blank" rel="noopener">英文原文</a>）</p>
+<h2 id="配对堆"><a class="markdownIt-Anchor" href="#配对堆"></a> 配对堆</h2>
+<p><a href="https://oi-wiki.org/ds/pairing-heap/" target="_blank" rel="noopener">OI-WiKi 配对堆</a></p>
+<blockquote>
+<p>配对堆是一个支持插入，查询/删除最小值，合并，修改元素等操作的数据结构，也就是俗称的可并堆。<br />
+<strong>配对堆在 OI 界十分的冷门，但其实跑得比较快，也很好写，但不能可持久化</strong>，因为配对堆复杂度是势能分析出来的均摊复杂度。</p>
+</blockquote>
+<h2 id="左偏树"><a class="markdownIt-Anchor" href="#左偏树"></a> 左偏树</h2>
+<p><a href="https://oi-wiki.org/ds/leftist-tree/" target="_blank" rel="noopener">OI-WiKi 左偏树</a></p>
+<blockquote>
+<p>左偏树 与 配对堆 一样，是一种 可并堆，具有堆的性质，并且可以快速合并。</p>
+</blockquote>
+<h2 id="堆和优先队列的区别"><a class="markdownIt-Anchor" href="#堆和优先队列的区别"></a> 堆和优先队列的区别</h2>
+<p><a href="https://blog.csdn.net/weixin_44337445/article/details/110508591" target="_blank" rel="noopener">PriorityQueue（优先队列）和Heap（堆）到底有什么区别？</a></p>
+<p>首先来看名字：</p>
+<ul>
+<li>优先队列：说到底还是一种队列，不过是一种特殊的队列。它的主要作用就是poll()/peek()出队列中最大/最小的那个元素。</li>
+<li>堆：首先我们要明确：<strong>堆是一个很大的概念，它并不一定是完全二叉树</strong>。我们之前用完全二叉树是因为这个很容易被数组储存（index: index * 2是右子节点 index*2+1是左子节点）。正因为这样，所以<strong>大部分情况我们用完全二叉树（数组）来储存堆</strong>，但是除了这种二叉堆之外，<strong>像二项堆、斐波那契堆这种堆就不属于二叉树。</strong></li>
+</ul>
+<p>那么优先对列和堆有什么区别呢？<strong>这里说的堆默认我们最常使用的二叉堆</strong>，而<strong>二叉堆只是优先队列的一种是实现方式而已</strong>。</p>
+<p>那么优先队列还有哪些实现方式呢？二项堆，平衡树，线段树，甚至用二进制分组的vector来实现一个优先对列。</p>
+<p>所以说，<strong>优先队列和堆不是一个同level的概念</strong>，如果非要说，他们之间的关系就是：<strong>二叉堆只是优先队列的一种实现方式</strong>，而<strong>Java的PriorityQueue就是通过用数组表示的小根堆实现的</strong>。</p>
+<hr />
+<h1 id="散列"><a class="markdownIt-Anchor" href="#散列"></a> 散列</h1>
+<p><a href="https://oi-wiki.org/ds/hash/" target="_blank" rel="noopener">Oi-WiKi 哈希表</a></p>
+<p><a href="https://www.cnblogs.com/binarylei/p/12432774.html" target="_blank" rel="noopener">Java数据结构 - 散列表原理</a></p>
+<p><a href="https://www.jianshu.com/p/1bf91bbcad13" target="_blank" rel="noopener">Java关于数据结构的实现：散列</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/51275437" target="_blank" rel="noopener">Java中的散列表——HashSet</a></p>
+<p><strong>哈希表</strong>是又称<strong>散列表</strong>，一种以 “<strong>key-value</strong>” 形式存储数据的数据结构。所谓以 “key-value” 形式存储数据，是指任意的键值 key 都唯一对应到内存中的某个位置。只需要输入查找的键值，就可以快速地找到其对应的 value。可以把哈希表理解为一种高级的数组，这种数组的下标可以是很大的整数，浮点数，字符串甚至结构体。</p>
+<p>关于Java中对哈希表的具体实现，如HashSet，LinkedHashSet，HashMap，LinkedHashMap 之类的，在之前<a href="https://www.qingbo1011.top/2021/08/31/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E9%9B%86%E5%90%88%E7%9F%A5%E8%AF%86%E5%85%A8%E7%B3%BB%E5%88%97%E5%9B%9E%E9%A1%BE/">Java数据结构之集合知识全系列</a>的笔记中已经介绍过了。</p>
+<p>这里我们以HashMap为例，再具体学习一下。</p>
+<blockquote>
+<p>散列表，是一种数据结构，通过存储位置与key的映射关系存储数据，实现平均时间复杂度为<code>O(1)</code>的查找功能。在Java中，每个类因为继承关系，都含有一个<code>public int hashCode()</code>方法，当我们要将自己实现的类作为散列表中的key时，我们需要自己重写这个函数。</p>
+</blockquote>
+<h2 id="查找"><a class="markdownIt-Anchor" href="#查找"></a> 查找</h2>
+<p>我们知道在查找一个线性表中是否<code>contains</code>某个值时，我们需要遍历整个线性表，判断是否存在某个值，时间复杂度为<code>O(n)</code>，如Java中的ArrayList和LinkedList。</p>
+<p>这时候<strong>散列表</strong>就显示出它的作用来了，它就是为<strong>快速查找</strong>value诞生的。在Java中<code>HashMap</code>就是散列表的实现，从 jdk1.8开始，HashMap 主要是由<strong>数组+单向链表+红黑树</strong> 实现，相比 jdk1.7 而言，多了一个<strong>红黑树</strong>实现。</p>
+<p>HashMap 的实现原理，算是面试必问的一个话题，详细的实现过程，有兴趣的朋友可以参考文章<a href="http://www.justdojava.com/2019/09/16/java-collection-4/" target="_blank" rel="noopener">【集合系列】- 深入浅出分析HashMap</a>！</p>
+<h2 id="hashcode方法"><a class="markdownIt-Anchor" href="#hashcode方法"></a> hashCode()方法</h2>
+<p>散列值也即哈希值，提到哈希值，我们不禁会联想到Java里到<code>hashCode()</code>方法与<code>equals()</code>方法。</p>
+<blockquote>
+<p><code>hashCode()</code>方法返回该对象的哈希码值，在一次Java应用运行期间，如果该对象上equals()方法里比较的信息没有修改，则对该对象多次调用hashCode()方法时返回相同的整数。</p>
+</blockquote>
+<p>从这个定义我们可以了解到以下几点：</p>
+<ul>
+<li>当<code>equals()</code>方法被重写时，通常有必要重写<code>hashCode()</code>方法，以维<code>护hashCode()</code>方法的常规协定，该协定声明相等对象必须具有相等的哈希码。</li>
+<li><strong>hashCode的存在主要用来提升查找的快捷性</strong>，HashMap、Hashtable等用hashCode来确定散列表中对象的存储地址。</li>
+<li><strong>两个对象相同，则两个对象的hashCode相同</strong>，<strong>反过来却不一定，hashCode相同只能说明这两个对象放在散列表里的同一个&quot;篮子&quot;里</strong>。</li>
+</ul>
+<h2 id="哈希冲突"><a class="markdownIt-Anchor" href="#哈希冲突"></a> 哈希冲突</h2>
+<p>通过上面的描述，我们可以知道散列表主要面临的问题是散列值均匀的分布，而我们主要解决的问题是在散列值在计算的时候出现的冲突问题，即出现了两个相同的散列值，通常这也成为<strong>哈希冲突</strong>。</p>
+<p>对于发生Hash冲突的情况，冲突有两种实现方式，<strong>一种开放地址方式（当发生hash冲突时，就继续以此继续寻找，直到找到没有冲突的hash值），另一种是拉链方式（将冲突的元素放入链表）</strong>。<strong>Java HashMap采用的就是第二种方式，拉链法。</strong></p>
+<h2 id="散列的实现及jdk源码分析"><a class="markdownIt-Anchor" href="#散列的实现及jdk源码分析"></a> 散列的实现及jdk源码分析</h2>
+<blockquote>
+<p>后面再补。</p>
+</blockquote>
+<p>可以参考：<a href="http://www.justdojava.com/2019/09/16/java-collection-4/" target="_blank" rel="noopener">深入浅出分析HashMap</a></p>
+<h1 id="并查集"><a class="markdownIt-Anchor" href="#并查集"></a> 并查集</h1>
+<p><a href="https://oi-wiki.org/ds/dsu/" target="_blank" rel="noopener">Oi-WiKi 并查集</a></p>
+<p><a href="https://www.cnblogs.com/noking/p/8018609.html" target="_blank" rel="noopener">并查集(Java实现)</a></p>
+<p><a href="https://blog.csdn.net/yjw123456/article/details/78929640" target="_blank" rel="noopener">并查集Java实现</a></p>
+<blockquote>
+<p>后面学前缀树(Tire Tree)的时候一起补。</p>
+</blockquote>
+<p>​</p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#堆的分类"><span class="toc-text"> 堆的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#堆和普通树的区别"><span class="toc-text"> 堆和普通树的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二叉堆"><span class="toc-text"> 二叉堆</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#用数组实现二叉堆"><span class="toc-text"> 用数组实现二叉堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#堆的相关操作"><span class="toc-text"> 堆的相关操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#配对堆"><span class="toc-text"> 配对堆</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#左偏树"><span class="toc-text"> 左偏树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#堆和优先队列的区别"><span class="toc-text"> 堆和优先队列的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查找"><span class="toc-text"> 查找</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hashcode方法"><span class="toc-text"> hashCode()方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#哈希冲突"><span class="toc-text"> 哈希冲突</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#散列的实现及jdk源码分析"><span class="toc-text"> 散列的实现及jdk源码分析</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/08/31/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E9%9B%86%E5%90%88%E7%9F%A5%E8%AF%86%E5%85%A8%E7%B3%BB%E5%88%97%E5%9B%9E%E9%A1%BE/">
+            <span class="related-notes__meta">
+              <time datetime="2021-08-31T09:42:03.000Z">2021.08.31</time>
+              <span>#Java · #数据结构</span>
+            </span>
+            <strong>Java数据结构之集合知识全系列</strong>
+          </a>
+        
+          <a href="/2021/08/04/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E5%9B%BE/">
+            <span class="related-notes__meta">
+              <time datetime="2021-08-04T09:42:03.000Z">2021.08.04</time>
+              <span>#Java · #数据结构</span>
+            </span>
+            <strong>Java数据结构之图</strong>
+          </a>
+        
+          <a href="/2021/08/03/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E6%A0%91/">
+            <span class="related-notes__meta">
+              <time datetime="2021-08-03T09:42:03.000Z">2021.08.03</time>
+              <span>#Java · #数据结构</span>
+            </span>
+            <strong>Java数据结构之树</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/08/31/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E9%9B%86%E5%90%88%E7%9F%A5%E8%AF%86%E5%85%A8%E7%B3%BB%E5%88%97%E5%9B%9E%E9%A1%BE/"><span>上一篇</span><strong>Java数据结构之集合知识全系列</strong></a>
+    <a href="/2021/08/04/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B9%8B%E5%9B%BE/"><span>下一篇</span><strong>Java数据结构之图</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

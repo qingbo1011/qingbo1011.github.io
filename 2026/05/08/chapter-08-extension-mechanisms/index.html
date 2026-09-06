@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>第八章：扩展机制——Plugins、Skills与Multi-Agent · Quinn</title>
+<meta name="description" content="第八章：扩展机制——Plugins、Skills与Multi-Agent “一个系统的生命力，取决于它允许别人在上面做什么。” 8.1 扩展机制全景 Claude Code 的扩展体系由三个递进层次组成： 插件（Plugins） ：最重量级…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/05/08/chapter-08-extension-mechanisms/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="第八章：扩展机制——Plugins、Skills与Multi-Agent · Quinn" />
+<meta property="og:description" content="第八章：扩展机制——Plugins、Skills与Multi-Agent “一个系统的生命力，取决于它允许别人在上面做什么。” 8.1 扩展机制全景 Claude Code 的扩展体系由三个递进层次组成： 插件（Plugins） ：最重量级…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/05/08/chapter-08-extension-mechanisms/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Claude Code 源码学习 · 08 / 09
+      
+    </p>
+    <h1>第八章：扩展机制——Plugins、Skills与Multi-Agent</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“一个系统的生命力，取决于它允许别人在上面做什么。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/AI%E5%BA%94%E7%94%A8/">AI应用</a>
+  
+  <span class="post-meta__item">33 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Claude-Code/">#Claude Code</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="81-扩展机制全景"><a class="markdownIt-Anchor" href="#81-扩展机制全景"></a> 8.1 扩展机制全景</h2>
+<p>Claude Code 的扩展体系由三个递进层次组成：</p>
+<ul>
+<li><strong>插件（Plugins）</strong>：最重量级的扩展单元，可提供命令、Agent、Skills、Hooks、MCP/LSP 服务器、设置注入</li>
+<li><strong>技能（Skills）</strong>：轻量级的&quot;可复用工作流模板&quot;，一个 Markdown 文件定义一个工作流</li>
+<li><strong>多Agent（Multi-Agent）</strong>：通过 AgentTool 和 SendMessageTool 实现任务分解与并行执行</li>
+</ul>
+<div class="mermaid">
+graph TB
+    subgraph 插件系统["插件系统（Plugins）"]
+        P1[Marketplace 插件]
+        P2[Session 插件<br>--plugin-dir]
+        P3[内置插件<br>@builtin]
+    end
+
+    subgraph Skills系统["Skills系统（Skills）"]
+        S1[内置Skills<br>bundled/]
+        S2[用户Skills<br>~/.claude/skills/]
+        S3[项目Skills<br>.claude/skills/]
+        S4[MCP Skills<br>skill://]
+    end
+
+    subgraph 多Agent["多 Agent 架构"]
+        A1[协调者模式<br>Coordinator]
+        A2[直接派生<br>AgentTool]
+        A3[团队/群体<br>Swarm]
+    end
+
+    P1 --> |提供| S4
+    P1 --> |提供| Commands[斜杠命令]
+    P1 --> |提供| Agents[Agent 定义]
+    P1 --> |提供| Hooks[Hook 处理器]
+    P1 --> |提供| MCP[MCP 服务器]
+    P1 --> |注入| Settings[设置基础层]
+
+    S1 --> SkillTool[Skill 工具]
+    S2 --> SkillTool
+    S3 --> SkillTool
+    S4 --> SkillTool
+
+    A1 --> AgentTool[Agent 工具]
+    A2 --> AgentTool
+    A3 --> SendMsg[SendMessage 工具]
+</div>
+<hr />
+<h2 id="82-插件系统plugins"><a class="markdownIt-Anchor" href="#82-插件系统plugins"></a> 8.2 插件系统（Plugins）</h2>
+<h3 id="821-插件架构概览"><a class="markdownIt-Anchor" href="#821-插件架构概览"></a> 8.2.1 插件架构概览</h3>
+<p>插件是 Claude Code 中最完整的扩展单元。一个插件可以同时提供多种扩展组件：</p>
+<table>
+<thead>
+<tr>
+<th>组件类型</th>
+<th>目录/文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>命令（Commands）</td>
+<td><code>commands/*.md</code></td>
+<td>斜杠命令</td>
+</tr>
+<tr>
+<td>Agent 定义</td>
+<td><code>agents/*.md</code></td>
+<td>自定义 Agent 类型</td>
+</tr>
+<tr>
+<td>技能（Skills）</td>
+<td><code>skills/*/SKILL.md</code></td>
+<td>工作流模板</td>
+</tr>
+<tr>
+<td>Hooks</td>
+<td><code>hooks/hooks.json</code></td>
+<td>生命周期钩子</td>
+</tr>
+<tr>
+<td>MCP 服务器</td>
+<td><code>.mcp.json</code></td>
+<td>外部工具协议服务器</td>
+</tr>
+<tr>
+<td>LSP 服务器</td>
+<td><code>.lsp.json</code></td>
+<td>语言服务器</td>
+</tr>
+<tr>
+<td>输出样式</td>
+<td><code>output-styles/</code></td>
+<td>自定义输出格式</td>
+</tr>
+<tr>
+<td>设置注入</td>
+<td><code>settings.json</code></td>
+<td>注入设置基础层</td>
+</tr>
+</tbody>
+</table>
+<h3 id="822-插件目录结构"><a class="markdownIt-Anchor" href="#822-插件目录结构"></a> 8.2.2 插件目录结构</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">my-plugin&#x2F;</span><br><span class="line">├── .claude-plugin&#x2F;</span><br><span class="line">│   └── plugin.json          # 清单文件（元数据 + 组件声明）</span><br><span class="line">├── commands&#x2F;                # 斜杠命令（*.md 文件）</span><br><span class="line">│   ├── build.md</span><br><span class="line">│   └── deploy.md</span><br><span class="line">├── agents&#x2F;                  # AI Agent 定义（*.md 文件）</span><br><span class="line">│   └── test-runner.md</span><br><span class="line">├── skills&#x2F;                  # 技能目录（每个子目录含 SKILL.md）</span><br><span class="line">│   └── my-skill&#x2F;</span><br><span class="line">│       └── SKILL.md</span><br><span class="line">├── output-styles&#x2F;           # 自定义输出样式</span><br><span class="line">├── hooks&#x2F;                   # Hook 配置</span><br><span class="line">│   └── hooks.json</span><br><span class="line">├── .mcp.json                # MCP 服务器配置</span><br><span class="line">├── .lsp.json                # LSP 服务器配置</span><br><span class="line">└── settings.json            # 插件设置（作为最低优先级基础层）</span><br></pre></td></tr></table></figure>
+<h3 id="823-插件清单pluginjson"><a class="markdownIt-Anchor" href="#823-插件清单pluginjson"></a> 8.2.3 插件清单（plugin.json）</h3>
+<p>位于 <code>&lt;plugin-root&gt;/.claude-plugin/plugin.json</code>，通过 <code>PluginManifestSchema</code>（Zod）校验：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// schemas.ts（精简版）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// 元数据</span></span><br><span class="line">  name: <span class="built_in">string</span>,             <span class="comment">// 唯一标识，kebab-case</span></span><br><span class="line">  version?: <span class="built_in">string</span>,         <span class="comment">// Semver 版本</span></span><br><span class="line">  description?: <span class="built_in">string</span>,</span><br><span class="line">  author?: &#123; name: <span class="built_in">string</span>; email?: <span class="built_in">string</span>; url?: <span class="built_in">string</span> &#125;,</span><br><span class="line">  homepage?: <span class="built_in">string</span>,</span><br><span class="line">  repository?: <span class="built_in">string</span>,</span><br><span class="line">  license?: <span class="built_in">string</span>,</span><br><span class="line">  keywords?: <span class="built_in">string</span>[],</span><br><span class="line">  dependencies?: DependencyRef[],  <span class="comment">// "name" 或 "name@marketplace"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 组件声明</span></span><br><span class="line">  commands?: <span class="built_in">string</span> | <span class="built_in">string</span>[] | Record&lt;<span class="built_in">string</span>, CommandMetadata&gt;,</span><br><span class="line">  agents?: <span class="built_in">string</span> | <span class="built_in">string</span>[],</span><br><span class="line">  skills?: <span class="built_in">string</span> | <span class="built_in">string</span>[],</span><br><span class="line">  outputStyles?: <span class="built_in">string</span> | <span class="built_in">string</span>[],</span><br><span class="line">  hooks?: <span class="built_in">string</span> | HooksSettings | <span class="built_in">Array</span>&lt;<span class="built_in">string</span> | HooksSettings&gt;,</span><br><span class="line">  mcpServers?: <span class="built_in">string</span> | Record&lt;<span class="built_in">string</span>, McpServerConfig&gt;,</span><br><span class="line">  lspServers?: <span class="built_in">string</span> | Record&lt;<span class="built_in">string</span>, LspServerConfig&gt;,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 配置</span></span><br><span class="line">  settings?: Record&lt;<span class="built_in">string</span>, unknown&gt;,  <span class="comment">// 仅允许白名单 key</span></span><br><span class="line">  userConfig?: Record&lt;<span class="built_in">string</span>, PluginUserConfigOption&gt;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="824-插件类型定义"><a class="markdownIt-Anchor" href="#824-插件类型定义"></a> 8.2.4 插件类型定义</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// types/plugin.ts</span></span><br><span class="line"><span class="keyword">type</span> BuiltinPluginDefinition = &#123;</span><br><span class="line">  name: <span class="built_in">string</span></span><br><span class="line">  description: <span class="built_in">string</span></span><br><span class="line">  version?: <span class="built_in">string</span></span><br><span class="line">  skills?: BundledSkillDefinition[]</span><br><span class="line">  hooks?: HooksSettings</span><br><span class="line">  mcpServers?: Record&lt;<span class="built_in">string</span>, McpServerConfig&gt;</span><br><span class="line">  isAvailable?: <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">boolean</span></span><br><span class="line">  defaultEnabled?: <span class="built_in">boolean</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> LoadedPlugin = &#123;</span><br><span class="line">  name: <span class="built_in">string</span></span><br><span class="line">  manifest: PluginManifest</span><br><span class="line">  path: <span class="built_in">string</span></span><br><span class="line">  source: <span class="built_in">string</span>               <span class="comment">// e.g., "my-plugin@marketplace-name"</span></span><br><span class="line">  repository: <span class="built_in">string</span></span><br><span class="line">  enabled?: <span class="built_in">boolean</span></span><br><span class="line">  isBuiltin?: <span class="built_in">boolean</span></span><br><span class="line">  sha?: <span class="built_in">string</span>                 <span class="comment">// Git commit SHA 版本锁定</span></span><br><span class="line">  commandsPath?: <span class="built_in">string</span></span><br><span class="line">  commandsPaths?: <span class="built_in">string</span>[]</span><br><span class="line">  agentsPath?: <span class="built_in">string</span></span><br><span class="line">  agentsPaths?: <span class="built_in">string</span>[]</span><br><span class="line">  skillsPath?: <span class="built_in">string</span></span><br><span class="line">  skillsPaths?: <span class="built_in">string</span>[]</span><br><span class="line">  hooksConfig?: HooksSettings</span><br><span class="line">  mcpServers?: Record&lt;<span class="built_in">string</span>, McpServerConfig&gt;</span><br><span class="line">  lspServers?: Record&lt;<span class="built_in">string</span>, LspServerConfig&gt;</span><br><span class="line">  settings?: Record&lt;<span class="built_in">string</span>, unknown&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="825-插件加载流程"><a class="markdownIt-Anchor" href="#825-插件加载流程"></a> 8.2.5 插件加载流程</h3>
+<div class="mermaid">
+sequenceDiagram
+    participant CLI as CLI 启动
+    participant Loader as pluginLoader
+    participant MP as Marketplace
+    participant Cache as 插件缓存
+    participant Deps as 依赖解析器
+    participant Settings as 设置级联
+
+    CLI->>Loader: loadAllPlugins()
+    
+    par 并行加载三类来源
+        Loader->>MP: loadPluginsFromMarketplaces()
+        Note over MP: 读取 enabledPlugins 配置<br>验证企业策略白名单
+        MP->>Cache: 从缓存或 clone 获取
+        
+        Loader->>Loader: loadSessionOnlyPlugins()
+        Note over Loader: --plugin-dir CLI flag
+        
+        Loader->>Loader: getBuiltinPlugins()
+        Note over Loader: 内存中注册的内置插件
+    end
+    
+    Loader->>Loader: mergePluginSources()
+    Note over Loader: 优先级: session > marketplace > builtin
+    
+    Loader->>Deps: verifyAndDemote()
+    Note over Deps: 检查插件依赖是否满足<br>降级不满足依赖的插件
+    
+    Loader->>Settings: cachePluginSettings()
+    Note over Settings: 合并所有启用插件的 settings<br>存入 pluginSettingsBase
+    
+    Loader-->>CLI: PluginLoadResult { enabled, disabled, errors }
+</div>
+<p><strong>关键加载步骤</strong>（<code>pluginLoader.ts</code>）：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">assemblePluginLoadResult</span>(<span class="params"></span>): <span class="title">PluginLoadResult</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 1. Marketplace 插件（读取 enabledPlugins 配置，验证企业策略）</span></span><br><span class="line">  <span class="keyword">const</span> marketplace = loadPluginsFromMarketplaces()</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 2. Session 插件（--plugin-dir CLI flag，始终启用）</span></span><br><span class="line">  <span class="keyword">const</span> session = loadSessionOnlyPlugins()</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 3. 内置插件（内存 BUILTIN_PLUGINS Map）</span></span><br><span class="line">  <span class="keyword">const</span> builtin = getBuiltinPlugins()</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 4. 合并（session &gt; marketplace &gt; builtin）</span></span><br><span class="line">  <span class="keyword">const</span> merged = mergePluginSources(marketplace, session, builtin)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 5. 依赖验证（不满足的降级为 disabled）</span></span><br><span class="line">  <span class="keyword">const</span> verified = verifyAndDemote(merged)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 6. 缓存插件设置到设置级联的最低层</span></span><br><span class="line">  cachePluginSettings(verified.enabled)</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> verified</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="826-插件设置注入"><a class="markdownIt-Anchor" href="#826-插件设置注入"></a> 8.2.6 插件设置注入</h3>
+<p>插件设置作为<strong>最低优先级基础层</strong>注入设置级联：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// settingsCache.ts</span></span><br><span class="line"><span class="keyword">let</span> pluginSettingsBase: Record&lt;<span class="built_in">string</span>, unknown&gt; | <span class="literal">undefined</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">setPluginSettingsBase</span>(<span class="params">settings</span>): <span class="title">void</span> </span>&#123; ... &#125;</span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getPluginSettingsBase</span>(<span class="params"></span>): <span class="title">Record</span>&lt;<span class="title">string</span>, <span class="title">unknown</span>&gt; | <span class="title">undefined</span> </span>&#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// settings.ts：loadSettingsFromDisk()</span></span><br><span class="line"><span class="comment">// 插件设置作为最低优先级基础层</span></span><br><span class="line"><span class="keyword">const</span> pluginSettings = getPluginSettingsBase()</span><br><span class="line"><span class="keyword">let</span> mergedSettings: SettingsJson = &#123;&#125;</span><br><span class="line"><span class="keyword">if</span> (pluginSettings) &#123;</span><br><span class="line">  mergedSettings = mergeWith(mergedSettings, pluginSettings, settingsMergeCustomizer)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 然后按优先级合并 user → project → local → flag → policy</span></span><br></pre></td></tr></table></figure>
+<p><strong>安全限制</strong>：通过 <code>PluginSettingsSchema</code> 白名单过滤，当前仅允许 <code>agent</code> 字段：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> PluginSettingsSchema = lazySchema(<span class="function"><span class="params">()</span> =&gt;</span></span><br><span class="line">  SettingsSchema().pick(&#123; agent: <span class="literal">true</span> &#125;).strip()</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="827-插件生命周期"><a class="markdownIt-Anchor" href="#827-插件生命周期"></a> 8.2.7 插件生命周期</h3>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> 注册: initBuiltinPlugins()
+    注册 --> 加载: loadAllPlugins()
+    加载 --> 启用: 满足依赖 + 企业策略通过
+    加载 --> 禁用: 不满足依赖 / 被用户禁用
+    启用 --> 激活: 按需加载组件（memoized）
+    激活 --> 热重载: 设置变更触发
+    热重载 --> 激活: clearPluginCache() + refreshActivePlugins()
+    启用 --> 禁用: 用户通过 /plugin 禁用
+    禁用 --> 启用: 用户通过 /plugin 启用
+</div>
+<p><strong>刷新机制</strong>（<code>refresh.ts</code>）：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">refreshActivePlugins</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  clearPluginCache()           <span class="comment">// 清除 memoized 加载结果</span></span><br><span class="line">  <span class="keyword">await</span> loadAllPlugins()       <span class="comment">// 完整重新加载（含网络请求）</span></span><br><span class="line">  reloadCommands()             <span class="comment">// 重新加载命令</span></span><br><span class="line">  reloadAgents()               <span class="comment">// 重新加载 Agent 定义</span></span><br><span class="line">  reloadHooks()                <span class="comment">// 重新加载 Hooks</span></span><br><span class="line">  reinitializeMcpServers()     <span class="comment">// 重新初始化 MCP 服务器</span></span><br><span class="line">  updateAppState()             <span class="comment">// 更新应用状态</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="828-marketplace-管理"><a class="markdownIt-Anchor" href="#828-marketplace-管理"></a> 8.2.8 Marketplace 管理</h3>
+<p>插件通过 <strong>Marketplace</strong> 分发。Marketplace 支持多种来源类型：</p>
+<table>
+<thead>
+<tr>
+<th>来源类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>github</code></td>
+<td>GitHub owner/repo</td>
+</tr>
+<tr>
+<td><code>git</code></td>
+<td>任意 Git URL</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td>直接 URL 指向 marketplace.json</td>
+</tr>
+<tr>
+<td><code>npm</code></td>
+<td>npm 包</td>
+</tr>
+<tr>
+<td><code>file</code> / <code>directory</code></td>
+<td>本地路径</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td>内联在 settings.json</td>
+</tr>
+</tbody>
+</table>
+<p><strong>缓存布局</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">~&#x2F;.claude&#x2F;plugins&#x2F;</span><br><span class="line">├── cache&#x2F;                   # 版本化插件安装</span><br><span class="line">│   └── &lt;marketplace&gt;&#x2F;</span><br><span class="line">│       └── &lt;plugin&gt;&#x2F;</span><br><span class="line">│           └── &lt;version&gt;&#x2F;</span><br><span class="line">├── data&#x2F;                    # 持久化插件数据（更新时保留）</span><br><span class="line">│   └── &lt;plugin-id&gt;&#x2F;        # 暴露为 $&#123;CLAUDE_PLUGIN_DATA&#125;</span><br><span class="line">├── npm-cache&#x2F;               # NPM 包缓存</span><br><span class="line">├── marketplaces&#x2F;            # Marketplace 清单</span><br><span class="line">└── known_marketplaces.json  # Marketplace 注册表</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="83-skills系统"><a class="markdownIt-Anchor" href="#83-skills系统"></a> 8.3 Skills系统</h2>
+<h3 id="831-skills概述"><a class="markdownIt-Anchor" href="#831-skills概述"></a> 8.3.1 Skills概述</h3>
+<p>Skills是&quot;可复用的工作流模板&quot;，比插件更轻量——<strong>一个 Markdown 文件定义一个工作流</strong>。Skills可以被用户通过 <code>/name</code> 调用，也可以被模型通过 <code>Skill</code> 工具自动调用。</p>
+<div class="mermaid">
+graph LR
+    User["/commit"] --> Parse[解析斜杠命令]
+    Model["Skill({skill:'commit'})"] --> SkillTool[SkillTool]
+    Parse --> Find[findCommand()]
+    SkillTool --> Find
+    Find --> Execute{执行模式?}
+    Execute -->|inline| Inject[注入 Prompt 到对话]
+    Execute -->|fork| SubAgent[启动子 Agent 执行]
+</div>
+<h3 id="832-skills类型定义"><a class="markdownIt-Anchor" href="#832-skills类型定义"></a> 8.3.2 Skills类型定义</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// types/command.ts</span></span><br><span class="line"><span class="keyword">type</span> Command = CommandBase &amp; (PromptCommand | LocalCommand | LocalJSXCommand)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> CommandBase = &#123;</span><br><span class="line">  name: <span class="built_in">string</span></span><br><span class="line">  description?: <span class="built_in">string</span></span><br><span class="line">  aliases?: <span class="built_in">string</span>[]</span><br><span class="line">  argumentHint?: <span class="built_in">string</span></span><br><span class="line">  whenToUse?: <span class="built_in">string</span>              <span class="comment">// 触发场景（帮助模型判断何时调用）</span></span><br><span class="line">  isEnabled?: <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">boolean</span></span><br><span class="line">  isHidden?: <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">boolean</span></span><br><span class="line">  userInvocable?: <span class="built_in">boolean</span>         <span class="comment">// 用户可通过 /name 调用</span></span><br><span class="line">  disableModelInvocation?: <span class="built_in">boolean</span> <span class="comment">// 禁止模型调用</span></span><br><span class="line">  loadedFrom: <span class="string">'commands_DEPRECATED'</span> | <span class="string">'skills'</span> | <span class="string">'plugin'</span> | <span class="string">'managed'</span> | <span class="string">'bundled'</span> | <span class="string">'mcp'</span></span><br><span class="line">  version?: <span class="built_in">string</span></span><br><span class="line">  kind?: <span class="built_in">string</span>                   <span class="comment">// e.g., 'workflow'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> PromptCommand = &#123;</span><br><span class="line">  <span class="keyword">type</span>: <span class="string">'prompt'</span></span><br><span class="line">  contentLength?: <span class="built_in">number</span>          <span class="comment">// Token 估算用</span></span><br><span class="line">  allowedTools?: <span class="built_in">string</span>[]         <span class="comment">// Skills授予的工具权限</span></span><br><span class="line">  model?: <span class="built_in">string</span>                  <span class="comment">// 模型覆盖</span></span><br><span class="line">  source: SettingSource | <span class="string">'builtin'</span> | <span class="string">'mcp'</span> | <span class="string">'plugin'</span> | <span class="string">'bundled'</span></span><br><span class="line">  hooks?: HooksSettings           <span class="comment">// 调用时注册的 Hooks</span></span><br><span class="line">  skillRoot?: <span class="built_in">string</span>              <span class="comment">// Skills根目录</span></span><br><span class="line">  context: <span class="string">'inline'</span> | <span class="string">'fork'</span>     <span class="comment">// 执行模式</span></span><br><span class="line">  agent?: <span class="built_in">string</span>                  <span class="comment">// fork 模式的 Agent 类型</span></span><br><span class="line">  effort?: EffortValue            <span class="comment">// 努力级别覆盖</span></span><br><span class="line">  paths?: <span class="built_in">string</span>[]                <span class="comment">// 条件激活的 glob 模式</span></span><br><span class="line">  getPromptForCommand(args, context): <span class="built_in">Promise</span>&lt;ContentBlockParam[]&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="833-skillmd-格式"><a class="markdownIt-Anchor" href="#833-skillmd-格式"></a> 8.3.3 <a href="http://SKILL.md" target="_blank" rel="noopener">SKILL.md</a> 格式</h3>
+<p>每个Skills是一个目录，包含一个 <code>SKILL.md</code> 文件，使用 YAML Frontmatter + Markdown 正文：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">name: commit</span><br><span class="line">description: 分析变更并生成提交信息</span><br><span class="line">allowed-tools:</span><br><span class="line"><span class="bullet">  - </span>Bash(git:*)</span><br><span class="line"><span class="bullet">  - </span>Read</span><br><span class="line"><span class="bullet">  - </span>Write</span><br><span class="line">argument-hint: "[message]"</span><br><span class="line">arguments:</span><br><span class="line"><span class="bullet">  - </span>message</span><br><span class="line">when<span class="emphasis">_to_</span>use: "当用户要求提交代码时使用"</span><br><span class="line">model: sonnet</span><br><span class="line">effort: high</span><br><span class="line">context: inline</span><br><span class="line">user-invocable: true</span><br><span class="line">disable-model-invocation: false</span><br><span class="line">paths:</span><br><span class="line"><span class="bullet">  - </span>"<span class="emphasis">**/*</span>.go"</span><br><span class="line"><span class="bullet">  - </span>"<span class="emphasis">**/*</span>.ts"</span><br><span class="line">hooks:</span><br><span class="line">  PreToolUse:</span><br><span class="line"><span class="bullet">    - </span>matcher: Bash</span><br><span class="line"><span class="code">      hooks: [...]</span></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line"><span class="section"># 提交工作流</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 步骤</span></span><br><span class="line"><span class="bullet">1. </span>运行 <span class="code">`git status`</span> 查看变更</span><br><span class="line"><span class="bullet">2. </span>分析变更内容，生成提交信息</span><br><span class="line"><span class="bullet">3. </span>使用 <span class="code">`$message`</span> 作为提交信息（如果提供）</span><br><span class="line"></span><br><span class="line"><span class="section">## 变量</span></span><br><span class="line"><span class="bullet">- </span><span class="code">`$message`</span>: 用户指定的提交信息</span><br><span class="line"><span class="bullet">- </span><span class="code">`$&#123;CLAUDE_SKILL_DIR&#125;`</span>: Skills文件所在目录</span><br><span class="line"><span class="bullet">- </span><span class="code">`$&#123;CLAUDE_SESSION_ID&#125;`</span>: 当前会话 ID</span><br></pre></td></tr></table></figure>
+<p><strong>Frontmatter 字段详解</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>显示名（可选，默认取目录名）</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>单行描述</td>
+</tr>
+<tr>
+<td><code>allowed-tools</code></td>
+<td>string[]</td>
+<td>授予的工具权限模式</td>
+</tr>
+<tr>
+<td><code>argument-hint</code></td>
+<td>string</td>
+<td>参数提示</td>
+</tr>
+<tr>
+<td><code>arguments</code></td>
+<td>string[]</td>
+<td>命名参数（用于 <code>$name</code> 替换）</td>
+</tr>
+<tr>
+<td><code>when_to_use</code></td>
+<td>string</td>
+<td>触发场景描述（帮助模型自动调用）</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>string</td>
+<td>模型覆盖（<code>sonnet</code>、<code>opus</code>、<code>inherit</code>）</td>
+</tr>
+<tr>
+<td><code>effort</code></td>
+<td>string/number</td>
+<td>努力级别（low/medium/high/max 或整数）</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td><code>'inline'</code>/<code>'fork'</code></td>
+<td>执行模式</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td>string</td>
+<td>fork 模式使用的 Agent 类型</td>
+</tr>
+<tr>
+<td><code>paths</code></td>
+<td>string[]</td>
+<td>条件激活的 glob 模式</td>
+</tr>
+<tr>
+<td><code>user-invocable</code></td>
+<td>boolean</td>
+<td>是否允许用户调用</td>
+</tr>
+<tr>
+<td><code>disable-model-invocation</code></td>
+<td>boolean</td>
+<td>是否禁止模型调用</td>
+</tr>
+<tr>
+<td><code>hooks</code></td>
+<td>HooksSettings</td>
+<td>调用时注册的 Hooks</td>
+</tr>
+<tr>
+<td><code>shell</code></td>
+<td><code>'bash'</code>/<code>'powershell'</code></td>
+<td><code>!</code> 命令使用的 Shell</td>
+</tr>
+</tbody>
+</table>
+<h3 id="834-skills发现与加载"><a class="markdownIt-Anchor" href="#834-skills发现与加载"></a> 8.3.4 Skills发现与加载</h3>
+<p>Skills从多个位置加载，优先级从高到低：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">① 企业管理目录   &lt;managed-path&gt;&#x2F;.claude&#x2F;skills&#x2F;     企业策略强制Skills</span><br><span class="line">② 用户目录       ~&#x2F;.claude&#x2F;skills&#x2F;                  个人全局Skills</span><br><span class="line">③ 项目目录       .claude&#x2F;skills&#x2F;                    项目级Skills</span><br><span class="line">④ 额外目录       --add-dir 指定的路径               附加Skills</span><br><span class="line">⑤ 遗留目录       .claude&#x2F;commands&#x2F;                  已废弃的命令格式</span><br></pre></td></tr></table></figure>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// loadSkillsDir.ts</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> getSkillDirCommands = memoize(<span class="keyword">async</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  projectRoot: <span class="built_in">string</span></span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">Promise</span>&lt;</span>&#123; commands: Command[]; conditionalCommands: Command[] &#125;&gt; &#123;</span><br><span class="line">  <span class="comment">// 并行加载所有来源</span></span><br><span class="line">  <span class="keyword">const</span> [managed, user, project, additional, legacy] = <span class="keyword">await</span> <span class="built_in">Promise</span>.all([</span><br><span class="line">    loadManagedSkills(),</span><br><span class="line">    loadUserSkills(),</span><br><span class="line">    loadProjectSkills(projectRoot),</span><br><span class="line">    loadAdditionalDirSkills(),</span><br><span class="line">    loadLegacyCommands(),</span><br><span class="line">  ])</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 去重（基于 realpath 解析后的路径）</span></span><br><span class="line">  <span class="keyword">const</span> deduped = deduplicateByResolvedPath([...all])</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 分离条件激活Skills（有 paths frontmatter）和无条件Skills</span></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    commands: deduped.filter(<span class="function"><span class="params">c</span> =&gt;</span> !c.paths?.length),</span><br><span class="line">    conditionalCommands: deduped.filter(<span class="function"><span class="params">c</span> =&gt;</span> c.paths?.length &gt; <span class="number">0</span>),</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><strong>动态发现</strong>：当模型操作文件时，系统会从文件路径向上查找新的 <code>.claude/skills/</code> 目录：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 动态发现嵌套Skills</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">discoverSkillDirsForPaths</span>(<span class="params">filePaths: <span class="built_in">string</span>[]</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> filePath of filePaths) &#123;</span><br><span class="line">    walkUpFindingSkillDirs(filePath)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 条件激活（paths frontmatter 匹配时激活）</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">activateConditionalSkillsForPaths</span>(<span class="params">filePaths: <span class="built_in">string</span>[]</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> skill of conditionalCommands) &#123;</span><br><span class="line">    <span class="keyword">if</span> (skill.paths.some(<span class="function"><span class="params">glob</span> =&gt;</span> matchesAny(filePaths, glob))) &#123;</span><br><span class="line">      activateSkill(skill)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="835-skills执行流程"><a class="markdownIt-Anchor" href="#835-skills执行流程"></a> 8.3.5 Skills执行流程</h3>
+<div class="mermaid">
+sequenceDiagram
+    participant User as 用户/模型
+    participant REPL as REPL/SkillTool
+    participant Find as findCommand()
+    participant Content as getPromptForCommand()
+    participant Hooks as registerSkillHooks()
+    participant Agent as 子 Agent（fork）
+
+    User->>REPL: /commit "fix bug" 或 Skill({skill:"commit"})
+    REPL->>Find: 查找命令
+    Find-->>REPL: PromptCommand
+
+    alt context: 'inline'（默认）
+        REPL->>Content: getPromptForCommand(args)
+        Content->>Content: 替换 $arguments
+        Content->>Content: 替换 ${CLAUDE_SKILL_DIR}
+        Content->>Content: 执行 ! 内联 Shell 命令
+        Content-->>REPL: ContentBlockParam[]
+        REPL->>Hooks: registerSkillHooks()
+        REPL-->>User: 注入 Prompt + allowedTools + model 覆盖
+    else context: 'fork'
+        REPL->>Agent: executeForkedSkill()
+        Agent->>Agent: runAgent() 独立执行
+        Agent-->>REPL: 执行结果
+        REPL-->>User: 返回结果文本
+    end
+</div>
+<p><strong>内容生成</strong>（<code>getPromptForCommand</code>）：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">getPromptForCommand</span>(<span class="params">args: <span class="built_in">string</span>, context</span>): <span class="title">Promise</span>&lt;<span class="title">ContentBlockParam</span>[]&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> content = <span class="keyword">this</span>.rawContent</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 1. 替换 $arguments</span></span><br><span class="line">  content = substituteArguments(content, args, <span class="keyword">this</span>.arguments)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 2. 替换环境变量</span></span><br><span class="line">  content = content.replace(<span class="string">'$&#123;CLAUDE_SKILL_DIR&#125;'</span>, <span class="keyword">this</span>.skillRoot)</span><br><span class="line">  content = content.replace(<span class="string">'$&#123;CLAUDE_SESSION_ID&#125;'</span>, getSessionId())</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 3. 执行内联 Shell 命令（! 前缀行）</span></span><br><span class="line">  content = <span class="keyword">await</span> executeShellCommandsInPrompt(content, <span class="keyword">this</span>.shell)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 4. 返回文本块</span></span><br><span class="line">  <span class="keyword">return</span> [&#123; <span class="keyword">type</span>: <span class="string">'text'</span>, text: content &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="836-skilltool模型调用skills的入口"><a class="markdownIt-Anchor" href="#836-skilltool模型调用skills的入口"></a> 8.3.6 SkillTool：模型调用Skills的入口</h3>
+<p><code>SkillTool</code> 是模型调用Skills的标准接口：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SkillTool.ts</span></span><br><span class="line"><span class="keyword">const</span> SkillTool: ToolDef = &#123;</span><br><span class="line">  name: <span class="string">'Skill'</span>,</span><br><span class="line">  inputSchema: z.object(&#123;</span><br><span class="line">    skill: z.string().describe(<span class="string">'Skills名称'</span>),</span><br><span class="line">    args: z.string().optional().describe(<span class="string">'Skills参数'</span>),</span><br><span class="line">  &#125;),</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> validateInput(&#123; skill &#125;, context) &#123;</span><br><span class="line">    <span class="keyword">const</span> commands = <span class="keyword">await</span> getAllCommands(context)</span><br><span class="line">    <span class="keyword">const</span> command = findCommand(commands, skill)</span><br><span class="line">    <span class="keyword">if</span> (!command || command.type !== <span class="string">'prompt'</span>) <span class="keyword">return</span> &#123; valid: <span class="literal">false</span> &#125;</span><br><span class="line">    <span class="keyword">if</span> (command.disableModelInvocation) <span class="keyword">return</span> &#123; valid: <span class="literal">false</span> &#125;</span><br><span class="line">    <span class="keyword">return</span> &#123; valid: <span class="literal">true</span> &#125;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> checkPermissions(&#123; skill &#125;, context) &#123;</span><br><span class="line">    <span class="comment">// 检查 deny 规则、allow 规则、安全属性自动允许</span></span><br><span class="line">    <span class="keyword">const</span> rule = getRuleByContentsForTool(<span class="string">'Skill'</span>, skill)</span><br><span class="line">    <span class="keyword">if</span> (rule?.type === <span class="string">'deny'</span>) <span class="keyword">return</span> &#123; behavior: <span class="string">'deny'</span> &#125;</span><br><span class="line">    <span class="keyword">if</span> (rule?.type === <span class="string">'allow'</span>) <span class="keyword">return</span> &#123; behavior: <span class="string">'allow'</span> &#125;</span><br><span class="line">    <span class="keyword">return</span> &#123; behavior: <span class="string">'ask'</span> &#125;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> call(&#123; skill, args &#125;, context) &#123;</span><br><span class="line">    <span class="keyword">const</span> command = findCommand(<span class="keyword">await</span> getAllCommands(context), skill)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (command.context === <span class="string">'fork'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> executeForkedSkill(command, skill, args, context)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// inline 模式：注入 Prompt 并返回 contextModifier</span></span><br><span class="line">    <span class="keyword">const</span> result = processPromptSlashCommand(command, args)</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      output: <span class="string">`Launching skill: <span class="subst">$&#123;skill&#125;</span>`</span>,</span><br><span class="line">      contextModifier: &#123;</span><br><span class="line">        allowedTools: command.allowedTools,</span><br><span class="line">        model: command.model,</span><br><span class="line">        effort: command.effort,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="837-内置skills一览"><a class="markdownIt-Anchor" href="#837-内置skills一览"></a> 8.3.7 内置Skills一览</h3>
+<table>
+<thead>
+<tr>
+<th>Skills</th>
+<th>功能</th>
+<th>特性门控</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>update-config</code></td>
+<td>配置 settings.json、hooks、权限</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>keybindings</code></td>
+<td>快捷键自定义</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td>启用/读取调试日志</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>loremIpsum</code></td>
+<td>Lorem ipsum 生成器</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>simplify</code></td>
+<td>代码复审和清理</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td>批量处理</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>stuck</code></td>
+<td>故障排除</td>
+<td>无</td>
+</tr>
+<tr>
+<td><code>verify</code></td>
+<td>验证代码变更是否有效</td>
+<td>ant-only</td>
+</tr>
+<tr>
+<td><code>skillify</code></td>
+<td>将当前会话捕获为可复用Skills</td>
+<td>ant-only</td>
+</tr>
+<tr>
+<td><code>remember</code></td>
+<td>审查和组织自动记忆</td>
+<td>ant-only</td>
+</tr>
+<tr>
+<td><code>loop</code></td>
+<td>定时循环执行 Prompt</td>
+<td>AGENT_TRIGGERS</td>
+</tr>
+<tr>
+<td><code>scheduleRemoteAgents</code></td>
+<td>远程 Agent 调度</td>
+<td>AGENT_TRIGGERS_REMOTE</td>
+</tr>
+<tr>
+<td><code>claudeApi</code></td>
+<td>构建/调试 Claude API 应用</td>
+<td>BUILDING_CLAUDE_APPS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="838-skills可见性管理"><a class="markdownIt-Anchor" href="#838-skills可见性管理"></a> 8.3.8 Skills可见性管理</h3>
+<p>Skills对模型的可见性通过 <strong>skill_listing attachment</strong> 管理，受 token 预算约束：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// prompt.ts</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">formatCommandsWithinBudget</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  commands: Command[],</span></span></span><br><span class="line"><span class="function"><span class="params">  budgetTokens: <span class="built_in">number</span>,  <span class="comment">// 上下文窗口的 1%</span></span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 按优先级排列，在预算内尽可能多地展示Skills</span></span><br><span class="line">  <span class="comment">// 超出预算时截断低优先级Skills</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="84-multi-agent协调"><a class="markdownIt-Anchor" href="#84-multi-agent协调"></a> 8.4 Multi-Agent协调</h2>
+<h3 id="841-三种工作模式"><a class="markdownIt-Anchor" href="#841-三种工作模式"></a> 8.4.1 三种工作模式</h3>
+<p>Claude Code 支持三种 Agent 协作模式：</p>
+<div class="mermaid">
+graph TB
+    subgraph 直接派生["直接派生模式（默认）"]
+        Main1[主 Agent] -->|AgentTool| Worker1A[子 Agent A<br>同步/异步]
+        Main1 -->|AgentTool| Worker1B[子 Agent B<br>同步/异步]
+    end
+
+    subgraph 协调者模式["协调者模式（Coordinator）"]
+        Coord[协调者<br>纯编排，不直接工具调用] -->|AgentTool| Worker2A[Worker A<br>始终异步]
+        Coord -->|AgentTool| Worker2B[Worker B<br>始终异步]
+        Coord -->|SendMessage| Worker2A
+        Worker2A -->|task-notification| Coord
+        Worker2B -->|task-notification| Coord
+    end
+
+    subgraph 群体模式["团队/群体模式（Swarm）"]
+        Lead[Team Lead] -->|Mailbox| Mate1[Teammate A]
+        Lead -->|Mailbox| Mate2[Teammate B]
+        Mate1 -->|Mailbox| Mate2
+        Mate2 -->|Mailbox| Mate1
+    end
+</div>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>触发方式</th>
+<th>父 Agent 角色</th>
+<th>Worker 执行</th>
+<th>通信方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>直接派生</td>
+<td>默认</td>
+<td>自己也做工作 + 委派</td>
+<td>同步或异步</td>
+<td>返回值 + SendMessage</td>
+</tr>
+<tr>
+<td>协调者</td>
+<td><code>CLAUDE_CODE_COORDINATOR_MODE=1</code></td>
+<td>纯编排，不用直接工具</td>
+<td>始终异步</td>
+<td>SendMessage + task-notification XML</td>
+</tr>
+<tr>
+<td>团队/群体</td>
+<td>Agent Swarms 特性门控</td>
+<td>Team Lead</td>
+<td>持久化对等 Agent</td>
+<td>Mailbox 文件</td>
+</tr>
+</tbody>
+</table>
+<h3 id="842-agenttool子-agent-派生"><a class="markdownIt-Anchor" href="#842-agenttool子-agent-派生"></a> 8.4.2 AgentTool：子 Agent 派生</h3>
+<p><code>AgentTool</code> 是派生子 Agent 的核心工具：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AgentTool.tsx（精简）</span></span><br><span class="line"><span class="keyword">const</span> AgentTool: ToolDef = &#123;</span><br><span class="line">  name: <span class="string">'Agent'</span>,</span><br><span class="line">  inputSchema: z.object(&#123;</span><br><span class="line">    prompt: z.string(),</span><br><span class="line">    description: z.string(),</span><br><span class="line">    subagent_type: z.string().optional(),</span><br><span class="line">    model: z.enum([<span class="string">'sonnet'</span>, <span class="string">'opus'</span>, <span class="string">'haiku'</span>]).optional(),</span><br><span class="line">    run_in_background: z.boolean().optional(),</span><br><span class="line">    isolation: z.enum([<span class="string">'worktree'</span>]).optional(),</span><br><span class="line">    name: z.string().optional(),</span><br><span class="line">  &#125;),</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> call(input, context) &#123;</span><br><span class="line">    <span class="comment">// 1. 路由决策</span></span><br><span class="line">    <span class="keyword">if</span> (input.team_name &amp;&amp; input.name) &#123;</span><br><span class="line">      <span class="keyword">return</span> spawnTeammate(input)  <span class="comment">// 群体模式</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 解析 Agent 定义</span></span><br><span class="line">    <span class="keyword">const</span> agentDef = resolveAgentType(input.subagent_type || <span class="string">'general-purpose'</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 组装工具池（独立权限模式）</span></span><br><span class="line">    <span class="keyword">const</span> tools = assembleToolPool(agentDef.tools, <span class="string">'acceptEdits'</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. Worktree 隔离（如果指定）</span></span><br><span class="line">    <span class="keyword">let</span> worktreePath: <span class="built_in">string</span> | <span class="literal">undefined</span></span><br><span class="line">    <span class="keyword">if</span> (input.isolation === <span class="string">'worktree'</span>) &#123;</span><br><span class="line">      worktreePath = <span class="keyword">await</span> createAgentWorktree(slug)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 5. 判断同步 vs 异步</span></span><br><span class="line">    <span class="keyword">const</span> isAsync = input.run_in_background</span><br><span class="line">      || agentDef.background</span><br><span class="line">      || isCoordinatorMode()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 6. 执行</span></span><br><span class="line">    <span class="keyword">if</span> (isAsync) &#123;</span><br><span class="line">      registerAsyncAgent(agentId)</span><br><span class="line">      <span class="built_in">void</span> runAsyncAgentLifecycle(agentId, agentDef, tools, input.prompt)</span><br><span class="line">      <span class="keyword">return</span> &#123; status: <span class="string">'async_launched'</span>, agentId, outputFile &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> runAgent(agentId, agentDef, tools, input.prompt)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="843-内置-agent-类型"><a class="markdownIt-Anchor" href="#843-内置-agent-类型"></a> 8.4.3 内置 Agent 类型</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// builtInAgents.ts</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getBuiltInAgents</span>(<span class="params"></span>): <span class="title">AgentDefinition</span>[] </span>&#123;</span><br><span class="line">  <span class="comment">// SDK 用户可通过环境变量禁用所有内置 Agent</span></span><br><span class="line">  <span class="keyword">if</span> (isEnvTruthy(process.env.CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS) &amp;&amp;</span><br><span class="line">      getIsNonInteractiveSession()) &#123;</span><br><span class="line">    <span class="keyword">return</span> []</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 协调者模式：替换为 worker Agent</span></span><br><span class="line">  <span class="keyword">if</span> (isCoordinatorMode()) &#123;</span><br><span class="line">    <span class="keyword">return</span> getCoordinatorAgents()</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> agents = [GENERAL_PURPOSE_AGENT, STATUSLINE_SETUP_AGENT]</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (areExplorePlanAgentsEnabled()) &#123;</span><br><span class="line">    agents.push(EXPLORE_AGENT, PLAN_AGENT)</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (isNonSdkEntrypoint) &#123;</span><br><span class="line">    agents.push(CLAUDE_CODE_GUIDE_AGENT)</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (feature(<span class="string">'VERIFICATION_AGENT'</span>)) &#123;</span><br><span class="line">    agents.push(VERIFICATION_AGENT)</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> agents</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>各 Agent 定位</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>Agent 类型</th>
+<th>模型</th>
+<th>工具权限</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>general-purpose</code></td>
+<td>默认子 Agent 模型</td>
+<td>全部工具</td>
+<td>通用任务执行</td>
+</tr>
+<tr>
+<td><code>Explore</code></td>
+<td>haiku（外部）/ inherit（内部）</td>
+<td>只读工具</td>
+<td>快速文件搜索，不加载 <a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a></td>
+</tr>
+<tr>
+<td><code>Plan</code></td>
+<td>inherit</td>
+<td>只读工具</td>
+<td>架构规划，不加载 <a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a></td>
+</tr>
+<tr>
+<td><code>verification</code></td>
+<td>inherit</td>
+<td>只读 + 后台</td>
+<td>对抗性测试验证</td>
+</tr>
+<tr>
+<td><code>statusline-setup</code></td>
+<td>sonnet</td>
+<td>Read + Edit</td>
+<td>状态栏配置</td>
+</tr>
+<tr>
+<td><code>claude-code-guide</code></td>
+<td>-</td>
+<td>只读 + Web</td>
+<td>Claude Code 使用指南</td>
+</tr>
+</tbody>
+</table>
+<h3 id="844-自定义-agent-定义"><a class="markdownIt-Anchor" href="#844-自定义-agent-定义"></a> 8.4.4 自定义 Agent 定义</h3>
+<p>用户可通过 Markdown 文件在 <code>.claude/agents/</code> 中定义自定义 Agent：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">name: my-agent</span><br><span class="line">description: "当需要执行某类任务时使用此 Agent"</span><br><span class="line">model: inherit</span><br><span class="line">tools: [Read, Edit, Bash]</span><br><span class="line">permissionMode: acceptEdits</span><br><span class="line">maxTurns: 50</span><br><span class="line">background: true</span><br><span class="line">isolation: worktree</span><br><span class="line">mcpServers:</span><br><span class="line"><span class="bullet">  - </span>my-server</span><br><span class="line"><span class="bullet">  - </span>another-server: &#123; command: "node", args: ["server.js"] &#125;</span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">你是一个专门处理数据库迁移的 Agent。</span><br><span class="line"></span><br><span class="line"><span class="section">## 规则</span></span><br><span class="line"><span class="bullet">- </span>始终在 worktree 中工作</span><br><span class="line"><span class="bullet">- </span>先备份再修改</span><br></pre></td></tr></table></figure>
+<p><strong>Agent 定义类型</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> BaseAgentDefinition = &#123;</span><br><span class="line">  agentType: <span class="built_in">string</span>             <span class="comment">// 唯一标识</span></span><br><span class="line">  whenToUse: <span class="built_in">string</span>             <span class="comment">// 何时使用的描述</span></span><br><span class="line">  tools?: <span class="built_in">string</span>[]              <span class="comment">// 工具白名单（'*' = 全部）</span></span><br><span class="line">  disallowedTools?: <span class="built_in">string</span>[]    <span class="comment">// 工具黑名单</span></span><br><span class="line">  model?: <span class="built_in">string</span>                <span class="comment">// 模型（'inherit'、'haiku'、'sonnet'、'opus'）</span></span><br><span class="line">  permissionMode?: PermissionMode</span><br><span class="line">  maxTurns?: <span class="built_in">number</span>             <span class="comment">// 最大轮数</span></span><br><span class="line">  background?: <span class="built_in">boolean</span>          <span class="comment">// 始终后台执行</span></span><br><span class="line">  isolation?: <span class="string">'worktree'</span> | <span class="string">'remote'</span></span><br><span class="line">  memory?: <span class="string">'user'</span> | <span class="string">'project'</span> | <span class="string">'local'</span></span><br><span class="line">  hooks?: HooksSettings         <span class="comment">// 会话级 Hooks</span></span><br><span class="line">  mcpServers?: AgentMcpServerSpec[]</span><br><span class="line">  skills?: <span class="built_in">string</span>[]             <span class="comment">// 预加载的技能</span></span><br><span class="line">  color?: AgentColorName</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>解析优先级</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">内置 Agent → 插件 Agent → 用户 Agent → 项目 Agent → Flag Agent → Policy Agent</span><br><span class="line">（后者覆盖前者同名定义）</span><br></pre></td></tr></table></figure>
+<h3 id="845-协调者模式coordinator-mode"><a class="markdownIt-Anchor" href="#845-协调者模式coordinator-mode"></a> 8.4.5 协调者模式（Coordinator Mode）</h3>
+<p>协调者模式通过环境变量 <code>CLAUDE_CODE_COORDINATOR_MODE=1</code> 激活：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// coordinatorMode.ts</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">isCoordinatorMode</span>(<span class="params"></span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (feature(<span class="string">'COORDINATOR_MODE'</span>)) &#123;</span><br><span class="line">    <span class="keyword">return</span> isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>协调者系统提示词</strong>核心内容：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getCoordinatorSystemPrompt</span>(<span class="params"></span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">`You are Claude Code, an AI assistant that orchestrates tasks across workers.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">## 1. 角色</span></span><br><span class="line"><span class="string">你是一个**协调者**。你的工作是：</span></span><br><span class="line"><span class="string">- 帮助用户达成目标</span></span><br><span class="line"><span class="string">- 指挥 worker 研究、实现和验证代码变更</span></span><br><span class="line"><span class="string">- 综合结果并与用户沟通</span></span><br><span class="line"><span class="string">- 能直接回答的问题不委派</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">## 2. 可用工具</span></span><br><span class="line"><span class="string">- **Agent** — 派生新 worker</span></span><br><span class="line"><span class="string">- **SendMessage** — 向已有 worker 发送后续指令</span></span><br><span class="line"><span class="string">- **TaskStop** — 停止运行中的 worker</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">## 3. Worker 结果</span></span><br><span class="line"><span class="string">Worker 结果以 &lt;task-notification&gt; XML 格式到达：</span></span><br><span class="line"><span class="string">  &lt;task-notification&gt;</span></span><br><span class="line"><span class="string">    &lt;task-id&gt;&#123;agentId&#125;&lt;/task-id&gt;</span></span><br><span class="line"><span class="string">    &lt;status&gt;completed|failed|killed&lt;/status&gt;</span></span><br><span class="line"><span class="string">    &lt;summary&gt;...&lt;/summary&gt;</span></span><br><span class="line"><span class="string">    &lt;result&gt;...&lt;/result&gt;</span></span><br><span class="line"><span class="string">  &lt;/task-notification&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">## 4. 工作流阶段</span></span><br><span class="line"><span class="string">Research → Synthesis → Implementation → Verification`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>协调者工具上下文</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getCoordinatorUserContext</span>(<span class="params">mcpClients, scratchpadDir</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> content = <span class="string">`Workers have access to these tools: <span class="subst">$&#123;workerTools&#125;</span>`</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (mcpClients.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    content += <span class="string">`\nWorkers also have MCP tools from: <span class="subst">$&#123;serverNames&#125;</span>`</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (scratchpadDir &amp;&amp; isScratchpadGateEnabled()) &#123;</span><br><span class="line">    content += <span class="string">`\nScratchpad directory: <span class="subst">$&#123;scratchpadDir&#125;</span></span></span><br><span class="line"><span class="string">Workers can read and write here without permission prompts.`</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> &#123; workerToolsContext: content &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="846-sendmessagetoolagent-间通信"><a class="markdownIt-Anchor" href="#846-sendmessagetoolagent-间通信"></a> 8.4.6 SendMessageTool：Agent 间通信</h3>
+<p><code>SendMessageTool</code> 支持三种通信模式：</p>
+<div class="mermaid">
+graph TB
+    SendMessage[SendMessageTool]
+    
+    SendMessage -->|to=agentId| InProcess[进程内 Agent]
+    SendMessage -->|to=teammate| Mailbox[Mailbox 文件]
+    SendMessage -->|to="*"| Broadcast[广播所有 Teammate]
+    SendMessage -->|to="bridge:id"| Remote[远程 Agent]
+    SendMessage -->|to="uds:/path"| UDS[Unix Socket 通信]
+    
+    InProcess --> Running{Agent 状态?}
+    Running -->|运行中| Queue[queuePendingMessage()]
+    Running -->|已停止| Resume[resumeAgentBackground()]
+</div>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SendMessageTool.ts（精简）</span></span><br><span class="line"><span class="keyword">const</span> inputSchema = z.object(&#123;</span><br><span class="line">  to: z.string().describe(<span class="string">'接收者：Agent 名/ID、"*" 广播、teammate 名'</span>),</span><br><span class="line">  summary: z.string().optional().describe(<span class="string">'5-10 字摘要'</span>),</span><br><span class="line">  message: z.union([</span><br><span class="line">    z.string(),</span><br><span class="line">    StructuredMessage,  <span class="comment">// shutdown_request | shutdown_response | plan_approval_response</span></span><br><span class="line">  ]),</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><strong>结构化消息类型</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> StructuredMessage = z.discriminatedUnion(<span class="string">'type'</span>, [</span><br><span class="line">  z.object(&#123; <span class="keyword">type</span>: z.literal(<span class="string">'shutdown_request'</span>), reason: z.string().optional() &#125;),</span><br><span class="line">  z.object(&#123; <span class="keyword">type</span>: z.literal(<span class="string">'shutdown_response'</span>), request_id: z.string(), approve: <span class="built_in">boolean</span> &#125;),</span><br><span class="line">  z.object(&#123; <span class="keyword">type</span>: z.literal(<span class="string">'plan_approval_response'</span>), request_id: z.string(), approve: <span class="built_in">boolean</span>, feedback: z.string().optional() &#125;),</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+<h3 id="847-worktree-隔离"><a class="markdownIt-Anchor" href="#847-worktree-隔离"></a> 8.4.7 Worktree 隔离</h3>
+<p>当 Agent 需要文件系统隔离时，使用 Git Worktree：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// worktree.ts</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">createAgentWorktree</span>(<span class="params">slug: <span class="built_in">string</span></span>): <span class="title">Promise</span>&lt;<span class="title">string</span>&gt; </span>&#123;</span><br><span class="line">  <span class="comment">// 1. 验证 slug 合法性</span></span><br><span class="line">  validateSlug(slug)  <span class="comment">// 严格正则白名单</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 2. 创建 worktree</span></span><br><span class="line">  <span class="keyword">const</span> worktreePath = join(gitRoot, <span class="string">'.claude/worktrees'</span>, flatSlug)</span><br><span class="line">  <span class="keyword">await</span> exec(<span class="string">`git worktree add <span class="subst">$&#123;worktreePath&#125;</span> -b worktree-<span class="subst">$&#123;flatSlug&#125;</span>`</span>)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 3. 后处理</span></span><br><span class="line">  copySettingsLocalJson(worktreePath)      <span class="comment">// 复制本地设置</span></span><br><span class="line">  configureGitHooksPath(worktreePath)       <span class="comment">// 配置 git hooks</span></span><br><span class="line">  symlinkNodeModules(worktreePath)          <span class="comment">// 符号链接 node_modules</span></span><br><span class="line">  copyWorktreeIncludeFiles(worktreePath)    <span class="comment">// 复制 .worktreeinclude 文件</span></span><br><span class="line">  installCommitAttributionHook(worktreePath) <span class="comment">// 安装提交归属 hook</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> worktreePath</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Worktree 生命周期</strong>：</p>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> 创建: createAgentWorktree(slug)
+    创建 --> 使用中: Agent 在隔离环境工作
+    使用中 --> 检查变更: hasWorktreeChanges()
+    检查变更 -->|有变更| 保留: 返回路径给用户
+    检查变更 -->|无变更| 清理: removeAgentWorktree()
+    保留 --> [*]
+    清理 --> [*]
+    使用中 --> 过期清理: cleanupStaleAgentWorktrees(cutoffDate)
+    过期清理 --> [*]
+</div>
+<h3 id="848-权限冒泡permission-bubbling"><a class="markdownIt-Anchor" href="#848-权限冒泡permission-bubbling"></a> 8.4.8 权限冒泡（Permission Bubbling）</h3>
+<p>子 Agent 的权限处理有多种模式：</p>
+<table>
+<thead>
+<tr>
+<th>权限模式</th>
+<th>行为</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>acceptEdits</code></td>
+<td>自动接受编辑操作</td>
+<td>普通 Worker</td>
+</tr>
+<tr>
+<td><code>bubble</code></td>
+<td>权限对话框冒泡到父终端</td>
+<td>Fork 子 Agent</td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>需要 Team Lead 审批</td>
+<td>团队模式</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// runAgent.ts</span></span><br><span class="line"><span class="keyword">const</span> shouldAvoidPrompts =</span><br><span class="line">  canShowPermissionPrompts !== <span class="literal">undefined</span></span><br><span class="line">    ? !canShowPermissionPrompts</span><br><span class="line">    : agentPermissionMode === <span class="string">'bubble'</span></span><br><span class="line">      ? <span class="literal">false</span>   <span class="comment">// bubble 模式：始终显示提示（冒泡到父终端）</span></span><br><span class="line">      : isAsync <span class="comment">// 异步 Agent 默认抑制提示</span></span><br></pre></td></tr></table></figure>
+<h3 id="849-任务通知机制"><a class="markdownIt-Anchor" href="#849-任务通知机制"></a> 8.4.9 任务通知机制</h3>
+<p>后台 Agent 完成后，通过 XML 格式通知协调者：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">task-notification</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">task-id</span>&gt;</span>agent-a1b2c3d4<span class="tag">&lt;/<span class="name">task-id</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">status</span>&gt;</span>completed<span class="tag">&lt;/<span class="name">status</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">summary</span>&gt;</span>Agent "Investigate auth bug" completed<span class="tag">&lt;/<span class="name">summary</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">result</span>&gt;</span>Found null pointer in src/auth/validate.ts:42...<span class="tag">&lt;/<span class="name">result</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">usage</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">total_tokens</span>&gt;</span>15234<span class="tag">&lt;/<span class="name">total_tokens</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">tool_uses</span>&gt;</span>8<span class="tag">&lt;/<span class="name">tool_uses</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">duration_ms</span>&gt;</span>45000<span class="tag">&lt;/<span class="name">duration_ms</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">usage</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">task-notification</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// LocalAgentTask.tsx</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueueAgentNotification</span>(<span class="params">agentId, status, description, result, usage</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> message = formatTaskNotificationXml(agentId, status, description, result, usage)</span><br><span class="line">  enqueuePendingNotification(&#123;</span><br><span class="line">    value: message,</span><br><span class="line">    mode: <span class="string">'task-notification'</span>,</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="85-agent-mcp-服务器"><a class="markdownIt-Anchor" href="#85-agent-mcp-服务器"></a> 8.5 Agent MCP 服务器</h2>
+<p>Agent 可以定义自己专属的 MCP 服务器，在启动时连接、结束时清理：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// runAgent.ts</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">initializeAgentMcpServers</span>(<span class="params">agentDefinition, parentClients</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!agentDefinition.mcpServers?.length) &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123; clients: parentClients, tools: [], cleanup: <span class="keyword">async</span> () =&gt; &#123;&#125; &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> spec of agentDefinition.mcpServers) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> spec === <span class="string">'string'</span>) &#123;</span><br><span class="line">      <span class="comment">// 引用已配置的 MCP 服务器名称</span></span><br><span class="line">      <span class="keyword">const</span> config = getMcpConfigByName(spec)</span><br><span class="line">      <span class="keyword">const</span> client = <span class="keyword">await</span> connectToServer(spec, config)</span><br><span class="line">      agentClients.push(client)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 内联定义新的 MCP 服务器</span></span><br><span class="line">      <span class="keyword">const</span> [name, config] = <span class="built_in">Object</span>.entries(spec)[<span class="number">0</span>]</span><br><span class="line">      <span class="keyword">const</span> client = <span class="keyword">await</span> connectToServer(name, &#123; ...config, scope: <span class="string">'dynamic'</span> &#125;)</span><br><span class="line">      newlyCreatedClients.push(client)  <span class="comment">// 新建的需要在结束时清理</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    clients: [...parentClients, ...agentClients],</span><br><span class="line">    tools: agentTools,</span><br><span class="line">    cleanup: <span class="keyword">async</span> () =&gt; &#123; <span class="comment">/* 关闭 newlyCreatedClients */</span> &#125;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="86-扩展机制间的关系"><a class="markdownIt-Anchor" href="#86-扩展机制间的关系"></a> 8.6 扩展机制间的关系</h2>
+<div class="mermaid">
+graph TB
+    Plugin[插件<br>重量级扩展单元] -->|提供| Skill[技能<br>轻量工作流]
+    Plugin -->|提供| AgentDef[Agent 定义<br>自定义 Agent 类型]
+    Plugin -->|提供| Hook[Hooks<br>生命周期钩子]
+    Plugin -->|提供| MCPServer[MCP 服务器<br>外部工具协议]
+    Plugin -->|注入| BaseSetting[设置基础层]
+    
+    Skill -->|被调用| SkillTool2[Skill 工具]
+    AgentDef -->|被使用| AgentTool2[Agent 工具]
+    MCPServer -->|提供工具| AgentDef
+    
+    SkillTool2 -->|fork 模式| AgentTool2
+    AgentTool2 -->|派生| Worker[Worker Agent]
+    Worker -->|使用| SkillTool2
+    
+    Hook -->|PreToolUse| Worker
+    Hook -->|PostToolUse| Worker
+</div>
+<p><strong>递进关系</strong>：</p>
+<ol>
+<li><strong>插件</strong>是最顶层的扩展容器，可以包含技能、Agent 定义、Hooks、MCP 等所有组件</li>
+<li><strong>技能</strong>可独立存在于文件系统，也可作为插件的一部分</li>
+<li><strong>Agent 定义</strong>决定了子 Agent 的能力范围，可引用 MCP 服务器和预加载技能</li>
+<li><strong>多 Agent 协调</strong>使用 Agent 定义来派生 Worker，Worker 又可以调用技能</li>
+</ol>
+<hr />
+<h2 id="87-设计原则总结"><a class="markdownIt-Anchor" href="#87-设计原则总结"></a> 8.7 设计原则总结</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>原则</th>
+<th>具体体现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>分层递进</strong></td>
+<td>插件（重）→ 技能（轻）→ 命令（最轻），复杂度递减</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Markdown 即配置</strong></td>
+<td>技能和 Agent 定义用 Markdown + Frontmatter，降低创建门槛</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>隔离执行</strong></td>
+<td>Worktree 提供文件系统隔离，fork 模式提供上下文隔离</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>权限最小化</strong></td>
+<td>每个 Agent 有独立工具池和权限模式</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>异步优先</strong></td>
+<td>协调者模式下所有 Worker 强制异步，最大化并行度</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>消息驱动</strong></td>
+<td>task-notification XML + SendMessage 实现松耦合通信</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>动态发现</strong></td>
+<td>技能按需发现和条件激活，避免加载不相关内容</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>优先级覆盖</strong></td>
+<td>插件 → 用户 → 项目 → Flag → Policy，后者覆盖前者</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>白名单安全</strong></td>
+<td>插件设置仅允许特定 key 通过，MCP 受 pluginOnly 策略控制</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>幂等刷新</strong></td>
+<td>插件热重载清除所有缓存后完整重建，无增量状态问题</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="88-核心文件速查表"><a class="markdownIt-Anchor" href="#88-核心文件速查表"></a> 8.8 核心文件速查表</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/plugins/builtinPlugins.ts</code></td>
+<td>内置插件注册表（注册、启用/禁用状态查询）</td>
+</tr>
+<tr>
+<td><code>src/plugins/bundled/index.ts</code></td>
+<td><code>initBuiltinPlugins()</code> 入口</td>
+</tr>
+<tr>
+<td><code>src/types/plugin.ts</code></td>
+<td><code>BuiltinPluginDefinition</code>、<code>LoadedPlugin</code> 类型定义</td>
+</tr>
+<tr>
+<td><code>src/utils/plugins/pluginLoader.ts</code></td>
+<td>插件加载主流程：<code>loadAllPlugins()</code>、<code>createPluginFromPath()</code></td>
+</tr>
+<tr>
+<td><code>src/utils/plugins/schemas.ts</code></td>
+<td><code>PluginManifestSchema</code>（Zod）清单校验</td>
+</tr>
+<tr>
+<td><code>src/utils/plugins/refresh.ts</code></td>
+<td><code>refreshActivePlugins()</code> 热重载</td>
+</tr>
+<tr>
+<td><code>src/utils/plugins/loadPluginCommands.ts</code></td>
+<td>加载插件命令</td>
+</tr>
+<tr>
+<td><code>src/utils/plugins/loadPluginAgents.ts</code></td>
+<td>加载插件 Agent 定义</td>
+</tr>
+<tr>
+<td><code>src/utils/plugins/loadPluginHooks.ts</code></td>
+<td>加载插件 Hooks</td>
+</tr>
+<tr>
+<td><code>src/skills/bundledSkills.ts</code></td>
+<td>内置技能注册：<code>registerBundledSkill()</code></td>
+</tr>
+<tr>
+<td><code>src/skills/loadSkillsDir.ts</code></td>
+<td>文件技能加载、动态发现、条件激活</td>
+</tr>
+<tr>
+<td><code>src/skills/bundled/index.ts</code></td>
+<td><code>initBundledSkills()</code> 初始化所有内置技能</td>
+</tr>
+<tr>
+<td><code>src/tools/SkillTool/SkillTool.ts</code></td>
+<td>Skill 工具实现（模型调用入口）</td>
+</tr>
+<tr>
+<td><code>src/tools/SkillTool/prompt.ts</code></td>
+<td>技能列表格式化和 token 预算管理</td>
+</tr>
+<tr>
+<td><code>src/tools/AgentTool/AgentTool.tsx</code></td>
+<td>Agent 工具主逻辑（路由、派生、异步管理）</td>
+</tr>
+<tr>
+<td><code>src/tools/AgentTool/runAgent.ts</code></td>
+<td>Agent 执行引擎（MCP 初始化、工具过滤）</td>
+</tr>
+<tr>
+<td><code>src/tools/AgentTool/builtInAgents.ts</code></td>
+<td>内置 Agent 注册表</td>
+</tr>
+<tr>
+<td><code>src/tools/AgentTool/loadAgentsDir.ts</code></td>
+<td>Agent 定义解析（Markdown、JSON、插件）</td>
+</tr>
+<tr>
+<td><code>src/tools/AgentTool/forkSubagent.ts</code></td>
+<td>Fork 实验（上下文继承的子 Agent）</td>
+</tr>
+<tr>
+<td><code>src/tools/AgentTool/resumeAgent.ts</code></td>
+<td>Agent 恢复（从磁盘 transcript 恢复）</td>
+</tr>
+<tr>
+<td><code>src/tools/SendMessageTool/SendMessageTool.ts</code></td>
+<td>Agent 间通信（进程内、Mailbox、远程）</td>
+</tr>
+<tr>
+<td><code>src/coordinator/coordinatorMode.ts</code></td>
+<td>协调者模式逻辑 + 系统提示词</td>
+</tr>
+<tr>
+<td><code>src/utils/worktree.ts</code></td>
+<td>Worktree 创建/清理（文件系统隔离）</td>
+</tr>
+<tr>
+<td><code>src/tasks/LocalAgentTask/LocalAgentTask.tsx</code></td>
+<td>后台 Agent 任务状态 + 通知</td>
+</tr>
+</tbody>
+</table>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#81-扩展机制全景"><span class="toc-text"> 8.1 扩展机制全景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#82-插件系统plugins"><span class="toc-text"> 8.2 插件系统（Plugins）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#821-插件架构概览"><span class="toc-text"> 8.2.1 插件架构概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#822-插件目录结构"><span class="toc-text"> 8.2.2 插件目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#823-插件清单pluginjson"><span class="toc-text"> 8.2.3 插件清单（plugin.json）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#824-插件类型定义"><span class="toc-text"> 8.2.4 插件类型定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#825-插件加载流程"><span class="toc-text"> 8.2.5 插件加载流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#826-插件设置注入"><span class="toc-text"> 8.2.6 插件设置注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#827-插件生命周期"><span class="toc-text"> 8.2.7 插件生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#828-marketplace-管理"><span class="toc-text"> 8.2.8 Marketplace 管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#83-skills系统"><span class="toc-text"> 8.3 Skills系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#831-skills概述"><span class="toc-text"> 8.3.1 Skills概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#832-skills类型定义"><span class="toc-text"> 8.3.2 Skills类型定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#833-skillmd-格式"><span class="toc-text"> 8.3.3 SKILL.md 格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#834-skills发现与加载"><span class="toc-text"> 8.3.4 Skills发现与加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#835-skills执行流程"><span class="toc-text"> 8.3.5 Skills执行流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#836-skilltool模型调用skills的入口"><span class="toc-text"> 8.3.6 SkillTool：模型调用Skills的入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#837-内置skills一览"><span class="toc-text"> 8.3.7 内置Skills一览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#838-skills可见性管理"><span class="toc-text"> 8.3.8 Skills可见性管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#84-multi-agent协调"><span class="toc-text"> 8.4 Multi-Agent协调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#841-三种工作模式"><span class="toc-text"> 8.4.1 三种工作模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#842-agenttool子-agent-派生"><span class="toc-text"> 8.4.2 AgentTool：子 Agent 派生</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#843-内置-agent-类型"><span class="toc-text"> 8.4.3 内置 Agent 类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#844-自定义-agent-定义"><span class="toc-text"> 8.4.4 自定义 Agent 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#845-协调者模式coordinator-mode"><span class="toc-text"> 8.4.5 协调者模式（Coordinator Mode）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#846-sendmessagetoolagent-间通信"><span class="toc-text"> 8.4.6 SendMessageTool：Agent 间通信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#847-worktree-隔离"><span class="toc-text"> 8.4.7 Worktree 隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#848-权限冒泡permission-bubbling"><span class="toc-text"> 8.4.8 权限冒泡（Permission Bubbling）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#849-任务通知机制"><span class="toc-text"> 8.4.9 任务通知机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#85-agent-mcp-服务器"><span class="toc-text"> 8.5 Agent MCP 服务器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#86-扩展机制间的关系"><span class="toc-text"> 8.6 扩展机制间的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#87-设计原则总结"><span class="toc-text"> 8.7 设计原则总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#88-核心文件速查表"><span class="toc-text"> 8.8 核心文件速查表</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/05/09/chapter-09-engineering-patterns/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-09T04:30:00.000Z">2026.05.09</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第九章：工程实践——值得学习的设计模式</strong>
+          </a>
+        
+          <a href="/2026/05/07/chapter-07-config-system/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-07T04:30:00.000Z">2026.05.07</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第七章：配置系统——灵活性的来源</strong>
+          </a>
+        
+          <a href="/2026/05/06/chapter-06-terminal-ui/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-06T04:30:00.000Z">2026.05.06</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第六章：终端 UI——在命令行里做&#34;前端&#34;</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/05/09/chapter-09-engineering-patterns/"><span>上一篇</span><strong>第九章：工程实践——值得学习的设计模式</strong></a>
+    <a href="/2026/05/07/chapter-07-config-system/"><span>下一篇</span><strong>第七章：配置系统——灵活性的来源</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

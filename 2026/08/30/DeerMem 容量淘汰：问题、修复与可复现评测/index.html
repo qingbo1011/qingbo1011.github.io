@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测 · Quinn</title>
+<meta name="description" content="一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测 库满了，删哪条 DeerFlow 的记忆后端 DeerMem 给每个 agent 的 fact 库设了上限，默认 100 条。新 fact 进来，超了上限…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测 · Quinn" />
+<meta property="og:description" content="一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测 库满了，删哪条 DeerFlow 的记忆后端 DeerMem 给每个 agent 的 fact 库设了上限，默认 100 条。新 fact 进来，超了上限…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" />
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Memory · 2026.08.30
+      
+    </p>
+    <h1>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Memory/">Memory</a>
+  
+  <span class="post-meta__item">19 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Memory/">#Memory</a>
+      
+        <a href="/tags/DeerMem/">#DeerMem</a>
+      
+        <a href="/tags/DeerFlow/">#DeerFlow</a>
+      
+        <a href="/tags/%E8%AF%84%E6%B5%8B/">#评测</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="库满了删哪条"><a class="markdownIt-Anchor" href="#库满了删哪条"></a> 库满了，删哪条</h2>
+<p>DeerFlow 的记忆后端 DeerMem 给每个 agent 的 fact 库设了上限，默认 100 条。新 fact 进来，超了上限就得挤掉一条。假设现在有两个候选：一条 confidence 0.9，180 天没人再提过；另一条 confidence 0.7，用户七天前刚确认过&quot;对，就是这样&quot;。再换一组：一条 <code>correction</code> 类别的 fact，记录的是用户纠正过 agent 的某个错误做法，confidence 0.7，对面是十条 confidence 0.9 的 <code>preference</code>。</p>
+<p>2026 年 8 月之前，DeerMem 的答案是删 0.7 那条，也删那条 correction。</p>
+<p>这个问题我在 issue <a href="https://github.com/bytedance/deer-flow/issues/4641" target="_blank" rel="noopener">#4641</a> 里提出，AnnaSuSu 在 PR <a href="https://github.com/bytedance/deer-flow/pull/4789" target="_blank" rel="noopener">#4789</a> 里用一个需要显式打开（opt-in）的 <code>hybrid-v1</code> 策略修掉了它，PR <a href="https://github.com/bytedance/deer-flow/pull/4810" target="_blank" rel="noopener">#4810</a> 把他的评测协议做成了仓库里可以独立重跑的评测。两个 PR 都在 2.1.0 里。</p>
+<h2 id="问题只看-confidence-的淘汰issue-4641"><a class="markdownIt-Anchor" href="#问题只看-confidence-的淘汰issue-4641"></a> 问题：只看 confidence 的淘汰（issue #4641）</h2>
+<p><a href="https://github.com/bytedance/deer-flow/issues/4641" target="_blank" rel="noopener">#4641</a> 提出时 <code>main</code> 在 <code>8234370a</code>，容量控制全部集中在 <code>_trim_facts_to_max</code> 一个函数里：所有 fact 按 confidence 降序排，保留前 <code>max_facts</code> 条，updater 在追加新 fact 之后调用它。排序不看 <code>updatedAt</code>，没有&quot;最近一次确认&quot;的时间戳，没有类别配额，也没有任何多样性信号。fact 本身有 <code>createdAt</code> 和 <code>updatedAt</code> 两个字段，淘汰路径不用它们。</p>
+<p>单看这一个函数，问题只是排序键太单一。放回整个系统里看，问题是三套治理互不认识：</p>
+<ul>
+<li>DeerMem 在注入侧对 <code>correction</code> 有专门保护：它是默认的 guaranteed 类别，拥有独立的 500 token 预算，prompt 格式化时和普通 fact 分开挑选，目的是让&quot;别用 pip，用 uv&quot;这种纠正在预算紧张时也能进 prompt。</li>
+<li>按 fact 年龄触发的 staleness review 也默认保护 <code>correction</code>。（解决&quot;这条 fact 还是真的吗&quot;的问题）</li>
+<li>但容量裁剪两个设置都不读。（解决&quot;库满了，牺牲哪几条&quot;的问题）</li>
+</ul>
+<p>correction 一旦被高 confidence 的 preference 挤出库，注入侧那 500 token 保障的是一个已经不存在的东西。<a href="https://github.com/bytedance/deer-flow/issues/4641" target="_blank" rel="noopener">#4641</a> 里的这张图是当时的容量路径，和它绕开的两项保护：</p>
+<div class="mermaid">
+flowchart TD
+    Update["应用一次记忆更新"] --> Append["追加通过校验的新 fact"]
+    Append --> Over{"fact 数 > max_facts?"}
+    Over -- "否" --> Persist["持久化当前 facts"]
+    Over -- "是" --> Trim["_trim_facts_to_max"]
+    Trim --> Rank["按 confidence 降序排序"]
+    Rank --> Keep["保留前 max_facts 条"]
+    Rank --> Drop["剔除其余条目"]
+    Keep --> Persist
+    Drop --> DeleteSet["缺失的 fact ID 转为删除"]
+    DeleteSet --> Unlink["物理 unlink Markdown 文件"]
+    Injection["注入侧：correction 有 500 token 保障预算"]
+    Staleness["staleness review：默认保护 correction"]
+    Injection -. "不参与裁剪" .-> Trim
+    Staleness -. "不参与裁剪" .-> Trim
+</div>
+<p>第三层是删除方式。fact 的 schema 只接受 <code>status: &quot;active&quot;</code>，删除是物理的：持久化时把快照里缺失的 fact ID 转成 delete，storage 直接 unlink 对应的 Markdown 文件。没有 archived 状态，没有审计记录，没有恢复路径。淘汰错了，看不到删了什么，也看不到它为什么输了排序。</p>
+<blockquote>
+<p>issue 里 AnnaSuSu 先后提了两个要求：有没有具体测试，以及效果要有具体的测试集。前一个我在 <code>upstream/main@e16ef296</code> 上用三个本地离线测试回答，结果和上面的推演一致：0.9@180 天赢了 0.7@7 天；一条 0.7 的 correction 对十条 0.9 的 preference，correction 出局；重新加载后这条 correction 不在持久化数据里，Markdown 文件已删，没有 <code>archived</code> 状态。后一个要求划定了后面两个 PR 的边界：修复的参数要来自受控对比，评测要能被别人重跑。</p>
+</blockquote>
+<h2 id="修复hybrid-v1pr-4789annasusu"><a class="markdownIt-Anchor" href="#修复hybrid-v1pr-4789annasusu"></a> 修复：hybrid-v1（PR #4789，AnnaSuSu）</h2>
+<p><a href="https://github.com/bytedance/deer-flow/pull/4789" target="_blank" rel="noopener">#4789</a> 由 AnnaSuSu 设计并实现，PR 里对 <a href="https://github.com/bytedance/deer-flow/issues/4641" target="_blank" rel="noopener">#4641</a> 的发现和方向做了致谢。我本地那版方向重合的实现没有再提，转去做评测。</p>
+<h3 id="评分三个有界信号"><a class="markdownIt-Anchor" href="#评分三个有界信号"></a> 评分：三个有界信号</h3>
+<p><code>hybrid-v1</code> 的容量评分是三个 [0, 1] 区间信号的加权和：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">score &#x3D; 0.65 * confidence</span><br><span class="line">      + 0.25 * confirmation_freshness</span><br><span class="line">      + 0.10 * access_heat</span><br></pre></td></tr></table></figure>
+<ul>
+<li>confidence 是现成字段，解析失败时退回 0.5，一条脏数据不会让整个淘汰路径抛异常。</li>
+<li>confirmation_freshness 用半衰期衰减：有 <code>lastConfirmedAt</code> 就按它算，半衰期 90 天，七天前确认过的 fact 拿到约 0.95；从来没确认过的 fact 退回 <code>createdAt</code>，再乘 0.5，创建这件事本身是比用户确认弱得多的证据；两个时间戳都解析不了就记 0。</li>
+<li>access_heat 来自一个单独的 usage sidecar，先按 30 天半衰期衰减，再做 <code>log1p(heat) / log(9)</code> 的对数饱和，截到 1。对数饱和的意思是热度 8 就到顶，被搜到一百次和八次没有区别，这条信号只占 0.10 的权重，不会因为某个 fact 反复命中就把别的都挤掉。</li>
+</ul>
+<p>三个权重在 config 里可调，加起来必须是 1，不然启动就报错。</p>
+<p>回到开头那两条 fact，两条都没有访问热度，access 项为 0。记 confirmation_freshness 为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span></span></span></span>，总分为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span>。0.9@180 天、从未确认的那条：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>=</mo><mn>0.5</mn><mo>×</mo><msup><mn>2</mn><mrow><mo>−</mo><mn>180</mn><mi mathvariant="normal">/</mi><mn>90</mn></mrow></msup><mo>=</mo><mn>0.125</mn><mo separator="true">,</mo><mspace width="2em"/><mi>S</mi><mo>=</mo><mn>0.65</mn><mo>×</mo><mn>0.9</mn><mo>+</mo><mn>0.25</mn><mo>×</mo><mn>0.125</mn><mo>+</mo><mn>0.10</mn><mo>×</mo><mn>0</mn><mo>≈</mo><mn>0.62</mn></mrow><annotation encoding="application/x-tex">F = 0.5 \times 2^{-180/90} = 0.125,\qquad
+S = 0.65 \times 0.9 + 0.25 \times 0.125 + 0.10 \times 0 \approx 0.62
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.938em;vertical-align:0em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.938em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span><span class="mord mtight">8</span><span class="mord mtight">0</span><span class="mord mtight">/</span><span class="mord mtight">9</span><span class="mord mtight">0</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">2</span><span class="mord">5</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:2em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">6</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">9</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">2</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">2</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">0</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">6</span><span class="mord">2</span></span></span></span></span></p>
+<p>0.7@7 天、七天前确认过的那条：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>=</mo><msup><mn>2</mn><mrow><mo>−</mo><mn>7</mn><mi mathvariant="normal">/</mi><mn>90</mn></mrow></msup><mo>≈</mo><mn>0.95</mn><mo separator="true">,</mo><mspace width="2em"/><mi>S</mi><mo>=</mo><mn>0.65</mn><mo>×</mo><mn>0.7</mn><mo>+</mo><mn>0.25</mn><mo>×</mo><mn>0.95</mn><mo>+</mo><mn>0.10</mn><mo>×</mo><mn>0</mn><mo>≈</mo><mn>0.69</mn></mrow><annotation encoding="application/x-tex">F = 2^{-7/90} \approx 0.95,\qquad
+S = 0.65 \times 0.7 + 0.25 \times 0.95 + 0.10 \times 0 \approx 0.69
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.938em;vertical-align:0em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.938em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">7</span><span class="mord mtight">/</span><span class="mord mtight">9</span><span class="mord mtight">0</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">9</span><span class="mord">5</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:2em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">6</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">7</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">2</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">9</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">0</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">6</span><span class="mord">9</span></span></span></span></span></p>
+<p>七天前的确认赢了。</p>
+<h3 id="确认信号从哪来不加-llm-调用"><a class="markdownIt-Anchor" href="#确认信号从哪来不加-llm-调用"></a> 确认信号从哪来：不加 LLM 调用</h3>
+<p>难点在 confirmation 信号。&quot;用户确认过这条 fact&quot;不是现成字段，要有人判断。Anna 的做法是不加新的 LLM 调用，复用 memory-update 那次已有的调用：响应 schema 里新增可选的 <code>factsToReinforce</code> 数组，让模型在做记忆更新时顺便报告这轮对话明确确认了哪条已有 fact。模型说了不算，<code>lastConfirmedAt</code> 只有在三个条件同时满足时才会更新：</p>
+<ol>
+<li>确定性的消息处理在最近六条过滤后的人类消息里匹配到了 reinforcement 模式，“对，就是这样”“完全正确”“that’s exactly right” 这类正则，pattern 文件可以扩展；</li>
+<li>模型给出的条目 scope 是 <code>user</code>；reason 非空。</li>
+<li>重复提取、自动注入、搜索命中都不算确认，prompt 里专门写了这条。</li>
+</ol>
+<blockquote>
+<p>pattern 文件的注释里记了一条取舍：“你说的对”“没错”&quot;对的&quot;这类单独的肯定故意不在默认列表里，“对&quot;在&quot;对不起”“对方”&quot;对啊&quot;里都会误命中，需要时自行扩展。有效确认同时重置那条 fact 的 staleness review 时钟，不然一条 <code>createdAt</code> 很老的 fact 刚被确认，转头就被年龄清理掉。</p>
+</blockquote>
+<div class="mermaid">
+flowchart TD
+    Msg["最近六条过滤后的人类消息"] --> Det["确定性检测：是否命中 reinforcement 正则"]
+    LLM["memory-update 响应里的 factsToReinforce<br/>id / scope / reason"] --> Cond["模型条目：scope == user，reason 非空"]
+    Det --> Gate{"两边同时成立?"}
+    Cond --> Gate
+    Gate -- "是" --> Upd["按 id 找到已有 fact<br/>lastConfirmedAt = now<br/>confirmationCount + 1"]
+    Gate -- "否" --> Skip["不更新"]
+    Upd --> Clock["staleness review 时钟重置"]
+    Excl["重复提取 / 自动注入 / 搜索命中"] -. "都不算确认" .-> Skip
+</div>
+<h3 id="correction-保留槽和其他"><a class="markdownIt-Anchor" href="#correction-保留槽和其他"></a> correction 保留槽和其他</h3>
+<p>对开头第二组 fact，评分改了也不够，十条 0.9 的 preference 在任何加权下都能压过一条 0.7 的 correction。所以 hybrid 模式先给 correction 留 <code>min(10, ceil(max_facts × 10%))</code> 个槽，按分数最高的 correction 先占，占不满的槽立即释放给普通竞争，超出保留数的 correction 也正常竞争。默认 100 条的库，保留 10 个槽。整条选择路径合起来是这样：</p>
+<div class="mermaid">
+flowchart LR
+    subgraph signals["三个有界信号"]
+        C["confidence<br/>字段值，解析失败取 0.5"]
+        F["confirmation_freshness<br/>lastConfirmedAt 按 90 天半衰期<br/>未确认则 createdAt 衰减再乘 0.5"]
+        A["access_heat<br/>usage sidecar，30 天半衰期<br/>log1p(h) / log(9) 截到 1"]
+    end
+    C --> S["score = 0.65 C + 0.25 F + 0.10 A"]
+    F --> S
+    A --> S
+    S --> R["correction 保留槽<br/>min(10, ceil(max_facts × 10%))<br/>按分数先占，占不满即释放"]
+    R --> Fill["剩余名额按 score 降序填满"]
+    Fill --> Kept["kept"]
+    Fill --> Evicted["evicted"]
+    Evicted --> Audit["审计 sidecar<br/>只记 ID、类别、分数分量、原因"]
+</div>
+<p>另外几处设计一起说：</p>
+<ul>
+<li>自动提取、手工或工具创建、导入三条写入路径原来各走各的容量逻辑，现在统一过 <code>select_facts_for_capacity()</code>。</li>
+<li>淘汰仍是物理删除，软删除涉及存储迁移，但每次容量淘汰会追加一条只含元数据的审计记录：fact ID、类别、策略分数、各分量、原因，不复制内容，默认保留 200 条。</li>
+<li>usage 和审计 sidecar 与 canonical Markdown 解耦，搜索命中不会改写 fact 文件和它的 <code>updatedAt</code>；sidecar 只在 hybrid-v1 或 shadow mode 打开时才读写，默认部署不多一次文件锁。</li>
+<li>默认策略仍是 <code>confidence</code>，<code>hybrid-v1</code> 要显式打开；还有一个 shadow mode，用 hybrid 算一遍但不改实际保留结果，只记录两种策略的分歧。</li>
+</ul>
+<p>opt-in 的原因 Anna 在 PR 里写得很直接：权重是在受控的、强制到容量上限的对比里选出来的，“They remain opt-in because the evaluation used synthetic metadata and is not sufficient to justify a default switch.”</p>
+<h2 id="评测把一段文字协议做成可以重跑的东西pr-4810"><a class="markdownIt-Anchor" href="#评测把一段文字协议做成可以重跑的东西pr-4810"></a> 评测：把一段文字协议做成可以重跑的东西（PR #4810）</h2>
+<p><a href="https://github.com/bytedance/deer-flow/pull/4810" target="_blank" rel="noopener">#4810</a> 目标是任何人拿到仓库和数据集，能跑出一样的池子、一样的 prompt、一样的判分，再用同一套东西跑一次两边同预算的 QA 对比。&quot;一样&quot;有好几层，每层要单独设计。整条链路如下，后面几小节各对应其中一段：</p>
+<div class="mermaid">
+flowchart LR
+    DS["longmemeval_oracle.json<br/>本地文件，pin revision 与 SHA-256"] --> V["validate<br/>校验 hash，重算 40 题筛选规则<br/>构建 bank，准备 45 个 case"]
+    M["仓库内：config、两个 manifest、prompt<br/>只有题目 ID，没有题目"] --> V
+    V --> Pool["确定性池子重建<br/>sha256 offset 取 9 条干扰项<br/>gold_ / d_ 命名，按 ID 排序"]
+    Pool --> Sel["生产 select_facts_for_capacity()<br/>confidence 与 hybrid-v1<br/>容量 5 / 7 / 9"]
+    Sel --> RP["run-policy<br/>270 行元数据<br/>support retention"]
+    Sel --> RQ["run-qa，容量 7<br/>90 次调用，两边同参数<br/>每行存 request_fingerprint"]
+    RQ --> Rows["responses/ 行文件<br/>预测与非敏感元数据"]
+    Rows --> G["grade-qa<br/>核对五个 hash，重算任务与 fingerprint<br/>盲判分，按 row ID join 回策略"]
+    G --> Out["qa.rows.jsonl<br/>qa.summary.json<br/>qa.stats.json"]
+</div>
+<h3 id="评什么四个-scenario-各控制一件事"><a class="markdownIt-Anchor" href="#评什么四个-scenario-各控制一件事"></a> 评什么：四个 scenario 各控制一件事</h3>
+<p>40 道题来自 Hugging Face 数据集 <a href="https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned" target="_blank" rel="noopener"><code>xiaowu0162/longmemeval-cleaned</code></a> 的 <code>longmemeval_oracle.json</code>，只取 <code>knowledge-update</code> 和 <code>temporal-reasoning</code> 两类，排除 8 个 pilot ID、<code>_abs</code> 结尾的 ID、答案为空或超过 100 字符、答案含 “not enough” 或 “only mentioned”、证据为空或超过 2000 字符的行，每类按 <code>question_id</code> 排序取前 20，切成四组各五题，两类对应的组合并成一个 10 题的 scenario。每道题的证据从 <code>haystack_sessions</code> 里抽 <code>has_answer</code> 的轮次拼成一条支持事实，另配 9 条干扰项。干扰项来自一个 40 条的 bank，取 <code>single-session-user</code> 和 <code>single-session-preference</code> 两类、渲染后证据长度在 40 到 700 字符之间的记录。</p>
+<p>四个 scenario 的区别全在支持事实和干扰项的元数据上：</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>支持事实</th>
+<th>干扰项</th>
+<th>想验证什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>confirmation_help</code></td>
+<td>confidence 0.70，7 天前确认</td>
+<td>前 N 条 0.94 起每条减 0.02，其余 0.68 起递减，都无信号</td>
+<td>确认信号能否救回低 confidence 的事实</td>
+</tr>
+<tr>
+<td><code>access_help</code></td>
+<td>confidence 0.70，访问热度 8</td>
+<td>同上</td>
+<td>访问热度能否救回</td>
+</tr>
+<tr>
+<td><code>confidence_control</code></td>
+<td>confidence 0.95，无信号</td>
+<td>前五条 0.94 起递减；其余 0.70，交替带 7 天前确认或热度 8</td>
+<td>0.25 + 0.10 的权重会不会反过来掀翻高 confidence 的事实</td>
+</tr>
+<tr>
+<td><code>noisy_signal_control</code></td>
+<td>confidence 0.90，无信号</td>
+<td>前 N 条 0.70 且交替带信号，其余 0.70 无信号</td>
+<td>干扰项上的噪声信号会不会把稳的事实挤出去</td>
+</tr>
+</tbody>
+</table>
+<p>N 由每题的 <code>loss_rank</code> 决定，序列固定为 (6, 6, 6, 8, 8, 8, 10, 10, 10, 10)，N = loss_rank − 1。loss_rank 8 的意思是按 confidence 排支持事实排第八，容量 7 时刚好出局。所以纯 confidence 策略在两个 help scenario 各只能保住 3 条，也就是 loss_rank 6 的那三题；两个 control scenario 全保住；5 个 correction case 只保住 1 条。加起来 27/45。这个数字不经过任何模型，是协议对齐的第一道关卡。QA accuracy 是第二层指标：保留下来的 fact 按固定 prompt 交给模型，要求只用给出的 stored memory 回答，不够就输出 <code>INSUFFICIENT</code>，YES/NO 题只答 YES 或 NO，其他题给最短的直接答案。</p>
+<p>5 个 synthetic correction case 由 Anna 编写，比如 “USER CORRECTION: I am allergic to peanuts. The earlier note saying I enjoy peanut snacks was wrong.”，问题是 YES/NO，支持事实类别 <code>correction</code>、confidence 0.65，干扰项从 0.90 起每条减 0.03。它测的是保留槽，不是评分。</p>
+<h3 id="数据边界pin-住不下载不提交"><a class="markdownIt-Anchor" href="#数据边界pin-住不下载不提交"></a> 数据边界：pin 住，不下载，不提交</h3>
+<p>LongMemEval 的题目、答案和对话不能进仓库，评测又必须能确认大家跑的是同一份数据。做法是把数据集 pin 到仓库 revision <code>98d7416c</code> 和文件 SHA-256 <code>821a2034…</code>，CLI 从不下载，调用者自己把文件放到本地，任何命令在读之前先校验 hash，不匹配就拒绝。仓库里只提交 40 个 question ID 和 scenario 分组，以及 Anna 原创的 5 个 synthetic case 全文。所有输出行只含 ID、kept 和 evicted 的 fact ID、分数分量、保留标记、模型预测和判分，不含事实内容、题目和参考答案。</p>
+<p>池子重建没有随机数。每题的 9 条干扰项从 bank 里连续取，起点是 <code>sha256(&quot;deermem-medium-v1:{case_id}&quot;)</code> 前四个字节对 bank 长度取模，取到尾部就绕回开头；支持事实和干扰项的元数据按上面的规则赋值，确认时间和访问时间都相对于固定的评测时钟 <code>2026-08-13T00:00:00Z</code>，半衰期衰减用这个时钟算，隔一年重跑结果也不会漂。</p>
+<p>第二条边界是不抄评分实现。评测直接 import 生产代码里的 <code>select_facts_for_capacity()</code>，两种策略都通过它跑；config 里 <code>required_policy_version: hybrid-v1</code> 会和生产常量 <code>EVICTION_POLICY_HYBRID_V1</code> 对比，生产策略版本变了，<code>validate-contracts</code> 直接失败。</p>
+<h3 id="grader把文字规则变成可冻结的判分器"><a class="markdownIt-Anchor" href="#grader把文字规则变成可冻结的判分器"></a> grader：把文字规则变成可冻结的判分器</h3>
+<p>QA accuracy 表里的每一个&quot;对&quot;都要有人判。模型输出是自由文本，参考答案是一句话，不能直接比字符串。Anna 用的是确定性规则，不是人工，也不是再叫一个模型当裁判，零成本，每次跑结果一样。要复现他的数字，我的判分器必须在每一行上和他做出同样的决定。</p>
+<p>他披露的规则是一段文字，实现成 <code>deterministic-overlap-v1</code> 后是这样：先归一化，两边全小写、非字母数字字符换成空格、英文数字词 one 到 ten 和 fifteen 换成数字；然后按顺序过六条规则：</p>
+<ol>
+<li>输出为空或等于 <code>INSUFFICIENT</code>，判错；</li>
+<li>归一化后完全相同，判对；</li>
+<li>一边是另一边的连续片段，判对，比如参考答案 Paris、模型答 in Paris；</li>
+<li>参考答案是 “ranging from X to Y” 的区间、模型答的整数都落在区间里，判对；</li>
+<li>两边都有整数但对不上，判错；</li>
+<li>以上都没命中，去掉 the、of 这类功能词后，剩下的词双向都有 60% 以上重合才判对。</li>
+</ol>
+<p>有两处光靠文字定不下实现。第 3 条必须按词匹配：参考答案 5、模型答 25，按字符 “5” 是 “25” 的子串会误判成对，按词就不会。第 6 条要先剔掉功能词，Anna 没有给词表，我提交了一份固定的英文功能词表，特意把 yes、no、not 留在外面，YES/NO 题的整个答案就是这一个词，剔掉就没法判了。</p>
+<p>冻结的依据是 Anna 公开的 90 行历史记录：每行有模型当时的回答、参考答案和他判的对错，两种策略各 45 行。把这 90 对回答和参考答案喂给新判分器，90 个对错逐条一致，才把版本号写进 config，<code>validate-contracts</code> 校验这个版本号，之后改任何规则都必须换版本号。新的 live run 跑完后没有回头改过规则。</p>
+<p>判分函数 <code>grade_answer(prediction, reference)</code> 只收两个字符串，不知道这条回答来自哪个策略，判完再按行 ID 拼回策略和 scenario。判分逻辑没有机会偏向任何一边。</p>
+<h3 id="协议等价的三层聚合-逐行-逐字节"><a class="markdownIt-Anchor" href="#协议等价的三层聚合-逐行-逐字节"></a> 协议等价的三层：聚合、逐行、逐字节</h3>
+<p>&quot;复现 Anna 的评测&quot;可以停在三个深度：</p>
+<ol>
+<li>聚合指标一致，比如容量 7 下的 27/45 对 45/45；</li>
+<li>每题的池子和保留集逐行一致；</li>
+<li>发给模型的请求逐字节一致。</li>
+</ol>
+<p>三层之间不能互相推出。这个协议里，聚合保留率只由每条干扰项的序号决定，第 i 条给什么 confidence、带不带信号，都和它是哪条记录无关；换掉 bank 里的记录，序号不变，保留率一个数都不动。27/45 对 45/45 只能证明元数据规则对了，证明不了池子对了。Anna 逐行比对第一版实现时的结论就是这句：</p>
+<blockquote>
+<p>The matching aggregate alone does not establish row-level reproduction.</p>
+</blockquote>
+<p>逐字节一致最终取决于三个披露里没有写的协议细节。</p>
+<p><strong>证据渲染格式</strong>，每个 session 的证据前缀是 <code>SESSION {id} AT {date}</code>。它决定渲染后的长度，而 bank 的准入条件是 40 到 700 字符。记录 <code>35a27287</code> 用这个前缀是 697 字符，换成 <code>[session_id={id} date={date}]</code> 是 704，跨过上限被 <code>60d45044</code> 顶替。bank 变了一条，每题的 offset 不变但指向的记录变了，33 个池子、264 条元数据分配、65/90 个容量 7 保留集、全部 90 条 prompt 随之变化，保留率仍是 27/45 对 45/45。</p>
+<div class="mermaid">
+flowchart TD
+    Fmt["session 头格式<br/>SESSION id AT date 写成了另一种前缀"] --> Len["记录 35a27287 的渲染长度<br/>697 字符变成 704 字符"]
+    Len --> Bound["跨过 bank 的 700 字符上限<br/>被 60d45044 顶替"]
+    Bound --> Bank["bank 成员变了，offset 不变"]
+    Bank --> Pools["33/45 个池子变化<br/>264 条元数据分配变化"]
+    Pools --> Kept["65/90 个容量 7 保留集变化"]
+    Pools --> Prompts["90/90 条 prompt 变化"]
+    Pools -. "元数据只看干扰项序号" .-> Agg["支持事实保留 27/45 对 45/45<br/>不变"]
+</div>
+<p><strong>fact ID 命名与排序</strong>，支持事实是 <code>gold_{case}</code>，干扰项是 <code>d_{case}_{index}_{source}</code>，进入选择器前按 ID 排序。生产选择器按分数降序、同分按输入顺序，所以 ID 的字典序就是 tie-break。用数据集原始 ID 时，题 <code>41698283</code> 在容量 7 下保留的是 <code>001be529</code>，历史保留的是 <code>58bf7951</code>，2/90 个保留集不同。</p>
+<p><strong>prompt 序列化</strong>，<code>STORED MEMORY</code> 里 fact 块之间是空行，块的顺序就是排序后的 ID 顺序。这一项不改变任何保留集，只改变请求字节。</p>
+<p>三次 live run 对应这三项逐步对齐的协议，每次协议改动后旧运行整体作废，不部分复用：</p>
+<table>
+<thead>
+<tr>
+<th>run</th>
+<th>协议状态</th>
+<th>官方 40 题 <code>confidence</code> / <code>hybrid-v1</code></th>
+<th style="text-align:right">exact McNemar p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>自定义前缀、原始 ID、单换行</td>
+<td>23/40 / 35/40</td>
+<td style="text-align:right">0.0042</td>
+</tr>
+<tr>
+<td>2</td>
+<td>历史前缀</td>
+<td>23/40 / 33/40</td>
+<td style="text-align:right">0.0129</td>
+</tr>
+<tr>
+<td>3</td>
+<td>历史前缀、历史 ID、空行</td>
+<td>23/40 / 35/40</td>
+<td style="text-align:right">0.0018</td>
+</tr>
+</tbody>
+</table>
+<p>三次运行的确定性保留率都是 27/45 对 45/45。前两层可以自验，第三层只有持有历史产物的人能验，所以&quot;复现&quot;的结论由 Anna 给出。他在最终版 <code>e481a2e7</code> 上的比对结果：45/45 个池子的 fact ID、内容和元数据一致，90/90 个容量 7 保留集一致，90/90 条请求消息逐字节一致，冻结的 grader 复现 90 个历史判分。</p>
+<h3 id="运行身份与完整性校验"><a class="markdownIt-Anchor" href="#运行身份与完整性校验"></a> 运行身份与完整性校验</h3>
+<p>设计目标是一份发布的 <code>qa.rows.jsonl</code> 能自己证明每一行是在被判分的那个协议下产生的，不靠作者保证。协议身份由五个文件的 SHA-256 定义：config、官方 manifest、synthetic manifest、answer prompt、数据集。<code>run-qa</code> 在输出目录写 <code>qa_run.json</code>，记下这五个 hash 和 git 状态。每一行回答文件除了预测和用量，还存 <code>row_id</code>、<code>case_id</code>、<code>source</code>、<code>scenario</code>、<code>policy</code>、<code>capacity</code>、<code>kept_fact_ids</code>，以及 <code>request_fingerprint</code>，也就是发给模型的完整消息的 SHA-256。</p>
+<p>校验分布在两个阶段：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>校验内容</th>
+<th>不通过时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run-qa</code> 续跑</td>
+<td>五个 hash 与当前协议一致；每条已存在的行用当前协议重算任务，<code>row_id</code>、<code>case_id</code>、<code>source</code>、<code>scenario</code>、<code>policy</code>、<code>capacity</code>、保留集、fingerprint 全部一致</td>
+<td>hash 不一致：拒绝在该目录续跑，指出变的是哪个文件；行不一致：重新调用，不复用</td>
+</tr>
+<tr>
+<td><code>grade-qa</code> 发布</td>
+<td>只读核对五个 hash；重建全部 90 个任务；逐行核对 fingerprint 和身份字段；参考答案取自重算的 <code>PolicyResult</code>，不取自行内的 <code>case_id</code></td>
+<td>任一行不匹配或缺失：整个判分拒绝执行</td>
+</tr>
+</tbody>
+</table>
+<p>回归测试逐个篡改每个身份字段，每一种都必须被拒绝；另一组测试从发布的行重算 McNemar 和 bootstrap，与 <code>qa.stats.json</code> 逐字节一致。</p>
+<p>这些检查有三条来自 review。续跑最初只绑 config 一个 hash，已存在的行不核对 fingerprint 就复用，改一条消息后第二次运行报 1 reused, 0 called，于是有了五个 hash 的 marker 和逐行重算。发布路径当时没有同样的校验，一条在旧序列化下产生的行可以直接进入发布结果，这正是前一节三次重跑遇到的漂移类型，此前只靠 Anna 的带外比对才发现。判分最初从行里存的 <code>case_id</code> 取参考答案，把一条合法行的 <code>case_id</code> 改成另一个合法 case，fingerprint、保留集、容量、策略都不动，所有校验通过而判分从对变错，续跑的匹配函数同样没有比对 <code>case_id</code>、<code>source</code>、<code>scenario</code>。三处都在合入前补上，已发布的行没有改动，判分结果不变。</p>
+<h3 id="统计两边同预算"><a class="markdownIt-Anchor" href="#统计两边同预算"></a> 统计：两边同预算</h3>
+<p>Anna 的历史运行里，confidence 基线用的是 <code>max_tokens=1024</code>，hybrid 候选是 2048 的新调用，基线行被复用。他在披露里主动说了这一点，也建议后续两边重跑。<a href="https://github.com/bytedance/deer-flow/pull/4810" target="_blank" rel="noopener">#4810</a> 里两种策略都是新调用，<code>deepseek-v4-flash</code>，temperature 0，<code>max_tokens=2048</code>，三次重试，三个 worker，走 DeepSeek 官方 API，每行记录 API 返回的 <code>response_model</code>。90 次调用一共消耗 86,342 input 和 12,340 output token，大约 0.03 美元。</p>
+<p>配对统计用 exact McNemar 加 seed 固定的 paired bootstrap，seed 4789，10000 次，α=0.05，官方 40 例、synthetic 5 例、45 例 overall 三个 suite 分开报，<code>qa.summary.json</code> 里永远不把官方题和 synthetic 折成一个数。离线测试从发布的行重新计算统计量，和 <code>qa.stats.json</code> 逐字节一致。</p>
+<h3 id="怎么跑"><a class="markdownIt-Anchor" href="#怎么跑"></a> 怎么跑</h3>
+<p>从 <code>backend/</code> 下执行，四条命令对应四层。<code>validate-contracts</code> 不需要数据集，校验提交的 config、manifest 和 prompt 的 hash；<code>validate</code> 校验数据集 hash、重新计算 40 题的筛选规则、构建 bank、准备 45 个 case；<code>run-policy</code> 在容量 5、7、9 下跑确定性选择，输出 270 行元数据，不调任何模型；<code>run-qa</code> 和 <code>grade-qa</code> 才需要 API key。前三条完全离线，不需要 API key 就能复现 27/45 对 45/45 那张表。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LONGMEMEVAL_ORACLE_PATH=/absolute/path/to/longmemeval_oracle.json</span><br><span class="line">PYTHONPATH=. uv run python -m scripts.benchmark.deermem_eviction validate \</span><br><span class="line">  --dataset <span class="string">"<span class="variable">$LONGMEMEVAL_ORACLE_PATH</span>"</span></span><br><span class="line">PYTHONPATH=. uv run python -m scripts.benchmark.deermem_eviction run-policy \</span><br><span class="line">  --dataset <span class="string">"<span class="variable">$LONGMEMEVAL_ORACLE_PATH</span>"</span> --output-dir /tmp/deermem-eviction-policy-run</span><br></pre></td></tr></table></figure>
+<p>合并前最后一处改动是文档。维护者试跑时发现 README 只写了数据集名和 hash，没写它是公开、无需登录的 Hugging Face 数据集，也没给下载命令，有些网络里 <a href="http://huggingface.co" target="_blank" rel="noopener">huggingface.co</a> 本身就访问不了。<code>69eecfa5</code> 补上了直接下载的 curl 命令、期望的 hash 和 <code>hf-mirror.com</code> 的替代主机。</p>
+<p>工具方面按 PR 里的披露：评测脚手架和协议校验用了 Codex，rebase、grader、runner、统计和 live run 用了 Claude Code；协议、代码和结果我逐一审过并负责。</p>
+<h2 id="结果怎么读"><a class="markdownIt-Anchor" href="#结果怎么读"></a> 结果怎么读</h2>
+<p>发布在 <code>results/pr4789-reproduction-v1/</code> 的最终运行，容量 7，两种策略同参数：</p>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th style="text-align:right"><code>confidence</code></th>
+<th style="text-align:right"><code>hybrid-v1</code></th>
+<th style="text-align:right">Exact McNemar p</th>
+<th>准确率差（95% CI）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>40 官方题</td>
+<td style="text-align:right">23/40</td>
+<td style="text-align:right">35/40</td>
+<td style="text-align:right">0.0018</td>
+<td>+0.300 [+0.150, +0.450]</td>
+</tr>
+<tr>
+<td>5 synthetic corrections</td>
+<td style="text-align:right">1/5</td>
+<td style="text-align:right">5/5</td>
+<td style="text-align:right">0.1250</td>
+<td>+0.800 [+0.400, +1.000]</td>
+</tr>
+<tr>
+<td>45 overall</td>
+<td style="text-align:right">24/45</td>
+<td style="text-align:right">40/45</td>
+<td style="text-align:right">0.0001</td>
+<td>+0.356 [+0.200, +0.511]</td>
+</tr>
+</tbody>
+</table>
+<p>按 scenario 拆：<code>confirmation_help</code> 3/10 对 10/10，<code>access_help</code> 3/10 对 9/10，<code>confidence_control</code> 8/10 对 7/10，<code>noisy_signal_control</code> 9/10 对 9/10，synthetic 1/5 对 5/5。两个 help scenario 的差距就是保留率的差距，支持事实不在池子里，模型按 prompt 的要求输出 <code>INSUFFICIENT</code>。</p>
+<p><code>confidence_control</code> 是 hybrid 唯一低于基线的格子，要单独看。40 道官方题里 hybrid 只输了一道，<code>1cea1afa</code>，它的支持事实在两种策略下都被保留了，confidence 策略下模型答对，hybrid 下模型输出了 <code>INSUFFICIENT</code>。问题不在淘汰。两种策略保留的干扰项集合不同，同一支持事实旁边放着不同的干扰项，模型的措辞和弃答倾向会变。grader 是冻结的，这个格子按原样报告。</p>
+<p>两边都比历史数字高不少，历史是 14/45 对 23/45。confidence 基线从 14 涨到 24，和输出预算从 1024 翻到 2048 是一致的，披露里记录过一次 hidden reasoning 耗尽预算后重试到 2048 的情况。hybrid 的历史行本来就是 2048，从 23 涨到 40 不能用预算解释；这次走的是 DeepSeek 官方 API，历史记录里是聚合命名空间 <code>deepseek/deepseek-v4-flash</code>，底层模型相同但服务路径不同，我没有证据把差异归到某一个原因上。两种策略之间的差距在三次运行里都在，官方 40 题上 hybrid 分别多答对 12、10、12 道。</p>
+<p>这些数字不构成把 <code>hybrid-v1</code> 改成默认的论据。评测用的元数据是构造的，confidence_control 的那一行说明信号权重和干扰项集合会影响模型的弃答行为，真实部署里 confirmation 信号还依赖前面说的 batch-level 门。<a href="https://github.com/bytedance/deer-flow/pull/4789" target="_blank" rel="noopener">#4789</a> 自己也把 confidence 留作默认，切默认是另一个需要社区讨论的问题。</p>
+<h2 id="回到那两条-fact"><a class="markdownIt-Anchor" href="#回到那两条-fact"></a> 回到那两条 fact</h2>
+<p>开头那条 0.7、七天前确认过的 fact，在 <code>hybrid-v1</code> 下总分约 0.69，赢过 0.62 的 0.9@180 天。那条 0.7 的 correction，在 100 条的库里有 10 个保留槽，十条 0.9 的 preference 挤不掉它。这两件事在 issue 里是文字推演，现在是生产代码里的行为，也是评测里 <code>confirmation_help</code> 的 10 行和 <code>correction_reserve</code> 的 5 行。</p>
+<p>评测这边只有一条结论：聚合指标对协议漂移不敏感，逐字节一致才算复现。仓库里现在的五个 hash、每行的 request fingerprint 和 grade-qa 的发布前自证，都是为这一条服务的。</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li>issue：<a href="https://github.com/bytedance/deer-flow/issues/4641" target="_blank" rel="noopener">bytedance/deer-flow#4641</a>，Improve DeerMem fact-cap eviction policy</li>
+<li>修复：<a href="https://github.com/bytedance/deer-flow/pull/4789" target="_blank" rel="noopener">bytedance/deer-flow#4789</a>，feat(memory): add hybrid fact eviction policy，作者 AnnaSuSu，2026-08-17 合入，squash <code>5ffaa09f</code>，milestone 2.1.0</li>
+<li>评测：<a href="https://github.com/bytedance/deer-flow/pull/4810" target="_blank" rel="noopener">bytedance/deer-flow#4810</a>，eval(memory): add a reproducible hybrid eviction evaluation，2026-08-29 合入，squash <code>2eba6544</code>，milestone 2.1.0</li>
+<li>评测代码与发布结果：<code>backend/scripts/benchmark/deermem_eviction/</code>，README 里有数据集下载方式和四条命令</li>
+<li>数据集：<a href="https://github.com/xiaowu0162/longmemeval" target="_blank" rel="noopener">xiaowu0162/longmemeval</a>，清洗版 Hugging Face 数据集 <a href="https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned" target="_blank" rel="noopener"><code>xiaowu0162/longmemeval-cleaned</code></a></li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#库满了删哪条"><span class="toc-text"> 库满了，删哪条</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题只看-confidence-的淘汰issue-4641"><span class="toc-text"> 问题：只看 confidence 的淘汰（issue #4641）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修复hybrid-v1pr-4789annasusu"><span class="toc-text"> 修复：hybrid-v1（PR #4789，AnnaSuSu）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#评分三个有界信号"><span class="toc-text"> 评分：三个有界信号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#确认信号从哪来不加-llm-调用"><span class="toc-text"> 确认信号从哪来：不加 LLM 调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#correction-保留槽和其他"><span class="toc-text"> correction 保留槽和其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#评测把一段文字协议做成可以重跑的东西pr-4810"><span class="toc-text"> 评测：把一段文字协议做成可以重跑的东西（PR #4810）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#评什么四个-scenario-各控制一件事"><span class="toc-text"> 评什么：四个 scenario 各控制一件事</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据边界pin-住不下载不提交"><span class="toc-text"> 数据边界：pin 住，不下载，不提交</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#grader把文字规则变成可冻结的判分器"><span class="toc-text"> grader：把文字规则变成可冻结的判分器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#协议等价的三层聚合-逐行-逐字节"><span class="toc-text"> 协议等价的三层：聚合、逐行、逐字节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#运行身份与完整性校验"><span class="toc-text"> 运行身份与完整性校验</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#统计两边同预算"><span class="toc-text"> 统计：两边同预算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#怎么跑"><span class="toc-text"> 怎么跑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结果怎么读"><span class="toc-text"> 结果怎么读</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#回到那两条-fact"><span class="toc-text"> 回到那两条 fact</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text"> 参考</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-04T09:23:38.000Z">2026.08.04</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</strong>
+          </a>
+        
+          <a href="/2026/08/03/TencentDB-Agent-Memory%E7%9A%84%E8%AE%B0%E5%BF%86%E8%AE%BE%E8%AE%A1/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-03T04:00:00.000Z">2026.08.03</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>TencentDB-Agent-Memory的记忆设计</strong>
+          </a>
+        
+          <a href="/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-02T04:00:00.000Z">2026.08.02</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/09/01/pi%E6%98%AFAgent%E4%B8%96%E7%95%8C%E7%9A%84ArchLinux%E5%90%97-%E5%8D%95%E7%AF%87%E5%AE%8C%E6%95%B4%E7%89%88/"><span>上一篇</span><strong>Pi Coding Agent 调研学习</strong></a>
+    <a href="/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/"><span>下一篇</span><strong>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

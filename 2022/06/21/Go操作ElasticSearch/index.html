@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Go操作Elasticsearch · Quinn</title>
+<meta name="description" content="Go操作Elasticsearch 操作ElasticSearch golang elasticsearch入门教程 官方文档 我们使用第三方库https://github.com/olivere/elastic 来连接ES并进行操作。 注…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2022/06/21/Go%E6%93%8D%E4%BD%9CElasticSearch/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Go操作Elasticsearch · Quinn" />
+<meta property="og:description" content="Go操作Elasticsearch 操作ElasticSearch golang elasticsearch入门教程 官方文档 我们使用第三方库https://github.com/olivere/elastic 来连接ES并进行操作。 注…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2022/06/21/Go%E6%93%8D%E4%BD%9CElasticSearch/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705111821.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220705111821.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Database · 2022.06.21
+      
+    </p>
+    <h1>Go操作Elasticsearch</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Database/">Database</a>
+  
+  <span class="post-meta__item">20 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Database/">#Database</a>
+      
+        <a href="/tags/Elasticsearch/">#Elasticsearch</a>
+      
+        <a href="/tags/elk/">#elk</a>
+      
+        <a href="/tags/Go/">#Go</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p><a href="https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9Celasticsearch/%E6%93%8D%E4%BD%9Celasticsearch.html" target="_blank" rel="noopener">操作ElasticSearch</a></p>
+<p><strong><a href="https://www.tizi365.com/archives/850.html" target="_blank" rel="noopener">golang elasticsearch入门教程</a></strong></p>
+<p><strong><a href="https://pkg.go.dev/github.com/olivere/elastic/v7#section-readme" target="_blank" rel="noopener">官方文档</a></strong></p>
+<p>我们使用第三方库https://github.com/olivere/elastic 来连接ES并进行操作。</p>
+<p>注意下载与你的ES相同版本的client，在官方的README中可以看到如下表格：</p>
+<table>
+<thead>
+<tr>
+<th>Elasticsearch version</th>
+<th>Elastic version</th>
+<th>Package URL</th>
+<th>Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7.x</td>
+<td>7.0</td>
+<td><a href="https://github.com/olivere/elastic" target="_blank" rel="noopener"><code>github.com/olivere/elastic/v7</code></a> (<a href="https://github.com/olivere/elastic/tree/release-branch.v7" target="_blank" rel="noopener">source</a> <a href="https://pkg.go.dev/github.com/olivere/elastic/v7" target="_blank" rel="noopener">doc</a>)</td>
+<td>Use Go modules.</td>
+</tr>
+<tr>
+<td>6.x</td>
+<td>6.0</td>
+<td><a href="https://github.com/olivere/elastic" target="_blank" rel="noopener"><code>github.com/olivere/elastic</code></a> (<a href="https://github.com/olivere/elastic/tree/release-branch.v6" target="_blank" rel="noopener">source</a> <a href="http://godoc.org/github.com/olivere/elastic" target="_blank" rel="noopener">doc</a>)</td>
+<td>Use a dependency manager (see below).</td>
+</tr>
+<tr>
+<td>5.x</td>
+<td>5.0</td>
+<td><a href="https://gopkg.in/olivere/elastic.v5" target="_blank" rel="noopener"><code>gopkg.in/olivere/elastic.v5</code></a> (<a href="https://github.com/olivere/elastic/tree/release-branch.v5" target="_blank" rel="noopener">source</a> <a href="http://godoc.org/gopkg.in/olivere/elastic.v5" target="_blank" rel="noopener">doc</a>)</td>
+<td>Actively maintained.</td>
+</tr>
+<tr>
+<td>2.x</td>
+<td>3.0</td>
+<td><a href="https://gopkg.in/olivere/elastic.v3" target="_blank" rel="noopener"><code>gopkg.in/olivere/elastic.v3</code></a> (<a href="https://github.com/olivere/elastic/tree/release-branch.v3" target="_blank" rel="noopener">source</a> <a href="http://godoc.org/gopkg.in/olivere/elastic.v3" target="_blank" rel="noopener">doc</a>)</td>
+<td>Deprecated. Please update.</td>
+</tr>
+<tr>
+<td>1.x</td>
+<td>2.0</td>
+<td><a href="https://gopkg.in/olivere/elastic.v2" target="_blank" rel="noopener"><code>gopkg.in/olivere/elastic.v2</code></a> (<a href="https://github.com/olivere/elastic/tree/release-branch.v2" target="_blank" rel="noopener">source</a> <a href="http://godoc.org/gopkg.in/olivere/elastic.v2" target="_blank" rel="noopener">doc</a>)</td>
+<td>Deprecated. Please update.</td>
+</tr>
+<tr>
+<td>0.9-1.3</td>
+<td>1.0</td>
+<td><a href="https://gopkg.in/olivere/elastic.v1" target="_blank" rel="noopener"><code>gopkg.in/olivere/elastic.v1</code></a> (<a href="https://github.com/olivere/elastic/tree/release-branch.v1" target="_blank" rel="noopener">source</a> <a href="http://godoc.org/gopkg.in/olivere/elastic.v1" target="_blank" rel="noopener">doc</a>)</td>
+<td>Deprecated. Please update.</td>
+</tr>
+</tbody>
+</table>
+<h1 id="操作示例"><a class="markdownIt-Anchor" href="#操作示例"></a> 操作示例</h1>
+<p>来看两个示例。（elk版本：<code>6.4.0</code>）</p>
+<h2 id="示例1-helloworld"><a class="markdownIt-Anchor" href="#示例1-helloworld"></a> 示例1 helloworld</h2>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> person <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name    <span class="keyword">string</span> <span class="string">`json:"name"`</span></span><br><span class="line">	Age     <span class="keyword">int</span>    <span class="string">`json:"age"`</span></span><br><span class="line">	Married <span class="keyword">bool</span>   <span class="string">`json:"married"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	client, err := elastic.NewClient(elastic.SetURL(<span class="string">"http://ip:9200"</span>), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// Handle error</span></span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"连接成功！"</span>)</span><br><span class="line">	p1 := person&#123;</span><br><span class="line">		Name:    <span class="string">"张三"</span>,</span><br><span class="line">		Age:     <span class="number">18</span>,</span><br><span class="line">		Married: <span class="literal">false</span>,</span><br><span class="line">	&#125;</span><br><span class="line">	response, err := client.Index().Index(<span class="string">"person"</span>).Type(<span class="string">"person"</span>).BodyJson(p1).Do(context.Background()) <span class="comment">// Index a document</span></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(response)</span><br><span class="line">	fmt.Printf(<span class="string">"Indexed person %v to index %v, type %v\n"</span>, response.Id, response.Index, response.Type)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果不加<code>elastic.SetSniff(false)</code>，会报错<code>no active connection found: no Elasticsearch node available</code>，解决方案：<a href="https://stackoverflow.com/questions/61455272/cannot-connect-to-elastic-search-no-active-connection-found-no-elasticsearch" target="_blank" rel="noopener">Cannot connect to elastic search : no active connection found: no Elasticsearch node available</a></p>
+</blockquote>
+<p>运行结果：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220621142643.png" alt="" /></p>
+<h2 id="示例2-crud"><a class="markdownIt-Anchor" href="#示例2-crud"></a> 示例2 CRUD</h2>
+<p>首先看一下<code>init</code>函数（<a href="https://www.qingbo1011.top/2022/04/23/Golang%E5%9F%BA%E7%A1%8001/#init%E5%87%BD%E6%95%B0%E5%92%8Cmain%E5%87%BD%E6%95%B0">init函数笔记</a>），代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"context"</span></span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"log"</span></span><br><span class="line">   <span class="string">"os"</span></span><br><span class="line"></span><br><span class="line">   <span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> employee <span class="keyword">struct</span> &#123;</span><br><span class="line">   FirstName <span class="keyword">string</span>   <span class="string">`json:"first_name"`</span></span><br><span class="line">   LastName  <span class="keyword">string</span>   <span class="string">`json:"last_name"`</span></span><br><span class="line">   Age       <span class="keyword">int</span>      <span class="string">`json:"age"`</span></span><br><span class="line">   About     <span class="keyword">string</span>   <span class="string">`json:"about"`</span></span><br><span class="line">   Interests []<span class="keyword">string</span> <span class="string">`json:"interests"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> client *elastic.Client</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">"http://ip:9200/"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// go init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">   errorLog := log.New(os.Stdout, <span class="string">"APP"</span>, log.LstdFlags)</span><br><span class="line">   client, err := elastic.NewClient(elastic.SetErrorLog(errorLog), elastic.SetURL(host), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      log.Fatal(err)</span><br><span class="line">   &#125;</span><br><span class="line">   pingResult, code, err := client.Ping(host).Do(context.Background())</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      log.Fatal(err)</span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Printf(<span class="string">"Elasticsearch returned with code %d and version %s\n"</span>, code, pingResult.Version.Number)</span><br><span class="line">   version, err := client.ElasticsearchVersion(host)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      log.Fatal(err)</span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Printf(<span class="string">"Elasticsearch version %s\n"</span>, version)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="create-创建"><a class="markdownIt-Anchor" href="#create-创建"></a> create 创建</h3>
+<ul>
+<li>使用结构体创建：<code>BodyJson</code></li>
+<li>使用字符串（通常是<strong>json字符串</strong>）创建：<code>BodyString</code>（也可以使用<code>BodyJson</code>）</li>
+</ul>
+<blockquote>
+<p>其实观察源码可以发现：<code>BodyJson</code>几乎是万能的，也就是说使用字符串也可以用<code>BodyJson</code>的方式。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// BodyJson is the document as a serializable JSON interface.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *IndexService)</span> <span class="title">BodyJson</span><span class="params">(body <span class="keyword">interface</span>&#123;&#125;)</span> *<span class="title">IndexService</span></span> &#123;</span><br><span class="line">   s.bodyJson = body</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// BodyString is the document encoded as a string.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *IndexService)</span> <span class="title">BodyString</span><span class="params">(body <span class="keyword">string</span>)</span> *<span class="title">IndexService</span></span> &#123;</span><br><span class="line">   s.bodyString = body</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> IndexService <span class="keyword">struct</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    bodyJson            <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">	bodyString          <span class="keyword">string</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> employee <span class="keyword">struct</span> &#123;</span><br><span class="line">	FirstName <span class="keyword">string</span>   <span class="string">`json:"first_name"`</span></span><br><span class="line">	LastName  <span class="keyword">string</span>   <span class="string">`json:"last_name"`</span></span><br><span class="line">	Age       <span class="keyword">int</span>      <span class="string">`json:"age"`</span></span><br><span class="line">	About     <span class="keyword">string</span>   <span class="string">`json:"about"`</span></span><br><span class="line">	Interests []<span class="keyword">string</span> <span class="string">`json:"interests"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> client *elastic.Client</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">"http://ip</span></span><br><span class="line"><span class="string">:9200"</span></span><br><span class="line"><span class="keyword">var</span> ctx = context.Background() <span class="comment">// 执行ES请求需要提供一个上下文对象</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	create()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// go init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	errorLog := log.New(os.Stdout, <span class="string">"APP"</span>, log.LstdFlags)</span><br><span class="line">	<span class="keyword">var</span> err error</span><br><span class="line">	client, err = elastic.NewClient(elastic.SetErrorLog(errorLog), elastic.SetURL(host), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">create</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 使用结构体</span></span><br><span class="line">	e1 := employee&#123;</span><br><span class="line">		FirstName: <span class="string">"top"</span>,</span><br><span class="line">		LastName:  <span class="string">"sen"</span>,</span><br><span class="line">		Age:       <span class="number">18</span>,</span><br><span class="line">		About:     <span class="string">"热爱学习"</span>,</span><br><span class="line">		Interests: []<span class="keyword">string</span>&#123;<span class="string">"法律"</span>, <span class="string">"看书"</span>&#125;,</span><br><span class="line">	&#125;</span><br><span class="line">	response, err := client.Index().</span><br><span class="line">		Index(<span class="string">"hx"</span>).</span><br><span class="line">		Type(<span class="string">"employee"</span>).</span><br><span class="line">		Id(<span class="string">"3"</span>).</span><br><span class="line">		BodyJson(e1).</span><br><span class="line">		Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Printf(<span class="string">"id: %s index: %s, type: %s\n"</span>, response.Id, response.Index, response.Type)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 使用字符串</span></span><br><span class="line">	e2_str := <span class="string">`&#123;</span></span><br><span class="line"><span class="string">    "first_name":"虎",</span></span><br><span class="line"><span class="string">    "last_name":"哥",</span></span><br><span class="line"><span class="string">    "age":25,</span></span><br><span class="line"><span class="string">    "about":"I love to go rock climbing",</span></span><br><span class="line"><span class="string">    "interests":[</span></span><br><span class="line"><span class="string">        "sports",</span></span><br><span class="line"><span class="string">        "music"</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">&#125;`</span></span><br><span class="line">	resp1, err := client.Index().Index(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Id(<span class="string">"5"</span>).BodyString(e2_str).Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Printf(<span class="string">"id: %s to index: %s, type: %s\n"</span>, resp1.Id, resp1.Index, resp1.Type)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过查询可以发现已经成功添加：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220622154850.png" alt="" /></p>
+<h3 id="delete-删除"><a class="markdownIt-Anchor" href="#delete-删除"></a> delete 删除</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"context"</span></span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"log"</span></span><br><span class="line">   <span class="string">"os"</span></span><br><span class="line"></span><br><span class="line">   <span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> employee <span class="keyword">struct</span> &#123;</span><br><span class="line">   FirstName <span class="keyword">string</span>   <span class="string">`json:"first_name"`</span></span><br><span class="line">   LastName  <span class="keyword">string</span>   <span class="string">`json:"last_name"`</span></span><br><span class="line">   Age       <span class="keyword">int</span>      <span class="string">`json:"age"`</span></span><br><span class="line">   About     <span class="keyword">string</span>   <span class="string">`json:"about"`</span></span><br><span class="line">   Interests []<span class="keyword">string</span> <span class="string">`json:"interests"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> client *elastic.Client</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">"http://ip:9200"</span></span><br><span class="line"><span class="keyword">var</span> ctx = context.Background() <span class="comment">// 执行ES请求需要提供一个上下文对象</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   deleteEs()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">deleteEs</span><span class="params">()</span></span> &#123;</span><br><span class="line">   response, err := client.Delete().Index(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Id(<span class="string">"3"</span>).Do(ctx)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      log.Fatal(err)</span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Printf(<span class="string">"id: %s index: %s, type: %s\n"</span>, response.Id, response.Index, response.Type)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// go init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">   errorLog := log.New(os.Stdout, <span class="string">"APP"</span>, log.LstdFlags)</span><br><span class="line">   <span class="keyword">var</span> err error</span><br><span class="line">   client, err = elastic.NewClient(elastic.SetErrorLog(errorLog), elastic.SetURL(host), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      log.Fatal(err)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="update-修改"><a class="markdownIt-Anchor" href="#update-修改"></a> update 修改</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"context"</span></span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"log"</span></span><br><span class="line">   <span class="string">"os"</span></span><br><span class="line"></span><br><span class="line">   <span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> employee <span class="keyword">struct</span> &#123;</span><br><span class="line">   FirstName <span class="keyword">string</span>   <span class="string">`json:"first_name"`</span></span><br><span class="line">   LastName  <span class="keyword">string</span>   <span class="string">`json:"last_name"`</span></span><br><span class="line">   Age       <span class="keyword">int</span>      <span class="string">`json:"age"`</span></span><br><span class="line">   About     <span class="keyword">string</span>   <span class="string">`json:"about"`</span></span><br><span class="line">   Interests []<span class="keyword">string</span> <span class="string">`json:"interests"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> client *elastic.Client</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">"http://ip:9200"</span></span><br><span class="line"><span class="keyword">var</span> ctx = context.Background() <span class="comment">// 执行ES请求需要提供一个上下文对象</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   update()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">update</span><span class="params">()</span></span> &#123;</span><br><span class="line">   response, err := client.Update().Index(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Id(<span class="string">"2"</span>).</span><br><span class="line">      Doc(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">interface</span>&#123;&#125;&#123;</span><br><span class="line">         <span class="string">"age"</span>: <span class="number">81</span>,</span><br><span class="line">      &#125;).Do(ctx)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      log.Fatal(err)</span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Printf(<span class="string">"id: %s index: %s, type: %s\n"</span>, response.Id, response.Index, response.Type)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// go init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">   errorLog := log.New(os.Stdout, <span class="string">"APP"</span>, log.LstdFlags)</span><br><span class="line">   <span class="keyword">var</span> err error</span><br><span class="line">   client, err = elastic.NewClient(elastic.SetErrorLog(errorLog), elastic.SetURL(host), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      log.Fatal(err)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>源码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Doc allows for updating a partial document.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *UpdateService)</span> <span class="title">Doc</span><span class="params">(doc <span class="keyword">interface</span>&#123;&#125;)</span> *<span class="title">UpdateService</span></span> &#123;</span><br><span class="line">   s.doc = doc</span><br><span class="line">   <span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="gets-查找"><a class="markdownIt-Anchor" href="#gets-查找"></a> gets 查找</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> employee <span class="keyword">struct</span> &#123;</span><br><span class="line">	FirstName <span class="keyword">string</span>   <span class="string">`json:"first_name"`</span></span><br><span class="line">	LastName  <span class="keyword">string</span>   <span class="string">`json:"last_name"`</span></span><br><span class="line">	Age       <span class="keyword">int</span>      <span class="string">`json:"age"`</span></span><br><span class="line">	About     <span class="keyword">string</span>   <span class="string">`json:"about"`</span></span><br><span class="line">	Interests []<span class="keyword">string</span> <span class="string">`json:"interests"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> client *elastic.Client</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">"http://ip:9200"</span></span><br><span class="line"><span class="keyword">var</span> ctx = context.Background() <span class="comment">// 执行ES请求需要提供一个上下文对象</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	gets()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">gets</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 通过id查找</span></span><br><span class="line">	getResult, err := client.Get().Index(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Id(<span class="string">"2"</span>).Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> getResult.Found &#123;</span><br><span class="line">		fmt.Printf(<span class="string">"Got document %s in version %d from index %s, type %s\n"</span>, getResult.Id, getResult.Version, getResult.Index, getResult.Type)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// go init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	errorLog := log.New(os.Stdout, <span class="string">"APP"</span>, log.LstdFlags)</span><br><span class="line">	<span class="keyword">var</span> err error</span><br><span class="line">	client, err = elastic.NewClient(elastic.SetErrorLog(errorLog), elastic.SetURL(host), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="query-搜索"><a class="markdownIt-Anchor" href="#query-搜索"></a> query 搜索</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"reflect"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> employee <span class="keyword">struct</span> &#123;</span><br><span class="line">	FirstName <span class="keyword">string</span>   <span class="string">`json:"first_name"`</span></span><br><span class="line">	LastName  <span class="keyword">string</span>   <span class="string">`json:"last_name"`</span></span><br><span class="line">	Age       <span class="keyword">int</span>      <span class="string">`json:"age"`</span></span><br><span class="line">	About     <span class="keyword">string</span>   <span class="string">`json:"about"`</span></span><br><span class="line">	Interests []<span class="keyword">string</span> <span class="string">`json:"interests"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> client *elastic.Client</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">"http://ip:9200"</span></span><br><span class="line"><span class="keyword">var</span> ctx = context.Background() <span class="comment">// 执行ES请求需要提供一个上下文对象</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	query()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">query</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 查询所有</span></span><br><span class="line">	searchResult, err := client.Search(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	printEmployee(searchResult)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 给定字段内容查询（字段相等）</span></span><br><span class="line">	q := elastic.NewQueryStringQuery(<span class="string">"first_name:张"</span>)</span><br><span class="line">	result, err := client.Search(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Query(q).Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	printEmployee(result)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 条件查询</span></span><br><span class="line">	<span class="comment">// 年龄大于25的且first_name为“张”</span></span><br><span class="line">	boolQuery := elastic.NewBoolQuery()</span><br><span class="line">	boolQuery.Must(elastic.NewMatchQuery(<span class="string">"first_name"</span>, <span class="string">"张"</span>))</span><br><span class="line">	boolQuery.Filter(elastic.NewRangeQuery(<span class="string">"age"</span>).Gt(<span class="number">25</span>))</span><br><span class="line">	res, err := client.Search(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Query(boolQuery).Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	printEmployee(res)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 短语搜索 搜索about字段中有“学习”</span></span><br><span class="line">	matchPhraseQuery := elastic.NewMatchPhraseQuery(<span class="string">"about"</span>, <span class="string">"学习"</span>)</span><br><span class="line">	res1, err := client.Search(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Query(matchPhraseQuery).Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	printEmployee(res1)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 打印查询到的employee</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">printEmployee</span><span class="params">(result *elastic.SearchResult)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> typ employee</span><br><span class="line">	<span class="keyword">for</span> _, item := <span class="keyword">range</span> result.Each(reflect.TypeOf(typ)) &#123; <span class="comment">// 从搜索结果中取数据的方法</span></span><br><span class="line">		emp, ok := item.(employee)</span><br><span class="line">		<span class="keyword">if</span> ok &#123;</span><br><span class="line">			fmt.Println(emp)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"断言失败！"</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println() <span class="comment">// 换行</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// go init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	errorLog := log.New(os.Stdout, <span class="string">"APP"</span>, log.LstdFlags)</span><br><span class="line">	<span class="keyword">var</span> err error</span><br><span class="line">	client, err = elastic.NewClient(elastic.SetErrorLog(errorLog), elastic.SetURL(host), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="list-分页"><a class="markdownIt-Anchor" href="#list-分页"></a> list 分页</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"context"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"reflect"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/olivere/elastic"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> employee <span class="keyword">struct</span> &#123;</span><br><span class="line">	FirstName <span class="keyword">string</span>   <span class="string">`json:"first_name"`</span></span><br><span class="line">	LastName  <span class="keyword">string</span>   <span class="string">`json:"last_name"`</span></span><br><span class="line">	Age       <span class="keyword">int</span>      <span class="string">`json:"age"`</span></span><br><span class="line">	About     <span class="keyword">string</span>   <span class="string">`json:"about"`</span></span><br><span class="line">	Interests []<span class="keyword">string</span> <span class="string">`json:"interests"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> client *elastic.Client</span><br><span class="line"><span class="keyword">var</span> host = <span class="string">"http://ip:9200"</span></span><br><span class="line"><span class="keyword">var</span> ctx = context.Background() <span class="comment">// 执行ES请求需要提供一个上下文对象</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	list(<span class="number">3</span>, <span class="number">2</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">list</span><span class="params">(pageSize <span class="keyword">int</span>, pageNum <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 对pageSize和pageNum非法情况的处理</span></span><br><span class="line">	<span class="keyword">if</span> pageSize &lt;= <span class="number">0</span> &#123;</span><br><span class="line">		pageSize = <span class="number">3</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> pageNum &lt;= <span class="number">0</span> &#123;</span><br><span class="line">		pageNum = <span class="number">1</span></span><br><span class="line">	&#125;</span><br><span class="line">	res, err := client.Search(<span class="string">"hx"</span>).Type(<span class="string">"employee"</span>).Size(pageSize).From((pageNum - <span class="number">1</span>) * pageSize).Do(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	printEmployee(res)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 打印查询到的employee</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">printEmployee</span><span class="params">(result *elastic.SearchResult)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> typ employee</span><br><span class="line">	<span class="keyword">for</span> _, item := <span class="keyword">range</span> result.Each(reflect.TypeOf(typ)) &#123; <span class="comment">// 从搜索结果中取数据的方法</span></span><br><span class="line">		emp, ok := item.(employee)</span><br><span class="line">		<span class="keyword">if</span> ok &#123;</span><br><span class="line">			fmt.Println(emp)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"断言失败！"</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println() <span class="comment">// 换行</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// go init函数不能被其他函数调用，而是在main函数执行之前，自动被调用</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	errorLog := log.New(os.Stdout, <span class="string">"APP"</span>, log.LstdFlags)</span><br><span class="line">	<span class="keyword">var</span> err error</span><br><span class="line">	client, err = elastic.NewClient(elastic.SetErrorLog(errorLog), elastic.SetURL(host), elastic.SetSniff(<span class="literal">false</span>))</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h1 id="go操作elasticsearch7"><a class="markdownIt-Anchor" href="#go操作elasticsearch7"></a> Go操作Elasticsearch7</h1>
+<p>上面的教程中使用的是elk6.4.0。这里我们继续学习elk7的相关操作。（docker compose可以成功启动但是每次一起动服务器就卡机了。。。可能是因为我买的轻量应用服务器吧）</p>
+<h2 id="docker-compose安装elk7"><a class="markdownIt-Anchor" href="#docker-compose安装elk7"></a> docker compose安装elk7</h2>
+<p><a href="https://jasonkayzk.github.io/2021/05/15/%E4%BD%BF%E7%94%A8Docker-Compose%E9%83%A8%E7%BD%B2%E5%8D%95%E8%8A%82%E7%82%B9ELK/" target="_blank" rel="noopener">使用Docker-Compose部署单节点ELK</a></p>
+<p><a href="https://github.com/docker" target="_blank" rel="noopener">docker</a>/<strong><a href="https://github.com/docker/awesome-compose" target="_blank" rel="noopener">awesome-compose</a></strong></p>
+<p>使用docker compose安装elk会方便很多。目前在整个ELK-Stack中还包括了Filebeat进行日志采集，这里我们也一并带上。</p>
+<p>首先在同级目录下创建两个文件：<code>.env</code>文件和<code>docker-compose.yml</code>文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">elk7</span><br><span class="line">├── docker-compose.yml</span><br><span class="line">└── .env</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意<code>.</code>开头的文件名代表隐藏文件，<code>ls</code>是看不到的，需要<code>ls -a</code></p>
+</blockquote>
+<p><code>.env</code>文件内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># ELK版本号，统一elasticsearch，kibana，logstash的images版本</span><br><span class="line">ELK_VERSION&#x3D;7.16.1</span><br></pre></td></tr></table></figure>
+<p><code>docker-compose.yml</code>文件内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">'3.7'</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">elasticsearch:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">"elasticsearch:$&#123;ELK_VERSION&#125;"</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">discovery.type=single-node</span>  <span class="comment"># 将ES的集群发现模式配置为单节点模式</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">ES_JAVA_OPTS:="-Xms512m</span> <span class="string">-Xmx512m"</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/etc/localtime:/etc/localtime</span> <span class="comment"># Docker容器中时间和宿主机同步</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/home/root/dockerVolumes/elk7/elasticsearch:/usr/share/elasticsearch/data</span> <span class="comment"># 将ES的数据映射并持久化至宿主机中</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">"9200:9200"</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">"9300:9300"</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">logstash:</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">elasticsearch</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">"logstash:$&#123;ELK_VERSION&#125;"</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/home/root/dockerVolumes/elk7/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf</span>  <span class="comment"># 将宿主机本地的logstash配置映射至logstash容器内部</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">"5044:5044"</span></span><br><span class="line">    <span class="attr">links:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">elasticsearch</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">kibana:</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">elasticsearch</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">"kibana:$&#123;ELK_VERSION&#125;"</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">ELASTICSEARCH_URL=http://elasticsearch:9200</span> <span class="comment"># 配置ES的地址</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/etc/localtime:/etc/localtime</span> <span class="comment"># Docker容器中时间和宿主机同步</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">"5601:5601"</span></span><br><span class="line">    <span class="attr">links:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">elasticsearch</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 服务器配置低，带不动</span></span><br><span class="line"><span class="comment">#  filebeat:</span></span><br><span class="line"><span class="comment">#    depends_on:</span></span><br><span class="line"><span class="comment">#      - elasticsearch</span></span><br><span class="line"><span class="comment">#      - logstash</span></span><br><span class="line"><span class="comment">#    image: "elastic/filebeat:$&#123;ELK_VERSION&#125;"</span></span><br><span class="line"><span class="comment">#    user: root # 必须为root，否则会因为无权限而无法启动</span></span><br><span class="line"><span class="comment">#    environment:</span></span><br><span class="line"><span class="comment">#      - strict.perms=false</span></span><br><span class="line"><span class="comment">#    volumes:</span></span><br><span class="line"><span class="comment">#      - /home/root/dockerVolumes/elk7/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro</span></span><br><span class="line"><span class="comment">#      # 映射到容器中[作为数据源]</span></span><br><span class="line"><span class="comment">#      - /home/root/dockerVolumes/elk7/filebeat/logs:/usr/share/filebeat/logs:rw</span></span><br><span class="line"><span class="comment">#      - /home/root/dockerVolumes/elk7/filebeat/data:/usr/share/filebeat/data:rw</span></span><br><span class="line"><span class="comment">#    # 将指定容器连接到当前连接，可以设置别名，避免ip方式导致的容器重启动态改变的无法连接情况</span></span><br><span class="line"><span class="comment">#    links:</span></span><br><span class="line"><span class="comment">#      - logstash</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>可以用<code>container_name</code>指定容器名称，如<code>container_name: docker-web-container</code>。docker compose默认将会使用 <code>项目名称-服务名称-序号</code> 这样的格式。</p>
+<p>注意: 指定容器名称后，该服务将无法进行扩展（scale），因为 Docker 不允许多个容器具有相同的名称。</p>
+</blockquote>
+<blockquote>
+<p>关于<code>docker-compose.yml</code>文件：</p>
+<p>有多种版本的Compose文件格式：<code>1</code>，<code>2</code>，<code>2.x</code>和<code>3.x</code></p>
+<p>相容性矩阵：下表显示了哪些Compose文件版本支持特定的Docker版本。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"><strong>撰写档案格式</strong></th>
+<th style="text-align:left"><strong>Docker Engine版本</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">3.7</td>
+<td style="text-align:left">18.06.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">3.6</td>
+<td style="text-align:left">18.02.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">3.5</td>
+<td style="text-align:left">17.12.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">3.4</td>
+<td style="text-align:left">17.09.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">3.3</td>
+<td style="text-align:left">17.06.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">3.2</td>
+<td style="text-align:left">17.04.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">3.1</td>
+<td style="text-align:left">1.13.1+</td>
+</tr>
+<tr>
+<td style="text-align:left">3.0</td>
+<td style="text-align:left">1.13.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">2.4</td>
+<td style="text-align:left">17.12.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">2.3</td>
+<td style="text-align:left">17.06.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">2.2</td>
+<td style="text-align:left">1.13.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">2.1</td>
+<td style="text-align:left">1.12.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">2.0</td>
+<td style="text-align:left">1.10.0+</td>
+</tr>
+<tr>
+<td style="text-align:left">1.0</td>
+<td style="text-align:left">1.9.1。+</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<blockquote>
+<p>Compose模板文件支持动态读取主机的系统环境变量和当前目录下的 <code>.env</code> 文件中的变量。</p>
+<p>更多内容可参考：<a href="https://yeasy.gitbook.io/docker_practice/compose/compose_file" target="_blank" rel="noopener">Compose 模板文件</a></p>
+</blockquote>
+<p>注意，因为涉及到数据卷挂载，elk的安装有点特殊，我们需要提前在宿主机中创建elasticsearch的挂载目录并授予权限：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod 777 /home/root/dockerVolumes/elk7/elasticsearch</span><br></pre></td></tr></table></figure>
+<p>接下来在<code>/home/root/dockerVolumes/elk7/logstash</code>路径下创建<code>logstash.conf</code>文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">  tcp &#123;</span><br><span class="line">    mode &#x3D;&gt; &quot;server&quot;</span><br><span class="line">    host &#x3D;&gt; &quot;0.0.0.0&quot;</span><br><span class="line">    port &#x3D;&gt; 5047</span><br><span class="line">    codec &#x3D;&gt; json</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">  elasticsearch &#123;</span><br><span class="line">    hosts &#x3D;&gt; [&quot;http:&#x2F;&#x2F;elasticsearch:9207&quot;]</span><br><span class="line">    index &#x3D;&gt; &quot;%&#123;[service]&#125;-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  stdout &#123; codec &#x3D;&gt; rubydebug &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后在<code>/home/root/dockerVolumes/elk7/filebeat</code>创建Filebeat配置文件<code>filebeat.yml</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">filebeat.inputs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">type:</span> <span class="string">log</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">paths:</span></span><br><span class="line">      <span class="comment"># 容器中目录下的所有.log文件</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/usr/share/filebeat/logs/*.log</span></span><br><span class="line">    <span class="attr">multiline.pattern:</span> <span class="string">^\[</span></span><br><span class="line">    <span class="attr">multiline.negate:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">multiline.match:</span> <span class="string">after</span></span><br><span class="line"></span><br><span class="line"><span class="attr">filebeat.config.modules:</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">$&#123;path.config&#125;/modules.d/*.yml</span></span><br><span class="line">  <span class="attr">reload.enabled:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">setup.template.settings:</span></span><br><span class="line">  <span class="attr">index.number_of_shards:</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="attr">setup.dashboards.enabled:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">setup.kibana:</span></span><br><span class="line">  <span class="attr">host:</span> <span class="string">"http://kibana:5601"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接传输至ES</span></span><br><span class="line"><span class="comment">#output.elasticsearch:</span></span><br><span class="line"><span class="comment"># hosts: ["http://es-master:9200"]</span></span><br><span class="line"><span class="comment"># index: "filebeat-%&#123;[beat.version]&#125;-%&#123;+yyyy.MM.dd&#125;"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 传输至LogStash</span></span><br><span class="line"><span class="attr">output.logstash:</span></span><br><span class="line">  <span class="attr">hosts:</span> <span class="string">["logstash:5044"]</span></span><br><span class="line"></span><br><span class="line"><span class="attr">processors:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">add_host_metadata:</span> <span class="string">~</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">add_cloud_metadata:</span> <span class="string">~</span></span><br></pre></td></tr></table></figure>
+<p>随后使用docker-compose命令启动：<code>docker-compose up -d</code>。（<code>docker-compose down</code>命令将会停止 <code>up</code> 命令所启动的容器，并移除网络）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220627143157.png" alt="" /></p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#示例1-helloworld"><span class="toc-text"> 示例1 helloworld</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#示例2-crud"><span class="toc-text"> 示例2 CRUD</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#create-创建"><span class="toc-text"> create 创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete-删除"><span class="toc-text"> delete 删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#update-修改"><span class="toc-text"> update 修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gets-查找"><span class="toc-text"> gets 查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#query-搜索"><span class="toc-text"> query 搜索</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#list-分页"><span class="toc-text"> list 分页</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#docker-compose安装elk7"><span class="toc-text"> docker compose安装elk7</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2022/06/20/Elasticsearch/">
+            <span class="related-notes__meta">
+              <time datetime="2022-06-20T00:47:03.000Z">2022.06.20</time>
+              <span>#Database · #Elasticsearch · #elk</span>
+            </span>
+            <strong>Elasticsearch</strong>
+          </a>
+        
+          <a href="/2022/06/25/Gorm%20v2/">
+            <span class="related-notes__meta">
+              <time datetime="2022-06-25T00:47:03.000Z">2022.06.25</time>
+              <span>#Database · #Go</span>
+            </span>
+            <strong>GORM v2操作MySQL</strong>
+          </a>
+        
+          <a href="/2022/05/22/Go%E6%93%8D%E4%BD%9CRedis/">
+            <span class="related-notes__meta">
+              <time datetime="2022-05-22T00:47:03.000Z">2022.05.22</time>
+              <span>#Database · #Go</span>
+            </span>
+            <strong>Go操作Redis</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2022/06/22/RabbitMQ/"><span>上一篇</span><strong>RabbitMQ</strong></a>
+    <a href="/2022/06/20/Elasticsearch/"><span>下一篇</span><strong>Elasticsearch</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

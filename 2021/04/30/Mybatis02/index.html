@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Mybatis（二） · Quinn</title>
+<meta name="description" content="Mybatis（二） 官网教程 W3C教程 Mybatis基于代理Dao的CRUD操作 CRUD中可能遇到的问题：参数的传递以及返回值的封装 介绍Mybatis基于传统dao方式的使用（自己编写dao的实现类）（了解即可） mybatis主…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/04/30/Mybatis02/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Mybatis（二） · Quinn" />
+<meta property="og:description" content="Mybatis（二） 官网教程 W3C教程 Mybatis基于代理Dao的CRUD操作 CRUD中可能遇到的问题：参数的传递以及返回值的封装 介绍Mybatis基于传统dao方式的使用（自己编写dao的实现类）（了解即可） mybatis主…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/04/30/Mybatis02/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220504105319.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220504105319.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        SSM · 2021.04.30
+      
+    </p>
+    <h1>Mybatis（二）</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/SSM/">SSM</a>
+  
+  <span class="post-meta__item">24 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Mybatis/">#Mybatis</a>
+      
+        <a href="/tags/SSM/">#SSM</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p><strong><a href="https://mybatis.org/mybatis-3/zh/index.html" target="_blank" rel="noopener">官网教程</a></strong></p>
+<p><strong><a href="https://www.w3cschool.cn/mybatis/" target="_blank" rel="noopener">W3C教程</a></strong></p>
+<ul>
+<li><strong>Mybatis基于代理Dao的CRUD操作</strong>
+<ul>
+<li>CRUD中可能遇到的问题：参数的传递以及返回值的封装</li>
+</ul>
+</li>
+<li>介绍Mybatis基于传统dao方式的使用（自己编写dao的实现类）（了解即可）</li>
+<li>mybatis主配置文件中的常用配置：
+<ul>
+<li><code>properties</code>标签</li>
+<li><code>typeAliases</code>标签</li>
+<li><code>mappers</code>标签的子标签：<code>package</code></li>
+</ul>
+</li>
+</ul>
+<p>在之前的<a href="https://www.qingbo1011.top/2021/04/28/Mybatis01/#mybatis%E5%85%A5%E9%97%A8">笔记</a>中我们已经实现了Mybatis入门，这里回顾一下步骤：</p>
+<ul>
+<li>创建 maven 工程并导入坐标（pom.xml）</li>
+<li>编写必要代码（实体类和持久层接口）</li>
+<li>编写Mybatis的主配置文件（如SqlMapConfig.xml）</li>
+<li>编写映射配置文件（如UserDao.xml）</li>
+<li>编写测试类（执行代码）</li>
+</ul>
+<p>根据上述步骤，我们再创建一个Maven工程，以完成查询user表全部数据的功能（即和笔记中Mybatis入门程序一样）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112248.png" alt="" /></p>
+<blockquote>
+<p><strong><mark>注意</mark></strong>：这里刚开始的时候一直报空指针异常，**<code>InputStream inputStream = Resources.class.getClassLoader().getResourceAsStream(&quot;SqlMapConfig.xml&quot;);</code>的inputStream 一直为null，是因为自己的<code>SqlMapConfig.xml</code>错写成了<code>SqlMapConifg.xml</code>。**这里以后千万要仔细！不然空指针异常排错起来很浪费时间！</p>
+</blockquote>
+<h1 id="mybatis基于代理dao的crud操作"><a class="markdownIt-Anchor" href="#mybatis基于代理dao的crud操作"></a> Mybatis基于代理Dao的CRUD操作</h1>
+<p>使用要求：</p>
+<ol>
+<li>持久层接口和持久层接口的映射配置必须在相同的包下</li>
+<li>持久层映射配置中<code>mapper</code>标签的<code>namespace</code>属性取值必须是持久层接口的全限定类名</li>
+<li>SQL语句的配置标签<code>&lt;select&gt;</code>,<code>&lt;insert&gt;</code>,<code>&lt;delete&gt;</code>,<code>&lt;update&gt;</code>的id属性必须和持久层接口的方法名相同</li>
+</ol>
+<p>这里其实就是之前笔记里的**<a href="https://www.qingbo1011.top/2021/04/28/Mybatis01/#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E7%9A%84%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9">注意事项</a>**</p>
+<p>这里我们添加以下几个方法：</p>
+<ul>
+<li>保存操作（增）：saveUser</li>
+<li>更新操作（改）：updateUser</li>
+<li>删除操作（删）：deleteUser</li>
+<li>查询一个（查）：findById</li>
+<li>模糊查询（查）：findByName</li>
+<li>查询user表的总记录数（聚合函数）：findTotal</li>
+</ul>
+<p><strong>关于<code>&lt;select&gt;</code>，<code>&lt;insert&gt;</code>，<code>&lt;delete&gt;</code>，<code>&lt;update&gt;</code>这四个标签的具体说明可查看：</strong></p>
+<ul>
+<li><strong>官网</strong>：<strong><a href="https://mybatis.org/mybatis-3/zh/sqlmap-xml.html" target="_blank" rel="noopener">XML 映射文件</a></strong></li>
+<li><strong>W3C教程：<a href="https://www.w3cschool.cn/mybatis/f4uw1ilx.html" target="_blank" rel="noopener">MybatisXml配置文件</a></strong></li>
+</ul>
+<p>（<a href="https://www.bilibili.com/video/BV1mE411X7yp?p=22" target="_blank" rel="noopener">视频讲解</a>）</p>
+<h2 id="保存操作增saveuser"><a class="markdownIt-Anchor" href="#保存操作增saveuser"></a> 保存操作（增）：saveUser</h2>
+<p>首先在持久层接口（UserDao）中添加saveUser方法，完整代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> top.qing.dao;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> top.qing.domain.User;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserDao</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 查询所有结果</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">List&lt;User&gt; <span class="title">findAll</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 保存用户（增）</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> user</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">saveUser</span><span class="params">(User user)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后在映射配置文件中进行补充配置，完整代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">mapper</span></span></span><br><span class="line"><span class="meta">        <span class="meta-keyword">PUBLIC</span> <span class="meta-string">"-//mybatis.org//DTD Mapper 3.0//EN"</span></span></span><br><span class="line"><span class="meta">        <span class="meta-string">"http://mybatis.org/dtd/mybatis-3-mapper.dtd"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">mapper</span> <span class="attr">namespace</span>=<span class="string">"top.qing.dao.UserDao"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--配置查询所有结果--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findAll"</span> <span class="attr">resultType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">        select * from user</span><br><span class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--保存用户（增）--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">insert</span> <span class="attr">id</span>=<span class="string">"saveUser"</span> <span class="attr">parameterType</span>=<span class="string">"top.qing.domain.User"</span> &gt;</span></span><br><span class="line">        insert into user(username,birthday,sex,address)</span><br><span class="line">                    values(#&#123;username&#125;,#&#123;birthday&#125;,#&#123;sex&#125;,#&#123;address&#125;)</span><br><span class="line">    <span class="tag">&lt;/<span class="name">insert</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">mapper</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<ul>
+<li><code>parameterType</code> 属性：代表参数的类型，因为我们要传入的是一个类的对象，所以类型就写类的全名称。</li>
+</ul>
+<p>（<a href="https://www.w3cschool.cn/mybatis/f4uw1ilx.html" target="_blank" rel="noopener">MybatisXml配置文件</a>）</p>
+<ul>
+<li>
+<p><strong>sql 语句中使用<code>#{}</code>字符： 它代表占位符</strong>，相当于原来 jdbc 的<code>?</code>，都是用于执行语句时替换实际的数据。具体的数据是由<code>#{}</code>里面的内容决定的。</p>
+<ul>
+<li>
+<p>#{}中内容的写法：由于我们保存方法的参数是 一个 User 对象，此处要写 User 对象中的属性名称。它用的是 <strong>OGNL表达式</strong>。</p>
+<ul>
+<li>
+<p>OGNL表达式：Object Graphic Navigation Language，对象-图导航语言。它是按照一定的语法格式来获取数据的，即： <code>#{对象.对象}</code>的方式，通过对象的取值方法来获取数据。在写法上把get给省略了。比如：我们获取用户的名称类中的写法：<code>user.getUsername()</code>；OGNL表达式写法：<code>user.username</code>。（<a href="https://blog.csdn.net/jisuanjiguoba/article/details/81571611" target="_blank" rel="noopener">OGNL表达式基本原理和使用方法</a>）</p>
+</li>
+<li>
+<p>那么mybatis中为什么能直接写username，而不用user呢？<strong>因为在<code>parameterType</code>中已经提供了属性所属的类，所以此时不需要写对象名</strong></p>
+<p>（<a href="https://www.bilibili.com/video/BV1mE411X7yp?p=27" target="_blank" rel="noopener">OGNL视频讲解</a>）</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>最后就可以进行测试了（执行代码）。完整代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> top.qing.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.ibatis.io.Resources;</span><br><span class="line"><span class="keyword">import</span> org.apache.ibatis.session.SqlSession;</span><br><span class="line"><span class="keyword">import</span> org.apache.ibatis.session.SqlSessionFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.ibatis.session.SqlSessionFactoryBuilder;</span><br><span class="line"><span class="keyword">import</span> org.junit.After;</span><br><span class="line"><span class="keyword">import</span> org.junit.Before;</span><br><span class="line"><span class="keyword">import</span> org.junit.Test;</span><br><span class="line"><span class="keyword">import</span> top.qing.dao.UserDao;</span><br><span class="line"><span class="keyword">import</span> top.qing.domain.User;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.Date;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MybatisTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> InputStream inputStream;</span><br><span class="line">    <span class="keyword">private</span> SqlSession session;</span><br><span class="line">    <span class="keyword">private</span> UserDao userDao;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">// 1.读取配置文件</span></span><br><span class="line">        inputStream = Resources.class.getClassLoader().getResourceAsStream("SqlMapConfig.xml");</span><br><span class="line">        <span class="comment">// 2.创建 SqlSessionFactory 的SqlSessionFactoryBuilder对象builder</span></span><br><span class="line">        SqlSessionFactoryBuilder builder = <span class="keyword">new</span> SqlSessionFactoryBuilder();</span><br><span class="line">        <span class="comment">// 3.使用builder创建工厂对象 SqlSessionFactory</span></span><br><span class="line">        SqlSessionFactory factory = builder.build(inputStream);</span><br><span class="line">        <span class="comment">// 4.使用 SqlSessionFactory对象factory 生产 SqlSession 对象</span></span><br><span class="line">        session = factory.openSession();</span><br><span class="line">        <span class="comment">// 5.使用 SqlSession 创建 dao 接口的代理对象userDao</span></span><br><span class="line">        userDao = session.getMapper(UserDao<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@After</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">// 提交事务（不然增删改不会生效）</span></span><br><span class="line">        session.commit();</span><br><span class="line">        <span class="comment">// 7.释放资源</span></span><br><span class="line">        session.close();</span><br><span class="line">        inputStream.close();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test1</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">// 使用刚刚创建的代理对象userDao执行查询所有方法</span></span><br><span class="line">        List&lt;User&gt; users = userDao.findAll();</span><br><span class="line">        <span class="keyword">for</span> (User user : users) &#123;</span><br><span class="line">            System.out.println(user);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSaveUser</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        User user = <span class="keyword">new</span> User();</span><br><span class="line">        user.setUsername(<span class="string">"saveUser"</span>);</span><br><span class="line">        user.setBirthday(<span class="keyword">new</span> Date());</span><br><span class="line">        user.setSex(<span class="string">"男"</span>);</span><br><span class="line">        user.setAddress(<span class="string">"中国"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">        userDao.saveUser(user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里为了测试方便，提取出了<code>init()</code>方法和<code>destroy()</code>方法，而关于<code>@Before</code>和<code>@After</code>注解的使用，可以查看<a href="https://www.qingbo1011.top/2021/01/21/Junit/#junit%E4%B8%AD%E7%9A%84before%E5%92%8Cafter%E6%B3%A8%E8%A7%A3">Junit笔记</a></p>
+<blockquote>
+<p><strong>注意：要在<code>destroy()</code>方法中添加<code>session.commit();</code></strong></p>
+<p>这一点和 jdbc 是一样的，我们<strong>在实现<mark>增删改</mark>时一定要去控制事务的提交，在 mybatis中可以使用<code>session.commit();</code>来实现事务提交。</strong></p>
+</blockquote>
+<p>执行结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112300.png" alt="" /></p>
+<h3 id="问题扩展返回新增用户-id-的值"><a class="markdownIt-Anchor" href="#问题扩展返回新增用户-id-的值"></a> 问题扩展：返回新增用户 id 的值</h3>
+<p><a href="https://www.bilibili.com/video/BV1mE411X7yp?p=26" target="_blank" rel="noopener">视频讲解</a></p>
+<p>新增用户后，往往同时还要<strong>返回当前新增用户的 id 值</strong>。由于id 是由数据库的自动增长来实现的，所以<strong>就相</strong><br />
+<strong>当于我们要在新增后将自动增长 auto_increment 的值返回</strong>。</p>
+<p>修改UserDao.xml的saveUser部分代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--保存用户（增）--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">insert</span> <span class="attr">id</span>=<span class="string">"saveUser"</span> <span class="attr">parameterType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 保存时获取插入的 id --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">selectKey</span> <span class="attr">keyColumn</span>=<span class="string">"id"</span> <span class="attr">keyProperty</span>=<span class="string">"id"</span> <span class="attr">resultType</span>=<span class="string">"int"</span>&gt;</span></span><br><span class="line">            select last_insert_id();</span><br><span class="line">        <span class="tag">&lt;/<span class="name">selectKey</span>&gt;</span></span><br><span class="line">        insert into user(username,birthday,sex,address)</span><br><span class="line">        values(#&#123;username&#125;,#&#123;birthday&#125;,#&#123;sex&#125;,#&#123;address&#125;)</span><br><span class="line">    <span class="tag">&lt;/<span class="name">insert</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>selectKey 的属性：</p>
+<ul>
+<li><code>keyColumn</code>：<strong>匹配属性的返回结果集中的列名称。如果希望得到多个生成的列，也可以是逗号分隔的属性名称列表</strong>（在例子中id意思是数据库中的id字段）</li>
+<li><code>keyProperty</code>：<strong>selectKey 语句结果应该被设置的目标属性。如果希望得到多个生成的列，也可以是逗号分隔的属性名称列表</strong>（在例子中我们把获取到的id值赋值给了user对象的id属性）</li>
+<li><code>resultType</code>：**结果的类型。MyBatis 通常可以推算出来，但是为了更加确定写上也不会有什么问题。**MyBatis 允许任何简单类型用作主键的类型，包括字符串。如果希望作用于多个生成的列，则可以使用一个包含期望属性的 Object 或一个 Map。</li>
+<li><code>order</code>：这可以被设置为 <code>BEFORE</code> 或 <code>AFTER</code>。<strong>如果设置为 <code>BEFORE</code>，那么它会首先选择主键，设置 keyProperty 然后执行插入语句</strong>。<strong>如果设置为 <code>AFTER</code>，那么先执行插入语句，然后是 selectKey 元素</strong> （这和像 Oracle 的数据库相似，在插入语句内部可能有嵌入索引调用）</li>
+</ul>
+<p>（<a href="https://www.w3cschool.cn/mybatis/f4uw1ilx.html" target="_blank" rel="noopener">MybatisXml配置文件</a>）</p>
+<p>执行代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSaveUser</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    User user = <span class="keyword">new</span> User();</span><br><span class="line">    user.setUsername(<span class="string">"saveUser"</span>);</span><br><span class="line">    user.setBirthday(<span class="keyword">new</span> Date());</span><br><span class="line">    user.setSex(<span class="string">"男"</span>);</span><br><span class="line">    user.setAddress(<span class="string">"中国"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">    userDao.saveUser(user);</span><br><span class="line">    System.out.println(user.getId());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果为：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112314.png" alt="" /></p>
+<h2 id="更新操作改updateuser"><a class="markdownIt-Anchor" href="#更新操作改updateuser"></a> 更新操作（改）：updateUser</h2>
+<p>步骤和上述类似，这里只记录添加部分的代码：</p>
+<p>首先在持久层接口（UserDao）添加代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 更新用户（改）</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> user</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">updateUser</span><span class="params">(User user)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>然后在映射配置文件（UserDao.xml）中添加代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--更新用户（改）--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">update</span> <span class="attr">id</span>=<span class="string">"updateUser"</span> <span class="attr">parameterType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">    update user set username = #&#123;username&#125;,birthday = #&#123;birthday&#125;,sex = #&#123;sex&#125;, address = #&#123;address&#125;</span><br><span class="line">            where id = #&#123;id&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">update</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>最后在测试类中（执行代码）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testUpdateUser</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    User user = <span class="keyword">new</span> User();</span><br><span class="line">    user.setId(<span class="number">52</span>);</span><br><span class="line">    user.setUsername(<span class="string">"updateUser"</span>);</span><br><span class="line">    user.setBirthday(<span class="keyword">new</span> Date());</span><br><span class="line">    user.setSex(<span class="string">"女"</span>);</span><br><span class="line">    user.setAddress(<span class="string">"中国"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">    userDao.updateUser(user);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112325.png" alt="" /></p>
+<h2 id="删除操作删deleteuser"><a class="markdownIt-Anchor" href="#删除操作删deleteuser"></a> 删除操作（删）：deleteUser</h2>
+<p>首先在持久层接口（UserDao）添加代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 根据id删除用户</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> userId</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">deleteUser</span><span class="params">(Integer userId)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>然后在映射配置文件（UserDao.xml）中添加代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--据id删除用户（parameterType可以不写，Mybatis会自动推出）--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">delete</span> <span class="attr">id</span>=<span class="string">"deleteUser"</span> <span class="attr">parameterType</span>=<span class="string">"java.lang.Integer"</span>&gt;</span>    /*注意下这里的parameterType为Integer*/</span><br><span class="line">    delete from user where id = #&#123;uid&#125;  /*这里的uid占位符名称可以随意*/</span><br><span class="line"><span class="tag">&lt;/<span class="name">delete</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>最后在测试类中（执行代码）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testDeleteUser</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">    userDao.deleteUser(<span class="number">53</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="查询一个查findbyid"><a class="markdownIt-Anchor" href="#查询一个查findbyid"></a> 查询一个（查）：findById</h2>
+<p>首先在持久层接口（UserDao）添加代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 根据id查询用户信息</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> userId</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">User <span class="title">findById</span><span class="params">(Integer userId)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>然后在映射配置文件（UserDao.xml）中添加代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--根据id查询用户信息--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findById"</span> <span class="attr">resultType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">    select * from user where id = #&#123;uid&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<ul>
+<li>resultType 属性：用于指定结果集的类型</li>
+<li>parameterType 属性：用于指定传入参数的类型（可以不写，Mybatis会自动判断）</li>
+</ul>
+<p>（<a href="https://www.w3cschool.cn/mybatis/f4uw1ilx.html" target="_blank" rel="noopener">MybatisXml配置文件</a>）</p>
+<p>sql 语句中使用<code>#{}</code>字符：，代表占位符，相当于原来 jdbc 部分所学的<code>?</code>，都是用于执行语句时替换实际的数据。具体的数据是由#{}里面的内容决定的。</p>
+<p>此处<code>#{}</code>中内容的写法：<strong>由于数据类型是基本类型，所以此处可以随意写。</strong>（这里我们写的是<code>#{uid}</code>）</p>
+</blockquote>
+<p>最后在测试类中（执行代码）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindById</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">    User user = userDao.findById(<span class="number">54</span>);</span><br><span class="line">    System.out.println(user);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112338.png" alt="" /></p>
+<h2 id="模糊查询查findbyname"><a class="markdownIt-Anchor" href="#模糊查询查findbyname"></a> 模糊查询（查）：findByName</h2>
+<p>首先在持久层接口（UserDao）添加代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 根据Name模糊查询名字中带有指定字符串的用户信息</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findByName</span><span class="params">(String UserStr)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>然后在映射配置文件（UserDao.xml）中添加代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--根据Name模糊查询名字中带有指定字符串的用户信息--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findByName"</span> <span class="attr">resultType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">    select * from user where username like #&#123;uStr&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>最后在测试类中（执行代码）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindByName</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">    List&lt;User&gt; users = userDao.findByName(<span class="string">"%王%"</span>);   <span class="comment">// 注意这里要加占位符%以完成模糊查询</span></span><br><span class="line">    <span class="keyword">for</span> (User user : users) &#123;</span><br><span class="line">        System.out.println(user);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112348.png" alt="" /></p>
+<h2 id="查询user表的总记录数聚合函数findtotal"><a class="markdownIt-Anchor" href="#查询user表的总记录数聚合函数findtotal"></a> 查询user表的总记录数（聚合函数）：findTotal</h2>
+<p>首先在持久层接口（UserDao）添加代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 查询记录总数</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">Integer <span class="title">findTotal</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>然后在映射配置文件（UserDao.xml）中添加代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--查询记录总数--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findTotal"</span> <span class="attr">resultType</span>=<span class="string">"java.lang.Integer"</span>&gt;</span></span><br><span class="line">    select count(id) from user;</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>最后在测试类中（执行代码）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindTotal</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">    Integer total = userDao.findTotal();</span><br><span class="line">    System.out.println(<span class="string">"总记录数为："</span>+total);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112401.png" alt="" /></p>
+<h2 id="补充内容"><a class="markdownIt-Anchor" href="#补充内容"></a> 补充内容</h2>
+<h3 id="模糊查询的另一种配置方式"><a class="markdownIt-Anchor" href="#模糊查询的另一种配置方式"></a> 模糊查询的另一种配置方式</h3>
+<p>模糊查询中，可以在映射配置文件（UserDao.xml）中这么写：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--根据Name模糊查询名字中带有指定字符串的用户信息--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findByName"</span> <span class="attr">resultType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">    select * from user where username like '%$&#123;value&#125;%'</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这样写的话，在测试类中就不用加占位符<code>%</code>了，即这么写：<code>List&lt;User&gt; users = userDao.findByName(&quot;王&quot;);</code></p>
+<p>执行的结果是和之前一样的。</p>
+<p>模糊查询的${value}源码分析：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112412.png" alt="" /></p>
+<p><strong>说明源码中指定了读取的 key 的名字就是value，所以我们在绑定参数时就只能叫 value 的名字</strong>，即只能写：<strong><code>${value}</code></strong></p>
+<h3 id="与的区别"><a class="markdownIt-Anchor" href="#与的区别"></a> #{}与${}的区别</h3>
+<p><strong><a href="https://www.w3cschool.cn/mybatis/mybatis-yta93bpj.html" target="_blank" rel="noopener">MyBatis 中#{}和${}区别</a></strong></p>
+<p><a href="https://juejin.cn/post/6844904017269620744" target="_blank" rel="noopener">Mybatis中#{}与${}的区别（掘金）</a></p>
+<ul>
+<li>
+<p><strong><code>#{}</code>表示一个占位符号</strong>：通过<code>#{}</code>可以实现 <strong>preparedStatement</strong> 向占位符中设置值，自动进行 java 类型和 jdbc 类型转换，<strong><code>#{}</code>可以有效防止 sql 注入</strong>。 <strong><code>#{}</code>可以接收简单类型值或 pojo 属性值</strong>。 <strong>如果 parameterType 传输单个简单类型值，#{}括号中可以是 value 或其它名称。</strong></p>
+<p>（<a href="https://www.qingbo1011.top/2021/03/25/JDBC%EF%BC%88%E4%B8%80%EF%BC%89/#preparedstatement%E6%89%A7%E8%A1%8Csql%E7%9A%84%E5%AF%B9%E8%B1%A1">jdbc preparedStatement笔记</a>）</p>
+</li>
+<li>
+<p><code>${}</code>表示拼接 sql字符串：<strong>通过<code>${}</code>可以将 parameterType 传入的内容拼接在 sql 中且不进行 jdbc 类型转换</strong>， <strong><code>${}</code>可以接收简单类型值或 pojo 属性值</strong>，<strong>如果 parameterType 传输单个简单类型值，<code>${}</code>括号中只能是 value。</strong></p>
+</li>
+</ul>
+<p>注意：<strong>为了防止 SQL 注入，能用 <code>#{}</code> 的不要去用 <code>${}</code></strong>。如果非要用 <code>${}</code> 的话，那要注意防止 SQL 注入问题，可以手动判定传入的变量，进行过滤，一般 SQL 注入会输入很长的一条 SQL 语句</p>
+<hr />
+<h2 id="mybatis-与-jdbc-编程的比较"><a class="markdownIt-Anchor" href="#mybatis-与-jdbc-编程的比较"></a> Mybatis 与 JDBC 编程的比较</h2>
+<blockquote>
+<ol>
+<li>数据库链接创建、释放频繁造成系统资源浪费从而影响系统性能，如果使用数据库链接池可解决此问题
+<ul>
+<li>解决：在 SqlMapConfig.xml（<strong>主配置文件</strong>） 中配置数据链接池，使用连接池管理数据库链接</li>
+</ul>
+</li>
+<li>Sql 语句写在代码中造成代码不易维护，实际应用 sql 变化的可能较大，sql 变动需要改变 java 代码
+<ul>
+<li>解决：将 Sql 语句配置在 XXXXmapper.xml（<strong>映射配置文件</strong>） 文件中与 java 代码分离</li>
+</ul>
+</li>
+<li>向 sql 语句传参数麻烦，因为 sql 语句的 where 条件不一定，可能多也可能少，占位符需要和参数对应
+<ul>
+<li>解决：Mybatis 自动将 java 对象映射至 sql 语句，通过 statement 中的 parameterType 定义输入参数的类型</li>
+</ul>
+</li>
+<li>对结果集解析麻烦，sql 变化导致解析代码变化，且解析前需要遍历，如果能将数据库记录封装成 pojo 对象解析比较方便
+<ul>
+<li>解决：Mybatis 自动将 sql 执行结果映射至 java 对象，通过 statement 中的 resultType 定义输出结果的类型</li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<hr />
+<h1 id="mybatis-的参数深入"><a class="markdownIt-Anchor" href="#mybatis-的参数深入"></a> Mybatis 的参数深入</h1>
+<ul>
+<li><strong>parameterType 配置参数</strong></li>
+<li><strong>resultType&amp;resultMap 配置结果类型</strong></li>
+</ul>
+<blockquote>
+<p>**注意，resultType 和 resultMap 之间只能同时使用一个。**resultType和resultMap的区别：</p>
+<ul>
+<li><code>resultType</code>：期望从这条语句中返回结果的类全限定名或别名。 <strong>注意，如果返回的是集合，那应该设置为集合包含的类型，而不是集合本身的类型</strong>。</li>
+<li><code>resultMap</code>：对外部 resultMap 的命名引用。结果映射是 MyBatis 最强大的特性，如果你对其理解透彻，许多复杂的映射问题都能迎刃而解。</li>
+</ul>
+<p>（<a href="https://mybatis.org/mybatis-3/zh/sqlmap-xml.html" target="_blank" rel="noopener">Xml映射配置文件</a>）</p>
+</blockquote>
+<h2 id="parametertype-配置参数"><a class="markdownIt-Anchor" href="#parametertype-配置参数"></a> parameterType 配置参数</h2>
+<blockquote>
+<p>上面我们介绍了 SQL 语句传参，使用标签的 <code>parameterType</code> 属性来设定。该属性的取值可以是<strong>基本类型</strong>，<strong>引用类型</strong>（例如:String 类型），还可以是<strong>实体类类型（POJO 类）</strong>，同时也可以使用<strong>实体类的包装</strong><br />
+<strong>类</strong>。接下来我们将学习<strong>如何使用实体类的包装类作为参数传递</strong>。</p>
+</blockquote>
+<p><a href="https://www.jianshu.com/p/224489dfdec8" target="_blank" rel="noopener">java对象 POJO和JavaBean的区别</a></p>
+<p><a href="https://blog.csdn.net/jdfk423/article/details/80010357" target="_blank" rel="noopener">PO、VO、POJO、DTO、DAO、Service包等常见包的理解</a></p>
+<p>传递pojo包装对象：<strong>开发中通过 pojo 传递查询条件</strong> ，<strong>查询条件是综合的查询条件，不仅包括用户查询条件还包括其它的查询条件（比如将用户购买商品信息也作为查询条件），这时可以使用包装对象传递输入参数。</strong></p>
+<p>需求：根据用户名查询用户信息，查询条件放到 QueryVo 的 user 属性中</p>
+<p>首先我们在vo包下创建QueryVo类，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> top.qing.vo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"><span class="keyword">import</span> top.qing.domain.User;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">QueryVo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> User user;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先在持久层接口（UserDao）添加代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 根据QueryVo中的条件查询用户</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> vo</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findByVo</span><span class="params">(QueryVo vo)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>然后在映射配置文件（UserDao.xml）中添加代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--根据QueryVo中的条件查询用户--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findByVo"</span> <span class="attr">parameterType</span>=<span class="string">"top.qing.vo.QueryVo"</span> <span class="attr">resultType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">    select * from user where username like #&#123;user.username&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>最后在测试类中（执行代码）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindByVo</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    QueryVo queryVo = <span class="keyword">new</span> QueryVo();</span><br><span class="line">    User user = <span class="keyword">new</span> User();</span><br><span class="line">    user.setUsername(<span class="string">"%王%"</span>);</span><br><span class="line">    queryVo.setUser(user);</span><br><span class="line">    <span class="comment">// 使用useDao代理对象执行saveUser方法</span></span><br><span class="line">    List&lt;User&gt; users = userDao.findByVo(queryVo);</span><br><span class="line">    <span class="keyword">for</span> (User user1 : users) &#123;</span><br><span class="line">        System.out.println(user1);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505112424.png" alt="" /></p>
+<h2 id="resulttyperesultmap-配置结果类型"><a class="markdownIt-Anchor" href="#resulttyperesultmap-配置结果类型"></a> resultType&amp;resultMap 配置结果类型</h2>
+<blockquote>
+<p><strong><code>resultType</code> 属性可以指定结果集的类型，它支持基本类型和实体类类型</strong>。在前面的 CRUD 案例中我们已经用过此属性了。</p>
+<p>需要注意的是，<strong><code>resultType</code> 和 <code>parameterType</code> 一样，如果注册过类型别名的，可以直接使用别名。没有注册过的必须使用全限定类名</strong>。例如：我们的实体类此时必须是全限定类名（后面会介绍如何配置实体类的别名，官网上也有介绍：<a href="https://mybatis.org/mybatis-3/zh/configuration.html#typeAliases" target="_blank" rel="noopener">类型别名（typeAliases）</a>，可以查看官方提供的别名）</p>
+<p>同时，<strong>当是实体类名称是，还有一个要求，<mark>实体类中的属性名称必须和查询语句中的列名（字段名）保持一致</mark>，否则无法实现封装。</strong></p>
+</blockquote>
+<p>注意，<strong>实体类属性名和数据库字段名不对应的两种解决方式：</strong></p>
+<ul>
+<li><strong>在执行的SQL语句上起别名</strong></li>
+<li><strong>在Xml映射配置文件中配置<code>resultMap</code>属性</strong></li>
+</ul>
+<p>（<a href="https://www.bilibili.com/video/BV1mE411X7yp?p=29" target="_blank" rel="noopener">视频讲解</a>）</p>
+<p>比如说，在修改属性名后：</p>
+<p>在执行的SQL语句上起别名，在映射配置文件（UserDao.xml）中进行对应修改如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 配置查询所有操作 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findAll"</span> <span class="attr">resultType</span>=<span class="string">"top.qing.domain.User"</span>&gt;</span></span><br><span class="line">	select id as userId,username as userName,birthday as userBirthday,</span><br><span class="line">	sex as userSex,address as userAddress from user</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果我们的查询很多，都使用别名的话写起来就会很麻烦，如何解决呢。这就要用到<code>resultMap</code>了：</p>
+<blockquote>
+<p><code>resultMap</code> 标签可以建立<strong>查询的列名和实体类的属性名称不一致时建立对应关系</strong>，从而实现封装。<strong>在 select 标签中使用 resultMap 属性指定引用即可</strong>。<strong>同时 resultMap 可以实现将查询结果映射为复杂类型的 pojo，比如在查询结果映射对象中包括 pojo 和 list 实现一对一查询和一对多查询。</strong></p>
+</blockquote>
+<p><strong>在Xml映射配置文件中配置<code>resultMap</code>属性</strong>，然后在引用它的语句中<strong>设置 <code>resultMap</code> 属性</strong>就行了（注意我们<strong>去掉了 <code>resultType</code> 属性</strong>）</p>
+<p>在映射配置文件（UserDao.xml）中进行对应修改如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 建立 User 实体和数据库表的对应关系 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">resultMap</span> <span class="attr">type</span>=<span class="string">"top.qing.domain.User"</span> <span class="attr">id</span>=<span class="string">"userMap"</span>&gt;</span> </span><br><span class="line">    <span class="comment">&lt;!-- 主键字段的对应 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span> <span class="attr">column</span>=<span class="string">"id"</span> <span class="attr">property</span>=<span class="string">"userId"</span>/&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 非主键字段的对应 --&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">result</span> <span class="attr">column</span>=<span class="string">"username"</span> <span class="attr">property</span>=<span class="string">"userName"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">result</span> <span class="attr">column</span>=<span class="string">"sex"</span> <span class="attr">property</span>=<span class="string">"userSex"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">result</span> <span class="attr">column</span>=<span class="string">"address"</span> <span class="attr">property</span>=<span class="string">"userAddress"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">result</span> <span class="attr">column</span>=<span class="string">"birthday"</span> <span class="attr">property</span>=<span class="string">"userBirthday"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">resultMap</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 查询所有 --&gt;</span> </span><br><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">"findAll"</span> <span class="attr">resultMap</span>=<span class="string">"userMap"</span>&gt;</span></span><br><span class="line">	select * from user</span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>其中，resultMap的两个属性：</p>
+<ul>
+<li><strong>type 属性：指定实体类的全限定类名</strong></li>
+<li><strong>id 属性：给定一个唯一标识，用于给查询 select 标签引用（即select标签中的<code>resultMap=&quot;userMap&quot;</code>）</strong></li>
+</ul>
+<p>resultMap下的<code>id</code>和<code>result</code>标签：</p>
+<ul>
+<li>id 标签：用于指定主键字段</li>
+<li>result 标签：用于指定非主键字段</li>
+</ul>
+<p><code>id</code>和<code>result</code>标签共有的属性：</p>
+<ul>
+<li><strong>column 属性：用于指定数据库列名（字段名）</strong></li>
+<li><strong>property 属性：用于指定实体类属性名称</strong></li>
+</ul>
+<blockquote>
+<p>ResultMap 的属性列表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>id</code></td>
+<td style="text-align:left"><strong>当前命名空间中的一个唯一标识，用于标识一个结果映射。</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><code>type</code></td>
+<td style="text-align:left"><strong>类的完全限定名（或者一个类型别名）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><code>autoMapping</code></td>
+<td style="text-align:left">如果设置这个属性，MyBatis 将会为本结果映射开启或者关闭自动映射。 这个属性会覆盖全局的属性 autoMappingBehavior。默认值：未设置（unset）。</td>
+</tr>
+</tbody>
+</table>
+<p><code>id</code> &amp; <code>result</code>字标签：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">id</span> <span class="attr">property</span>=<span class="string">"id"</span> <span class="attr">column</span>=<span class="string">"post_id"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">result</span> <span class="attr">property</span>=<span class="string">"subject"</span> <span class="attr">column</span>=<span class="string">"post_subject"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这些元素（字标签）是结果映射的基础。<strong><code>id</code> 和 <code>result</code> 元素都将一个列的值映射到一个简单数据类型（String, int, double, Date 等）的属性或字段</strong>。这两者之间的唯一不同是，<strong><code>id</code>元素对应的属性会被标记为对象的标识符（主键），在比较对象实例时使用。</strong> 这样可以提高整体的性能，尤其是进行缓存和嵌套结果映射（也就是连接映射）的时候。</p>
+<p>两个元素都有一些属性：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>property</code></td>
+<td style="text-align:left"><strong>映射到列结果的字段或属性。如果 JavaBean 有这个名字的属性（property），会先使用该属性</strong>，否则 MyBatis 将会寻找给定名称的字段（field）。 无论是哪一种情形，你都可以使用常见的点式分隔形式进行复杂属性导航。 比如，你可以这样映射一些简单的东西：“username”，或者映射到一些复杂的东西上：“address.street.number”。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>column</code></td>
+<td style="text-align:left"><strong>数据库中的列名（或者是列的别名）</strong>。一般情况下，这和传递给 <code>resultSet.getString(columnName)</code> 方法的参数一样。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>javaType</code></td>
+<td style="text-align:left">一个 Java 类的全限定名，或一个类型别名（关于内置的类型别名，可以参考上面的表格）。 如果你映射到一个 JavaBean，MyBatis 通常可以推断类型。然而，如果你映射到的是 HashMap，那么你应该明确地指定 javaType 来保证行为与期望的相一致。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>jdbcType</code></td>
+<td style="text-align:left">JDBC 类型，所支持的 JDBC 类型参见这个表格之后的“支持的 JDBC 类型”。 只需要在可能执行插入、更新和删除的且允许空值的列上指定 JDBC 类型。这是 JDBC 的要求而非 MyBatis 的要求。如果你直接面向 JDBC 编程，你需要对可以为空值的列指定这个类型。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>typeHandler</code></td>
+<td style="text-align:left">我们在前面讨论过默认的类型处理器。使用这个属性，你可以覆盖默认的类型处理器。 这个属性值是一个类型处理器实现类的全限定名，或者是类型别名。</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<p>（<a href="https://www.bilibili.com/video/BV1mE411X7yp?p=29" target="_blank" rel="noopener">视频讲解</a>）</p>
+<p>官网：<a href="https://mybatis.org/mybatis-3/zh/sqlmap-xml.html#Result_Maps" target="_blank" rel="noopener">结果映射（resultMap）</a></p>
+<p>W3C教程：<a href="https://www.w3cschool.cn/mybatis/f4uw1ilx.html" target="_blank" rel="noopener">Result Maps</a></p>
+<hr />
+<h1 id="mybatis-传统-dao-层开发了解"><a class="markdownIt-Anchor" href="#mybatis-传统-dao-层开发了解"></a> Mybatis 传统 DAO 层开发（了解）</h1>
+<blockquote>
+<p>使用 Mybatis 开发 Dao，通常有两个方法，即<strong>原始 Dao 开发方式（了解）<strong>和 <strong>Mapper 接口代理开发方式</strong>。而</strong>现在主流的开发方式是接口代理开发方式</strong>，这种方式总体上更加简便。上面已经学习了基于代理方式的 dao 开发，现在可以了解一下基于传统编写 Dao 实现类的开发方式。</p>
+</blockquote>
+<p>大体就是写完UserDao接口后不写UserDao.xml映射配置文件，而是写一个UserDaoImpl接口来实现UserDao接口的相关方发。</p>
+<p>这里就不做代码展示了，后续要了解直接去看视频：<a href="https://www.bilibili.com/video/BV1mE411X7yp?p=30" target="_blank" rel="noopener">视频讲解</a></p>
+<h1 id="sqlmapconfigxml配置文件"><a class="markdownIt-Anchor" href="#sqlmapconfigxml配置文件"></a> SqlMapConfig.xml配置文件</h1>
+<p><a href="https://mybatis.org/mybatis-3/zh/configuration.html" target="_blank" rel="noopener">Mybatis官网</a></p>
+<p>W3C教程：<a href="https://www.w3cschool.cn/mybatis/7zy61ilv.html" target="_blank" rel="noopener">MyBatis XML配置</a></p>
+<p><a href="https://www.bilibili.com/video/BV1mE411X7yp?p=37" target="_blank" rel="noopener">视频讲解</a></p>
+<p>SqlMapConfig.xml 中配置的内容和顺序如下：</p>
+<ul>
+<li>configuration（配置）
+<ul>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#properties" target="_blank" rel="noopener">properties（属性）</a></li>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#settings" target="_blank" rel="noopener">settings（设置）</a></li>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#typeAliases" target="_blank" rel="noopener">typeAliases（类型别名）</a></li>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#typeHandlers" target="_blank" rel="noopener">typeHandlers（类型处理器）</a></li>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#objectFactory" target="_blank" rel="noopener">objectFactory（对象工厂）</a></li>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#plugins" target="_blank" rel="noopener">plugins（插件）</a></li>
+<li>environments（环境配置）
+<ul>
+<li>environment（环境变量）
+<ul>
+<li>transactionManager（事务管理器）</li>
+<li>dataSource（数据源）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#databaseIdProvider" target="_blank" rel="noopener">databaseIdProvider（数据库厂商标识）</a></li>
+<li><a href="https://mybatis.org/mybatis-3/zh/configuration.html#mappers" target="_blank" rel="noopener">mappers（映射器）</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="properties属性"><a class="markdownIt-Anchor" href="#properties属性"></a> properties（属性）</h2>
+<p><a href="https://mybatis.org/mybatis-3/zh/configuration.html#properties" target="_blank" rel="noopener">属性（properties）</a></p>
+<p>在使用 properties 标签配置时，我们有两种方式指定属性配置</p>
+<h3 id="第一种指定属性配置方式"><a class="markdownIt-Anchor" href="#第一种指定属性配置方式"></a> 第一种指定属性配置方式</h3>
+<p>先在SqlMaoConfig.xml配置文件中添加：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--配置properties--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--配置连接数据库的四个基本信息--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driver"</span> <span class="attr">value</span>=<span class="string">"com.mysql.jdbc.Driver"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"jdbc:mysql://localhost:3306/mybatis?characterEncoding=utf-8"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"root"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">"123456"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后在下面的dataSource标签中修改成以下内容：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dataSource</span> <span class="attr">type</span>=<span class="string">"POOLED"</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--配置连接数据库的四个基本信息--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driver"</span> <span class="attr">value</span>=<span class="string">"$&#123;driver&#125;"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"$&#123;url&#125;"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"$&#123;username&#125;"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">"$&#123;password&#125;"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dataSource</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>完整的SqlMaoConfig.xml如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">configuration</span></span></span><br><span class="line"><span class="meta">        <span class="meta-keyword">PUBLIC</span> <span class="meta-string">"-//mybatis.org//DTD Config 3.0//EN"</span></span></span><br><span class="line"><span class="meta">        <span class="meta-string">"http://mybatis.org/dtd/mybatis-3-config.dtd"</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--mybatis的主配置文件--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--配置properties--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--配置连接数据库的四个基本信息--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driver"</span> <span class="attr">value</span>=<span class="string">"com.mysql.jdbc.Driver"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"jdbc:mysql://localhost:3306/mybatis?characterEncoding=utf-8"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"root"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">"123456"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--配置环境--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">environments</span> <span class="attr">default</span>=<span class="string">"mysql"</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--配置mysql环境--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">environment</span> <span class="attr">id</span>=<span class="string">"mysql"</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--配置事务的类型--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">transactionManager</span> <span class="attr">type</span>=<span class="string">"JDBC"</span>&gt;</span><span class="tag">&lt;/<span class="name">transactionManager</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">dataSource</span> <span class="attr">type</span>=<span class="string">"POOLED"</span>&gt;</span></span><br><span class="line">                <span class="comment">&lt;!--配置连接数据库的四个基本信息--&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driver"</span> <span class="attr">value</span>=<span class="string">"$&#123;driver&#125;"</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"$&#123;url&#125;"</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"$&#123;username&#125;"</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">"$&#123;password&#125;"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">dataSource</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">environment</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">environments</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--指定映射配置文件的位置。映射配置文件指的是每个dao独立的配置文件</span></span><br><span class="line"><span class="comment">        如果是有注解来配置的话，此处应该使用class属性指定被注解的dao全限定类型--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">mappers</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mapper</span> <span class="attr">resource</span>=<span class="string">"top/qing/dao/UserDao.xml"</span>&gt;</span><span class="tag">&lt;/<span class="name">mapper</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">mappers</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="第二种指定属性配置方式"><a class="markdownIt-Anchor" href="#第二种指定属性配置方式"></a> 第二种指定属性配置方式</h3>
+<p>首先在 resources目录下定义db.properties文件：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">jdbc.driver</span>=<span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line"><span class="meta">jdbc.url</span>=<span class="string">jdbc:mysql://localhost:3306/mybatis?characterEncoding=utf-8</span></span><br><span class="line"><span class="meta">jdbc.username</span>=<span class="string">root</span></span><br><span class="line"><span class="meta">jdbc.password</span>=<span class="string">123456</span></span><br></pre></td></tr></table></figure>
+<p>然后在SqlMaoConfig.xml配置文件中修改对应内容：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--配置properties--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span> <span class="attr">resource</span>=<span class="string">"db.properties"</span>&gt;</span></span><br><span class="line">    </span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>resource</code>标签有两个属性，用于指定 properties 配置文件的位置，要求配置文件必须在类路径下。</p>
+<ul>
+<li>resource 属性：<code>resource=&quot;jdbcConfig.properties&quot;</code></li>
+<li>url 属性：要求按照URL的写法来写地址。<code>url=file:///D:/IdeaProjects/day02_eesy_01mybatisCRUD/src/main/resources/jdbcConfig.properties</code></li>
+</ul>
+<p>如果一个属性在不只一个地方进行了配置，那么，MyBatis 将按照下面的顺序来加载：</p>
+<ol>
+<li>首先读取在 properties 元素体内指定的属性。</li>
+<li>然后根据 properties 元素中的 resource 属性读取类路径下属性文件，或根据 url 属性指定的路径读取属性文件，并覆盖之前读取过的同名属性。</li>
+<li>最后读取作为方法参数传递的属性，并覆盖之前读取过的同名属性。</li>
+</ol>
+<p>因此，<strong>通过方法参数传递的属性具有最高优先级</strong>，<strong>resource/url 属性中指定的配置文件次之</strong>，<strong>最低优先级的则是 properties 元素中指定的属性</strong>。</p>
+</blockquote>
+<p>由于在db.properties文件中我们用的是<code>jdbc.driver=com.mysql.jdbc.Driver</code>之类的，前面命名的是<code>jdbc.driver</code>，所以应该在下面的dataSource标签中修改成以下内容：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dataSource</span> <span class="attr">type</span>=<span class="string">"POOLED"</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--配置连接数据库的四个基本信息--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driver"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.driver&#125;"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"url"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.url&#125;"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"username"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.username&#125;"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span> <span class="attr">value</span>=<span class="string">"$&#123;jdbc.password&#125;"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dataSource</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>（<a href="https://www.bilibili.com/video/BV1mE411X7yp?p=37" target="_blank" rel="noopener">视频讲解</a>）</p>
+<h2 id="typealiases类型别名"><a class="markdownIt-Anchor" href="#typealiases类型别名"></a> typeAliases（类型别名）</h2>
+<p><a href="https://mybatis.org/mybatis-3/zh/configuration.html#typeAliases" target="_blank" rel="noopener">类型别名（typeAliases）</a></p>
+<p>在 SqlMapConfig.xml 中配置：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">typeAliases</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 单个别名定义 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">typeAlias</span> <span class="attr">alias</span>=<span class="string">"user"</span> <span class="attr">type</span>=<span class="string">"top.qing.domain.User"</span>/&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 批量别名定义，扫描整个包下的类，别名即为类名（首字母大写或小写都可以） --&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">package</span> <span class="attr">name</span>=<span class="string">"top.qing.domain"</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">package</span> <span class="attr">name</span>=<span class="string">"其它包"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">typeAliases</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>&lt;typeAliases&gt;</code>下的两个标签：</p>
+<ul>
+<li><code>typeAlias</code></li>
+<li><code>package</code></li>
+</ul>
+<p><code>typeAlias</code>标签的两个属性：</p>
+<ul>
+<li>alias：指定别名</li>
+<li>type：指定实体类的全限定类名</li>
+</ul>
+<p><code>package</code>标签的属性：</p>
+<ul>
+<li>name：指定批量定义别名的包的路径</li>
+</ul>
+</blockquote>
+<p>（<a href="https://www.bilibili.com/video/BV1mE411X7yp?p=38" target="_blank" rel="noopener">视频讲解</a>）</p>
+<h2 id="mappers映射器"><a class="markdownIt-Anchor" href="#mappers映射器"></a> mappers（映射器）</h2>
+<p><a href="https://mybatis.org/mybatis-3/zh/configuration.html#mappers" target="_blank" rel="noopener">映射器（mappers）</a></p>
+<ul>
+<li><strong><code>&lt;mapper resource=&quot; &quot; /&gt;</code></strong>：使用相对于类路径的资源如：<code>&lt;mapper resource=&quot;com/itheima/dao/IUserDao.xml&quot; /&gt;</code></li>
+<li><code>&lt;mapper class=&quot; &quot; /&gt;</code>：使用 mapper 接口类路径。如：<code>&lt;mapper class=&quot;com.itheima.dao.UserDao&quot;/&gt;</code>。注意：<strong>此种方法要求 mapper 接口名称和 mapper 映射文件名称相同，且放在同一个目录中。</strong></li>
+<li><strong><code>&lt;package name=&quot;&quot;/&gt;</code></strong>：注册指定包下的所有 mapper 接口。如：<code>&lt;package name=&quot;cn.itcast.mybatis.mapper&quot;/&gt;</code>。注意：<strong>此种方法要求 mapper 接口名称和 mapper 映射文件名称相同，且放在同一个目录中。</strong></li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#保存操作增saveuser"><span class="toc-text"> 保存操作（增）：saveUser</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#问题扩展返回新增用户-id-的值"><span class="toc-text"> 问题扩展：返回新增用户 id 的值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更新操作改updateuser"><span class="toc-text"> 更新操作（改）：updateUser</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除操作删deleteuser"><span class="toc-text"> 删除操作（删）：deleteUser</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询一个查findbyid"><span class="toc-text"> 查询一个（查）：findById</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模糊查询查findbyname"><span class="toc-text"> 模糊查询（查）：findByName</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询user表的总记录数聚合函数findtotal"><span class="toc-text"> 查询user表的总记录数（聚合函数）：findTotal</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#补充内容"><span class="toc-text"> 补充内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#模糊查询的另一种配置方式"><span class="toc-text"> 模糊查询的另一种配置方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#与的区别"><span class="toc-text"> #{}与${}的区别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mybatis-与-jdbc-编程的比较"><span class="toc-text"> Mybatis 与 JDBC 编程的比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#parametertype-配置参数"><span class="toc-text"> parameterType 配置参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#resulttyperesultmap-配置结果类型"><span class="toc-text"> resultType&amp;resultMap 配置结果类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#properties属性"><span class="toc-text"> properties（属性）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#第一种指定属性配置方式"><span class="toc-text"> 第一种指定属性配置方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第二种指定属性配置方式"><span class="toc-text"> 第二种指定属性配置方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#typealiases类型别名"><span class="toc-text"> typeAliases（类型别名）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mappers映射器"><span class="toc-text"> mappers（映射器）</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/05/10/Mybatis04/">
+            <span class="related-notes__meta">
+              <time datetime="2021-05-10T00:47:03.000Z">2021.05.10</time>
+              <span>#Mybatis · #SSM</span>
+            </span>
+            <strong>Mybatis（四）</strong>
+          </a>
+        
+          <a href="/2021/05/08/Mybatis03/">
+            <span class="related-notes__meta">
+              <time datetime="2021-05-08T00:47:03.000Z">2021.05.08</time>
+              <span>#Mybatis · #SSM</span>
+            </span>
+            <strong>Mybatis（三）</strong>
+          </a>
+        
+          <a href="/2021/04/28/Mybatis01/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-28T00:47:03.000Z">2021.04.28</time>
+              <span>#Mybatis · #SSM</span>
+            </span>
+            <strong>Mybatis（一）</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/05/08/Mybatis03/"><span>上一篇</span><strong>Mybatis（三）</strong></a>
+    <a href="/2021/04/28/Mybatis01/"><span>下一篇</span><strong>Mybatis（一）</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

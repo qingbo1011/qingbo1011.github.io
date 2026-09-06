@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Qing&#39;s Blog</title>
+  <icon>https://www.gravatar.com/avatar/8c3422022a494ffb974b5499a5183189</icon>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://www.qingbo1011.top/"/>
+  <updated>2026-09-06T08:29:14.210Z</updated>
+  <id>https://www.qingbo1011.top/</id>
+  
+  <author>
+    <name>qingbo</name>
+    <email>qingbo1011@163.com</email>
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Pi Coding Agent 调研学习</title>
+    <link href="https://www.qingbo1011.top/2026/09/01/pi%E6%98%AFAgent%E4%B8%96%E7%95%8C%E7%9A%84ArchLinux%E5%90%97-%E5%8D%95%E7%AF%87%E5%AE%8C%E6%95%B4%E7%89%88/"/>
+    <id>https://www.qingbo1011.top/2026/09/01/pi%E6%98%AFAgent%E4%B8%96%E7%95%8C%E7%9A%84ArchLinux%E5%90%97-%E5%8D%95%E7%AF%87%E5%AE%8C%E6%95%B4%E7%89%88/</id>
+    <published>2026-09-01T04:00:00.000Z</published>
+    <updated>2026-09-06T08:29:14.210Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;pi-coding-agent&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#pi-coding-agent&quot;&gt;&lt;/a&gt; &lt;a href=&quot;https://pi.dev/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Pi Coding Agent&lt;/a&gt; 调研学习&lt;/h1&gt;
+&lt;p&gt;有人说：pi 是最好的 Agent 学习工具，就像 Arch Linux 是最好的 Linux 教具，适合想学 Agent 编排和 LLM 使用的人，但不适合拿来干活。&lt;/p&gt;
+&lt;p&gt;这个说法挺有意思，我把 pi
+        
+      
+    
+    </summary>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/categories/Agent/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="pi" scheme="https://www.qingbo1011.top/tags/pi/"/>
+    
+      <category term="Coding Agent" scheme="https://www.qingbo1011.top/tags/Coding-Agent/"/>
+    
+      <category term="Agent Harness" scheme="https://www.qingbo1011.top/tags/Agent-Harness/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测</title>
+    <link href="https://www.qingbo1011.top/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/"/>
+    <id>https://www.qingbo1011.top/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/</id>
+    <published>2026-08-30T04:40:50.000Z</published>
+    <updated>2026-09-06T08:29:14.197Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;一个-memory-系统该忘掉什么deermem-容量淘汰的问题-修复与可复现评测&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#一个-memory-系统该忘掉什么deermem-容量淘汰的问题-修复与可复现评测&quot;&gt;&lt;/a&gt; 一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测&lt;/h1&gt;
+&lt;h2 id=&quot;库满了删哪条&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#库满了删哪条&quot;&gt;&lt;/a&gt; 库满了，删哪条&lt;/h2&gt;
+&lt;p&gt;DeerFlow 的记忆后端
+        
+      
+    
+    </summary>
+    
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/categories/Memory/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/tags/Memory/"/>
+    
+      <category term="DeerMem" scheme="https://www.qingbo1011.top/tags/DeerMem/"/>
+    
+      <category term="DeerFlow" scheme="https://www.qingbo1011.top/tags/DeerFlow/"/>
+    
+      <category term="评测" scheme="https://www.qingbo1011.top/tags/%E8%AF%84%E6%B5%8B/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</title>
+    <link href="https://www.qingbo1011.top/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/"/>
+    <id>https://www.qingbo1011.top/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/</id>
+    <published>2026-08-04T09:23:38.000Z</published>
+    <updated>2026-09-06T08:29:14.211Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;纯干货几万字都讲不明白的memory架构与思考&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#纯干货几万字都讲不明白的memory架构与思考&quot;&gt;&lt;/a&gt; 「纯干货」几万字都讲不明白的Memory架构与思考&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;作者：陈梓康（库达）&lt;br /&gt;
+公众号：千问AI平台&lt;br /&gt;
+发布时间：2026年4月7日 08:30&lt;br /&gt;
+原文：&lt;a href=&quot;https://mp.weixin.qq.com/s/bl77_Mb85C4AKe8h4__V6Q&quot;
+        
+      
+    
+    </summary>
+    
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/categories/Memory/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/tags/Memory/"/>
+    
+      <category term="Agentic Memory" scheme="https://www.qingbo1011.top/tags/Agentic-Memory/"/>
+    
+      <category term="记忆系统" scheme="https://www.qingbo1011.top/tags/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>TencentDB-Agent-Memory的记忆设计</title>
+    <link href="https://www.qingbo1011.top/2026/08/03/TencentDB-Agent-Memory%E7%9A%84%E8%AE%B0%E5%BF%86%E8%AE%BE%E8%AE%A1/"/>
+    <id>https://www.qingbo1011.top/2026/08/03/TencentDB-Agent-Memory%E7%9A%84%E8%AE%B0%E5%BF%86%E8%AE%BE%E8%AE%A1/</id>
+    <published>2026-08-03T04:00:00.000Z</published>
+    <updated>2026-09-06T08:29:14.207Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;tencentdb-agent-memory的记忆设计&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#tencentdb-agent-memory的记忆设计&quot;&gt;&lt;/a&gt; TencentDB-Agent-Memory的记忆设计&lt;/h1&gt;
+&lt;h2 id=&quot;记忆系统要回答的两个问题&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#记忆系统要回答的两个问题&quot;&gt;&lt;/a&gt; 记忆系统要回答的两个问题&lt;/h2&gt;
+&lt;p&gt;给 Agent
+        
+      
+    
+    </summary>
+    
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/categories/Memory/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/tags/Memory/"/>
+    
+      <category term="TencentDB-Agent-Memory" scheme="https://www.qingbo1011.top/tags/TencentDB-Agent-Memory/"/>
+    
+      <category term="Agent Runtime" scheme="https://www.qingbo1011.top/tags/Agent-Runtime/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读</title>
+    <link href="https://www.qingbo1011.top/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/"/>
+    <id>https://www.qingbo1011.top/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/</id>
+    <published>2026-08-02T04:00:00.000Z</published>
+    <updated>2026-09-06T08:29:14.212Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;记忆系统的难点不在检索在写入时的那一次判定mem0-论文精读&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#记忆系统的难点不在检索在写入时的那一次判定mem0-论文精读&quot;&gt;&lt;/a&gt; 记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读&lt;/h1&gt;
+&lt;h2 id=&quot;三条消息一个决定&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#三条消息一个决定&quot;&gt;&lt;/a&gt; 三条消息，一个决定&lt;/h2&gt;
+&lt;p&gt;假想一个帮电商卖家做推广视频的
+        
+      
+    
+    </summary>
+    
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/categories/Memory/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/tags/Memory/"/>
+    
+      <category term="论文阅读" scheme="https://www.qingbo1011.top/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"/>
+    
+      <category term="Mem0" scheme="https://www.qingbo1011.top/tags/Mem0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读</title>
+    <link href="https://www.qingbo1011.top/2026/08/01/%E4%B8%BA%E4%BB%80%E4%B9%88%20long%20short-term%20%E4%BA%8C%E5%88%86%E6%B3%95%E5%A4%B1%E6%95%88%E4%BA%86/"/>
+    <id>https://www.qingbo1011.top/2026/08/01/%E4%B8%BA%E4%BB%80%E4%B9%88%20long%20short-term%20%E4%BA%8C%E5%88%86%E6%B3%95%E5%A4%B1%E6%95%88%E4%BA%86/</id>
+    <published>2026-08-01T14:57:27.000Z</published>
+    <updated>2026-09-06T08:29:14.211Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;为什么-longshort-term-二分法失效了107-页-agent-memory-综述精读&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#为什么-longshort-term-二分法失效了107-页-agent-memory-综述精读&quot;&gt;&lt;/a&gt; 为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读&lt;/h1&gt;
+&lt;h2 id=&quot;一个-agent-的三种失忆&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot;
+        
+      
+    
+    </summary>
+    
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/categories/Memory/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Memory" scheme="https://www.qingbo1011.top/tags/Memory/"/>
+    
+      <category term="论文阅读" scheme="https://www.qingbo1011.top/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第九章：工程实践——值得学习的设计模式</title>
+    <link href="https://www.qingbo1011.top/2026/05/09/chapter-09-engineering-patterns/"/>
+    <id>https://www.qingbo1011.top/2026/05/09/chapter-09-engineering-patterns/</id>
+    <published>2026-05-09T04:30:00.000Z</published>
+    <updated>2026-09-06T08:29:14.209Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第九章工程实践值得学习的设计模式&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第九章工程实践值得学习的设计模式&quot;&gt;&lt;/a&gt; 第九章：工程实践——值得学习的设计模式&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“好的代码不仅正确，还能让读它的人学到东西。”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;91-快速路径分发fast-path-dispatch&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot;
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第八章：扩展机制——Plugins、Skills与Multi-Agent</title>
+    <link href="https://www.qingbo1011.top/2026/05/08/chapter-08-extension-mechanisms/"/>
+    <id>https://www.qingbo1011.top/2026/05/08/chapter-08-extension-mechanisms/</id>
+    <published>2026-05-08T04:30:00.000Z</published>
+    <updated>2026-09-06T08:29:14.209Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第八章扩展机制plugins-skills与multi-agent&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第八章扩展机制plugins-skills与multi-agent&quot;&gt;&lt;/a&gt; 第八章：扩展机制——Plugins、Skills与Multi-Agent&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“一个系统的生命力，取决于它允许别人在上面做什么。”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;81-扩展机制全景&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot;
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第七章：配置系统——灵活性的来源</title>
+    <link href="https://www.qingbo1011.top/2026/05/07/chapter-07-config-system/"/>
+    <id>https://www.qingbo1011.top/2026/05/07/chapter-07-config-system/</id>
+    <published>2026-05-07T04:30:00.000Z</published>
+    <updated>2026-09-06T08:29:14.209Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第七章配置系统灵活性的来源&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第七章配置系统灵活性的来源&quot;&gt;&lt;/a&gt; 第七章：配置系统——灵活性的来源&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“一个工具的边界，由它的配置系统决定。”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;71-配置系统全景&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#71-配置系统全景&quot;&gt;&lt;/a&gt; 7.1 配置系统全景&lt;/h2&gt;
+&lt;p&gt;Claude Code
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第六章：终端 UI——在命令行里做&quot;前端&quot;</title>
+    <link href="https://www.qingbo1011.top/2026/05/06/chapter-06-terminal-ui/"/>
+    <id>https://www.qingbo1011.top/2026/05/06/chapter-06-terminal-ui/</id>
+    <published>2026-05-06T04:30:00.000Z</published>
+    <updated>2026-09-06T08:29:14.208Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第六章终端-ui在命令行里做前端&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第六章终端-ui在命令行里做前端&quot;&gt;&lt;/a&gt; 第六章：终端 UI——在命令行里做&amp;quot;前端&amp;quot;&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“命令行不是 UI 的终点，而是另一种 UI 的起点。”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;61-反直觉的选型在终端里用-react&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot;
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第五章：权限与安全——信任的边界</title>
+    <link href="https://www.qingbo1011.top/2026/05/05/chapter-05-permission-security/"/>
+    <id>https://www.qingbo1011.top/2026/05/05/chapter-05-permission-security/</id>
+    <published>2026-05-05T04:25:00.000Z</published>
+    <updated>2026-09-06T08:29:14.208Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第五章权限与安全信任的边界&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第五章权限与安全信任的边界&quot;&gt;&lt;/a&gt; 第五章：权限与安全——信任的边界&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“Agent 能做什么，不能做什么，由权限系统说了算。它是 Claude Code 最重要的安全护城河。”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;51-为什么需要权限系统&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#51-为什么需要权限系统&quot;&gt;&lt;/a&gt; 5.1
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第四章：工具系统——Agent 的双手</title>
+    <link href="https://www.qingbo1011.top/2026/05/04/chapter-04-tool-system/"/>
+    <id>https://www.qingbo1011.top/2026/05/04/chapter-04-tool-system/</id>
+    <published>2026-05-04T04:20:00.000Z</published>
+    <updated>2026-09-06T08:29:14.208Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第四章工具系统agent-的双手&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第四章工具系统agent-的双手&quot;&gt;&lt;/a&gt; 第四章：工具系统——Agent 的双手&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Agent 循环是大脑，工具系统就是双手。LLM 只能&amp;quot;想&amp;quot;，是工具让它能&amp;quot;做&amp;quot;。&lt;br /&gt;
+本章深入
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第三章：Agent 循环——大脑如何思考与行动</title>
+    <link href="https://www.qingbo1011.top/2026/05/03/chapter-03-agent-loop/"/>
+    <id>https://www.qingbo1011.top/2026/05/03/chapter-03-agent-loop/</id>
+    <published>2026-05-03T04:15:00.000Z</published>
+    <updated>2026-09-06T08:29:14.208Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第三章agent-循环大脑如何思考与行动&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第三章agent-循环大脑如何思考与行动&quot;&gt;&lt;/a&gt; 第三章：Agent 循环——大脑如何思考与行动&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这是整个 Claude Code 项目&lt;strong&gt;最核心&lt;/strong&gt;的部分。理解了 Agent 循环，就理解了 Coding Agent 的本质。&lt;br /&gt;
+本章深入 &lt;code&gt;query.ts&lt;/code&gt; 的 1729
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第二章：启动流程——从敲下命令到界面就绪</title>
+    <link href="https://www.qingbo1011.top/2026/05/02/chapter-02-startup-flow/"/>
+    <id>https://www.qingbo1011.top/2026/05/02/chapter-02-startup-flow/</id>
+    <published>2026-05-02T04:10:00.000Z</published>
+    <updated>2026-09-06T08:29:14.208Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第二章启动流程从敲下命令到界面就绪&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第二章启动流程从敲下命令到界面就绪&quot;&gt;&lt;/a&gt; 第二章：启动流程——从敲下命令到界面就绪&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;当用户在终端敲下 &lt;code&gt;claude&lt;/code&gt; 并回车，到看到交互式提示符，中间经历了什么？&lt;br /&gt;
+本章拆解 Claude Code
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>第一章：项目全景——目录结构与模块划分</title>
+    <link href="https://www.qingbo1011.top/2026/05/01/chapter-01-project-overview/"/>
+    <id>https://www.qingbo1011.top/2026/05/01/chapter-01-project-overview/</id>
+    <published>2026-05-01T04:05:00.000Z</published>
+    <updated>2026-09-06T08:29:14.207Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;第一章项目全景目录结构与模块划分&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#第一章项目全景目录结构与模块划分&quot;&gt;&lt;/a&gt; 第一章：项目全景——目录结构与模块划分&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本章从宏观视角俯瞰 Claude Code 项目的整体架构，帮助读者建立对 1900+ 文件、50 万行代码的&amp;quot;心智地图&amp;quot;。&lt;br /&gt;
+同时预览本系列重点关注的三个方向：Agent
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Claude Code 源码学习指南</title>
+    <link href="https://www.qingbo1011.top/2026/04/30/claude-code-source-guide/"/>
+    <id>https://www.qingbo1011.top/2026/04/30/claude-code-source-guide/</id>
+    <published>2026-04-30T04:00:00.000Z</published>
+    <updated>2026-09-06T08:29:14.209Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;claude-code-源码学习指南&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#claude-code-源码学习指南&quot;&gt;&lt;/a&gt; Claude Code 源码学习指南&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;面向不熟悉 TypeScript 的开发者，聚焦架构设计与工程思想。&lt;br /&gt;
+本文基于对 &lt;code&gt;claude-code/src/&lt;/code&gt; 目录的完整分析整理。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2 id=&quot;目录&quot;&gt;&lt;a
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="Agent" scheme="https://www.qingbo1011.top/tags/Agent/"/>
+    
+      <category term="Claude Code" scheme="https://www.qingbo1011.top/tags/Claude-Code/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>RAG增强方案技术文档</title>
+    <link href="https://www.qingbo1011.top/2026/01/01/rag/"/>
+    <id>https://www.qingbo1011.top/2026/01/01/rag/</id>
+    <published>2026-01-01T04:00:00.000Z</published>
+    <updated>2026-09-06T08:29:14.210Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h2 id=&quot;1-项目概述&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#1-项目概述&quot;&gt;&lt;/a&gt; 1. 项目概述&lt;/h2&gt;
+&lt;h3 id=&quot;11-项目背景&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#11-项目背景&quot;&gt;&lt;/a&gt; 1.1 项目背景&lt;/h3&gt;
+&lt;p&gt;本项目实现了一套完整的检索增强生成（Retrieval-Augmented Generation, RAG）系统，旨在通过多阶段优化技术提升问答系统的准确性和可靠性。系统基于 Golang
+        
+      
+    
+    </summary>
+    
+    
+      <category term="AI应用" scheme="https://www.qingbo1011.top/categories/AI%E5%BA%94%E7%94%A8/"/>
+    
+    
+      <category term="RAG" scheme="https://www.qingbo1011.top/tags/RAG/"/>
+    
+      <category term="Milvus" scheme="https://www.qingbo1011.top/tags/Milvus/"/>
+    
+      <category term="CRAG" scheme="https://www.qingbo1011.top/tags/CRAG/"/>
+    
+      <category term="Agentic RAG" scheme="https://www.qingbo1011.top/tags/Agentic-RAG/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Go第三方库之Cast</title>
+    <link href="https://www.qingbo1011.top/2023/10/01/Go%E5%BC%80%E6%BA%90%E5%BA%93%EF%BC%9ACast/"/>
+    <id>https://www.qingbo1011.top/2023/10/01/Go%E5%BC%80%E6%BA%90%E5%BA%93%EF%BC%9ACast/</id>
+    <published>2023-10-01T00:47:03.000Z</published>
+    <updated>2026-09-06T08:29:14.200Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;p&gt;Go第三方库之Cast&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;好久没有更新了，最近一直忙着工作，还有毕业的事情。再加上最近心态上的一些变化，导致博客更新没有像之前在学校那样频繁了。现在趁着这篇文章，试着开始重新更新博客，记录自己的学习经历和一些心路历程。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;之前在工作中，看见项目在其他类型转string的时候没有用Go的标准库&lt;code&gt;Strconv&lt;/code&gt;，而是使用了&lt;code&gt;cast&lt;/code&gt;包。点进去看了下源码发现还是挺简单的，这里简单记录一下。&lt;/p&gt;
+&lt;p&gt;&lt;a
+        
+      
+    
+    </summary>
+    
+    
+      <category term="Go" scheme="https://www.qingbo1011.top/categories/Go/"/>
+    
+    
+      <category term="Go" scheme="https://www.qingbo1011.top/tags/Go/"/>
+    
+      <category term="第三方库" scheme="https://www.qingbo1011.top/tags/%E7%AC%AC%E4%B8%89%E6%96%B9%E5%BA%93/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>算法学习：哈希表</title>
+    <link href="https://www.qingbo1011.top/2022/09/03/%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%EF%BC%9A%E5%93%88%E5%B8%8C%E8%A1%A8/"/>
+    <id>https://www.qingbo1011.top/2022/09/03/%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%EF%BC%9A%E5%93%88%E5%B8%8C%E8%A1%A8/</id>
+    <published>2022-09-03T09:42:03.000Z</published>
+    <updated>2026-09-06T08:29:14.212Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;算法学习哈希表&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#算法学习哈希表&quot;&gt;&lt;/a&gt; 算法学习：哈希表&lt;/h1&gt;
+&lt;p&gt;参考代码随想录：&lt;a href=&quot;https://programmercarl.com/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%80.html&quot; target=&quot;_blank&quot;
+        
+      
+    
+    </summary>
+    
+    
+      <category term="数据结构与算法" scheme="https://www.qingbo1011.top/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+      <category term="Go" scheme="https://www.qingbo1011.top/tags/Go/"/>
+    
+      <category term="算法" scheme="https://www.qingbo1011.top/tags/%E7%AE%97%E6%B3%95/"/>
+    
+      <category term="LeetCode" scheme="https://www.qingbo1011.top/tags/LeetCode/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>算法学习：链表</title>
+    <link href="https://www.qingbo1011.top/2022/09/02/%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%EF%BC%9A%E9%93%BE%E8%A1%A8/"/>
+    <id>https://www.qingbo1011.top/2022/09/02/%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%EF%BC%9A%E9%93%BE%E8%A1%A8/</id>
+    <published>2022-09-02T09:42:03.000Z</published>
+    <updated>2026-09-06T08:29:14.212Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;h1 id=&quot;算法学习链表&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#算法学习链表&quot;&gt;&lt;/a&gt; 算法学习：链表&lt;/h1&gt;
+&lt;p&gt;参考代码随想录：&lt;strong&gt;&lt;a href=&quot;https://programmercarl.com/%E9%93%BE%E8%A1%A8%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%80.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;链表理论基础&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;关于链表这种数据结构，之前已经学习过了（笔记：&lt;a
+        
+      
+    
+    </summary>
+    
+    
+      <category term="数据结构与算法" scheme="https://www.qingbo1011.top/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+      <category term="Go" scheme="https://www.qingbo1011.top/tags/Go/"/>
+    
+      <category term="算法" scheme="https://www.qingbo1011.top/tags/%E7%AE%97%E6%B3%95/"/>
+    
+      <category term="LeetCode" scheme="https://www.qingbo1011.top/tags/LeetCode/"/>
+    
+  </entry>
+  
+</feed>

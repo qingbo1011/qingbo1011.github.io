@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>MySQL（三） · Quinn</title>
+<meta name="description" content="MySQL（三） 多表查询 查询语法： 1 2 3 4 5 6 select 列名列表 from 表名列表 where ... 例子： 1 select * from emp,dep2; 多表查询的运算类似于 笛卡尔积 。 笛卡尔积：有两个…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/03/16/MySQL%EF%BC%88%E4%B8%89%EF%BC%89/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="MySQL（三） · Quinn" />
+<meta property="og:description" content="MySQL（三） 多表查询 查询语法： 1 2 3 4 5 6 select 列名列表 from 表名列表 where ... 例子： 1 select * from emp,dep2; 多表查询的运算类似于 笛卡尔积 。 笛卡尔积：有两个…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/03/16/MySQL%EF%BC%88%E4%B8%89%EF%BC%89/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505113326.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220505113326.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Database · 2021.03.16
+      
+    </p>
+    <h1>MySQL（三）</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Database/">Database</a>
+  
+  <span class="post-meta__item">10 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Database/">#Database</a>
+      
+        <a href="/tags/MySQL/">#MySQL</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h1 id="多表查询"><a class="markdownIt-Anchor" href="#多表查询"></a> 多表查询</h1>
+<p>查询语法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span></span><br><span class="line">	列名列表</span><br><span class="line"><span class="keyword">from</span></span><br><span class="line">	表名列表</span><br><span class="line"><span class="keyword">where</span></span><br><span class="line">	...</span><br></pre></td></tr></table></figure>
+<p>例子：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> emp,dep2;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507174240.png" alt="多表查询" /></p>
+<p>多表查询的运算类似于<strong>笛卡尔积</strong>。</p>
+<p><strong>笛卡尔积：有两个集合A，B，取这两个集合的所有组成情况。</strong>（这样就很有可能产生多条无用数据，比如说图中张三对应两个部门，显然第二条是无用的数据，因为dep（emp表的字段）对应着id（dep2的字段））</p>
+<p><strong>要完成多表查询，需要消除无用的数据</strong></p>
+<p>多表查询的分类：</p>
+<ul>
+<li>内连接查询</li>
+<li>外连接查询</li>
+<li>子查询</li>
+</ul>
+<p><a href="https://blog.csdn.net/plg17/article/details/78758593" target="_blank" rel="noopener"><strong>图解MySQL 内连接、外连接、左连接、右连接、全连接</strong></a></p>
+<h2 id="内连接查询"><a class="markdownIt-Anchor" href="#内连接查询"></a> 内连接查询</h2>
+<p>内连接：</p>
+<ul>
+<li>隐式内连接</li>
+<li>显式内连接</li>
+</ul>
+<h3 id="隐式内连接"><a class="markdownIt-Anchor" href="#隐式内连接"></a> 隐式内连接</h3>
+<p><strong>隐式内连接：使用where条件消除无用数据</strong></p>
+<p>例子：查询所有员工对应的部门信息</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> emp,dep2 <span class="keyword">where</span> dep = dep2.id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194329.png" alt="" /></p>
+<p>其中dep字段和id（dep2中的字段）这两个字段是多余的，可以改进一下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> emp.id,emp.name,dep2.name <span class="keyword">from</span> emp,dep2 <span class="keyword">where</span> dep = dep2.id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194343.png" alt="" /></p>
+<h3 id="显式内连接"><a class="markdownIt-Anchor" href="#显式内连接"></a> 显式内连接</h3>
+<p>语法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> 字段列表 <span class="keyword">from</span> 表名<span class="number">1</span>[<span class="keyword">inner</span>] <span class="keyword">join</span> 表名<span class="number">2</span> <span class="keyword">on</span> 条件</span><br></pre></td></tr></table></figure>
+<p>例子：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> emp [<span class="keyword">inner</span>] <span class="keyword">join</span> dep2 <span class="keyword">on</span> emp.dep = dep2.id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194359.png" alt="" /></p>
+<p>内连接查询要明确以下几点：</p>
+<ul>
+<li>从哪些表中查询数据</li>
+<li>条件是什么</li>
+<li>查询哪些字段</li>
+</ul>
+<h2 id="外连接查询"><a class="markdownIt-Anchor" href="#外连接查询"></a> 外连接查询</h2>
+<p>外连接：</p>
+<ul>
+<li>左外连接</li>
+<li>右外连接</li>
+</ul>
+<h3 id="左外连接"><a class="markdownIt-Anchor" href="#左外连接"></a> 左外连接</h3>
+<p>语法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> 字段列表 <span class="keyword">from</span> 表<span class="number">1</span> <span class="keyword">left</span> [<span class="keyword">outer</span>] <span class="keyword">join</span> 表<span class="number">2</span> <span class="keyword">on</span> 条件;</span><br></pre></td></tr></table></figure>
+<p><strong>左(外)连接，左表的记录将会全部表示出来，而右表只会显示符合搜索条件的记录。右表记录不足的地方均为NULL。</strong></p>
+<p>现在我们的emp表中有两个成员没有写部门：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194410.png" alt="" /></p>
+<p>如果我们执行sql：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> emp.*,dep2.name <span class="keyword">from</span> emp,dep2 <span class="keyword">where</span> dep = dep2.id;</span><br></pre></td></tr></table></figure>
+<p>结果为：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194422.png" alt="" /></p>
+<p>很显然没有rick和merry的信息，因为他们的dep为null，<a href="http://xn--dep2-fb5fu0a950aw85fozk.id" target="_blank" rel="noopener">不可能等于dep2.id</a>。</p>
+<p>现在如果要求：查询所有员工信息，如果员工有部门，则查询部门名称；没有部门，则不显示部门名称。</p>
+<p>所以现在我们使用左外连接来查询：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> emp.id,emp.name,dep2.name <span class="keyword">from</span> emp <span class="keyword">left</span> [<span class="keyword">outer</span>] <span class="keyword">join</span> dep2 <span class="keyword">on</span> emp.dep = dep2.id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194434.png" alt="" /></p>
+<p>可以看到通过左外连接可以将没有部门的员工信息也显示出来。</p>
+<p>从这个结果中可以更好地理解左连接：左表的记录将会全部表示出来，即图中</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194446.png" alt="" /></p>
+<p>所有记录都会表示出来，而右表只会显示符合条件的记录：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194457.png" alt="" /></p>
+<p>即上图结果中第三个name（右表中的字段）只会显示符合条件的记录，<strong>右表记录缺失则显示为null</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194525.png" alt="dep=3在右表中缺失，右边name显示为null" /></p>
+<h3 id="右外连接"><a class="markdownIt-Anchor" href="#右外连接"></a> 右外连接</h3>
+<p>在理解左连接后，有连接就很好理解了。</p>
+<p>语法：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> 字段列表 <span class="keyword">from</span> 表<span class="number">1</span> <span class="keyword">right</span> [<span class="keyword">outer</span>] <span class="keyword">join</span> 表<span class="number">2</span> <span class="keyword">on</span> 条件;</span><br></pre></td></tr></table></figure>
+<p><strong>与左(外)连接相反，右(外)连接，左表只会显示符合搜索条件的记录，而右表的记录将会全部表示出来。左表记录不足的地方均为NULL。</strong></p>
+<p>例子：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> emp.*,dep2.name <span class="keyword">from</span> emp <span class="keyword">right</span> [<span class="keyword">outer</span>] <span class="keyword">join</span> dep2 <span class="keyword">on</span> emp.dep = dep2.id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194543.png" alt="" /></p>
+<h2 id="子查询"><a class="markdownIt-Anchor" href="#子查询"></a> 子查询</h2>
+<p><a href="https://www.cnblogs.com/geaozhang/p/6756825.html" target="_blank" rel="noopener">MySQL中的子查询</a></p>
+<blockquote>
+<p>子查询的定义：<br />
+　　<strong>子查询是将一个查询语句嵌套在另一个查询语句中</strong>；<br />
+　　在特定情况下，一个查询语句的条件需要另一个查询语句来获取，内层查询（inner query）语句的查询结果，可以为外层查询（outer query）语句提供查询条件。</p>
+</blockquote>
+<p>子查询：查询中嵌套查询，称嵌套查询为子查询。</p>
+<p><strong>子查询特点（规范）：</strong></p>
+<ul>
+<li><strong>子查询必须放在小括号中</strong></li>
+<li><strong>子查询一般放在比较操作符的右边，以增强代码可读性</strong></li>
+<li><strong>子查询(小括号里的内容)可出现在几乎所有的SELECT子句中(如：SELECT子句、FROM子句、WHERE子句、ORDER BY子句、HAVING子句……)</strong></li>
+</ul>
+<p>例子，现有student表数据如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194554.png" alt="" /></p>
+<p>要查询表中年龄最大的学生的全部信息，如果只是输入以下sql语句，只能查询age这一个字段，而不是全部信息</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">Max</span>(stu_age) <span class="keyword">from</span> student;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194608.png" alt="只能查询stu_age字段" /></p>
+<p>而~~<code>select * from student where stu_age=Max(stu_age);</code>~~这样的sql语句是会报错的：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194619.png" alt="错误的sql语句" /></p>
+<p>要查询到年龄最大的学生的所有信息，就需要使用<strong>子查询</strong>了，输入sql如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> student <span class="keyword">where</span> stu_age = (<span class="keyword">select</span> <span class="keyword">Max</span>(stu_age) <span class="keyword">from</span> student);</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194631.png" alt="" /></p>
+<h3 id="子查询分类"><a class="markdownIt-Anchor" href="#子查询分类"></a> 子查询分类</h3>
+<ul>
+<li><strong>标量子查询(scalar subquery)：返回1行1列一个值（单行单列）</strong></li>
+<li><strong>行子查询(row subquery)：返回的结果集是 1 行 N 列（单行多列）</strong></li>
+<li><strong>列子查询(column subquery)：返回的结果集是 N 行 1列（多行单列）</strong></li>
+<li><strong>表子查询(table subquery)：返回的结果集是 N 行 N 列（多行多列）</strong></li>
+</ul>
+<h4 id="标量子查询"><a class="markdownIt-Anchor" href="#标量子查询"></a> 标量子查询</h4>
+<p>因为标量子查询返回1行1列是一个值，所以可以用来进行算术运算</p>
+<p>可以使用<code>=</code>,<code>&gt;</code>,<code>&lt;</code>,<code>&gt;=</code>,<code>&lt;=</code>,<code>&lt;&gt;</code>(<code>!=</code>)操作符对子查询的结果进行比较</p>
+<p>例子：查询student表中年龄小于平均年龄的学生的全部信息，输入sql：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> student <span class="keyword">where</span> stu_age &lt; (<span class="keyword">select</span> <span class="keyword">avg</span>(stu_age) <span class="keyword">from</span> student);</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194940.png" alt="" /></p>
+<h4 id="行子查询"><a class="markdownIt-Anchor" href="#行子查询"></a> 行子查询</h4>
+<p>行子查询返回的结果集是1行多列</p>
+<p>可以使用行表达式进行比较，可以使用<code>=</code>,<code>&gt;</code>,<code>&lt;</code>,<code>&gt;=</code>,<code>&lt;=</code>,<code>&lt;&gt;</code>(<code>!=</code>) <code>in</code>操作符</p>
+<p>例子：现有emp表和dep2表数据如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507194951.png" alt="emp表数据" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195004.png" alt="dep2表数据" /></p>
+<p>例子：我们要查询所有开发部员工的所有信息，输入sql如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> emp <span class="keyword">where</span> emp.dep=(<span class="keyword">select</span> <span class="keyword">id</span> <span class="keyword">from</span> dep2 <span class="keyword">where</span> <span class="keyword">name</span>=<span class="string">'开发部'</span>);</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195015.png" alt="" /></p>
+<h4 id="列子查询"><a class="markdownIt-Anchor" href="#列子查询"></a> <mark>列子查询</mark></h4>
+<p>列子查询返回的结果集是多行1列</p>
+<p><strong>必须使用<code>in</code>,<code>any</code>,<code>all</code>操作符对子查询返回的结果进行比较</strong></p>
+<p><strong>注意：any和all操作符<mark>不能单独使用</mark>，其前面必须加上单行比较操作符<code>=</code>,<code>&gt;</code>,<code>&lt;</code>,<code>&gt;=</code>,<code>&lt;=</code>,<code>&lt;&gt;</code>(<code>!=</code>)</strong></p>
+<p><a href="https://blog.csdn.net/pan_junbiao/article/details/86006839" target="_blank" rel="noopener">MySQL使用IN、EXISTS、ANY、ALL关键字的子查询</a></p>
+<ul>
+<li>带<code>any</code>关键字的子查询：<strong>any关键字表示满足其中任意一个条件</strong>。使用any关键字时，<strong>只要满足内层查询语句返回的结果中的任意一个，就可以通过该条件来执行外层查询语句</strong>。</li>
+</ul>
+<p>例子：现有test表如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195029.png" alt="test表中数据" /></p>
+<p>dep2表的数据同上，先要查询test表中所有部门编号合法的员工的所有数据（即test表中dep_id字段为1或2）。输入sql：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">test</span> <span class="keyword">where</span> test.dep_id = <span class="keyword">any</span> (<span class="keyword">select</span> dep2.id <span class="keyword">from</span> dep2);</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195044.png" alt="" /></p>
+<ul>
+<li>带<code>all</code>关键字的子查询：<strong>all关键字表示满足所有条件</strong>。使用all关键字时**，只有满足内层查询语句返回的所有结果，才可以执行外层查询语句**。</li>
+</ul>
+<p>例子：还是对test表，查询所有dep_id字段大于dep2表中id的员工的所有信息（即test表中的dep_id大于1且大于2）。输入sql：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">test</span> <span class="keyword">where</span> test.dep_id &gt; <span class="keyword">all</span> (<span class="keyword">select</span> dep2.id <span class="keyword">from</span> dep2);</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195102.png" alt="" /></p>
+<h4 id="表子查询"><a class="markdownIt-Anchor" href="#表子查询"></a> 表子查询</h4>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=526" target="_blank" rel="noopener">视频讲解</a></p>
+<p>表字查询：返回结果为多行多列</p>
+<p>表子查询的结果可以作为一张虚拟表参与查询</p>
+<p>例子：还是对上述test表和dep2表，我们要查询员工年龄大于20的员工信息和部门信息。输入sql：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 使用表子查询</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> dep2 t2,(<span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">test</span> <span class="keyword">where</span> age &gt; <span class="number">20</span>) t1 <span class="keyword">where</span> t1.dep_id = t2.id;</span><br><span class="line"><span class="comment">-- 使用普通内连接（隐式内连接）</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">test</span>,dep2 <span class="keyword">where</span> test.dep_id = dep2.id <span class="keyword">and</span> test.age &gt; <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195120.png" alt="表子查询" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195138.png" alt="隐式内连接" /></p>
+<hr />
+<h2 id="多表查询练习"><a class="markdownIt-Anchor" href="#多表查询练习"></a> 多表查询练习</h2>
+<p>题目相关表的sql语句如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 部门表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> dept (</span><br><span class="line">	<span class="keyword">id</span> <span class="built_in">INT</span> PRIMARY <span class="keyword">KEY</span> PRIMARY <span class="keyword">KEY</span>, <span class="comment">-- 部门id</span></span><br><span class="line">	dname <span class="built_in">VARCHAR</span>(<span class="number">50</span>), <span class="comment">-- 部门名称</span></span><br><span class="line">	loc <span class="built_in">VARCHAR</span>(<span class="number">50</span>) <span class="comment">-- 部门所在地</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加4个部门</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> dept (<span class="keyword">id</span>, dname, loc)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="number">10</span>, <span class="string">'教研部'</span>, <span class="string">'北京'</span>),</span><br><span class="line">	(<span class="number">20</span>, <span class="string">'学工部'</span>, <span class="string">'上海'</span>),</span><br><span class="line">	(<span class="number">30</span>, <span class="string">'销售部'</span>, <span class="string">'广州'</span>),</span><br><span class="line">	(<span class="number">40</span>, <span class="string">'财务部'</span>, <span class="string">'深圳'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 职务表，职务名称，职务描述</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> job (</span><br><span class="line">	<span class="keyword">id</span> <span class="built_in">INT</span> PRIMARY <span class="keyword">KEY</span>,</span><br><span class="line">	jname <span class="built_in">VARCHAR</span>(<span class="number">20</span>),</span><br><span class="line">	description <span class="built_in">VARCHAR</span>(<span class="number">50</span>)</span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加4个职务</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> job (<span class="keyword">id</span>, jname, description)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="string">'董事长'</span>, <span class="string">'管理整个公司，接单'</span>),</span><br><span class="line">	(<span class="number">2</span>, <span class="string">'经理'</span>, <span class="string">'管理部门员工'</span>),</span><br><span class="line">	(<span class="number">3</span>, <span class="string">'销售员'</span>, <span class="string">'向客人推销产品'</span>),</span><br><span class="line">	(<span class="number">4</span>, <span class="string">'文员'</span>, <span class="string">'使用办公软件'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 员工表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> emp (</span><br><span class="line">	<span class="keyword">id</span> <span class="built_in">INT</span> PRIMARY <span class="keyword">KEY</span>, <span class="comment">-- 员工id</span></span><br><span class="line">	ename <span class="built_in">VARCHAR</span>(<span class="number">50</span>), <span class="comment">-- 员工姓名</span></span><br><span class="line">	job_id <span class="built_in">INT</span>, <span class="comment">-- 职务id</span></span><br><span class="line">	mgr <span class="built_in">INT</span>, <span class="comment">-- 上级领导</span></span><br><span class="line">	joindate <span class="built_in">DATE</span>, <span class="comment">-- 入职日期</span></span><br><span class="line">	salary <span class="built_in">DECIMAL</span>(<span class="number">7</span>, <span class="number">2</span>), <span class="comment">-- 工资</span></span><br><span class="line">	bonus <span class="built_in">DECIMAL</span>(<span class="number">7</span>, <span class="number">2</span>), <span class="comment">-- 奖金</span></span><br><span class="line">	dept_id <span class="built_in">INT</span>, <span class="comment">-- 所在部门编号</span></span><br><span class="line">	<span class="keyword">CONSTRAINT</span> emp_jobid_ref_job_id_fk <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span> (job_id) <span class="keyword">REFERENCES</span> job (<span class="keyword">id</span>),</span><br><span class="line">	<span class="keyword">CONSTRAINT</span> emp_deptid_ref_dept_id_fk <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span> (dept_id) <span class="keyword">REFERENCES</span> dept (<span class="keyword">id</span>)</span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加员工</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp (<span class="keyword">id</span>, ename, job_id, mgr, joindate</span><br><span class="line">	, salary, bonus, dept_id)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="number">1001</span>, <span class="string">'孙悟空'</span>, <span class="number">4</span>, <span class="number">1004</span>, <span class="string">'2000-12-17'</span></span><br><span class="line">		, <span class="string">'8000.00'</span>, <span class="literal">NULL</span>, <span class="number">20</span>),</span><br><span class="line">	(<span class="number">1002</span>, <span class="string">'卢俊义'</span>, <span class="number">3</span>, <span class="number">1006</span>, <span class="string">'2001-02-20'</span></span><br><span class="line">		, <span class="string">'16000.00'</span>, <span class="string">'3000.00'</span>, <span class="number">30</span>),</span><br><span class="line">	(<span class="number">1003</span>, <span class="string">'林冲'</span>, <span class="number">3</span>, <span class="number">1006</span>, <span class="string">'2001-02-22'</span></span><br><span class="line">		, <span class="string">'12500.00'</span>, <span class="string">'5000.00'</span>, <span class="number">30</span>),</span><br><span class="line">	(<span class="number">1004</span>, <span class="string">'唐僧'</span>, <span class="number">2</span>, <span class="number">1009</span>, <span class="string">'2001-04-02'</span></span><br><span class="line">		, <span class="string">'29750.00'</span>, <span class="literal">NULL</span>, <span class="number">20</span>),</span><br><span class="line">	(<span class="number">1005</span>, <span class="string">'李逵'</span>, <span class="number">4</span>, <span class="number">1006</span>, <span class="string">'2001-09-28'</span></span><br><span class="line">		, <span class="string">'12500.00'</span>, <span class="string">'14000.00'</span>, <span class="number">30</span>),</span><br><span class="line">	(<span class="number">1006</span>, <span class="string">'宋江'</span>, <span class="number">2</span>, <span class="number">1009</span>, <span class="string">'2001-05-01'</span></span><br><span class="line">		, <span class="string">'28500.00'</span>, <span class="literal">NULL</span>, <span class="number">30</span>),</span><br><span class="line">	(<span class="number">1007</span>, <span class="string">'刘备'</span>, <span class="number">2</span>, <span class="number">1009</span>, <span class="string">'2001-09-01'</span></span><br><span class="line">		, <span class="string">'24500.00'</span>, <span class="literal">NULL</span>, <span class="number">10</span>),</span><br><span class="line">	(<span class="number">1008</span>, <span class="string">'猪八戒'</span>, <span class="number">4</span>, <span class="number">1004</span>, <span class="string">'2007-04-19'</span></span><br><span class="line">		, <span class="string">'30000.00'</span>, <span class="literal">NULL</span>, <span class="number">20</span>),</span><br><span class="line">	(<span class="number">1009</span>, <span class="string">'罗贯中'</span>, <span class="number">1</span>, <span class="literal">NULL</span>, <span class="string">'2001-11-17'</span></span><br><span class="line">		, <span class="string">'50000.00'</span>, <span class="literal">NULL</span>, <span class="number">10</span>),</span><br><span class="line">	(<span class="number">1010</span>, <span class="string">'吴用'</span>, <span class="number">3</span>, <span class="number">1006</span>, <span class="string">'2001-09-08'</span></span><br><span class="line">		, <span class="string">'15000.00'</span>, <span class="string">'0.00'</span>, <span class="number">30</span>),</span><br><span class="line">	(<span class="number">1011</span>, <span class="string">'沙僧'</span>, <span class="number">4</span>, <span class="number">1004</span>, <span class="string">'2007-05-23'</span></span><br><span class="line">		, <span class="string">'11000.00'</span>, <span class="literal">NULL</span>, <span class="number">20</span>),</span><br><span class="line">	(<span class="number">1012</span>, <span class="string">'李逵'</span>, <span class="number">4</span>, <span class="number">1006</span>, <span class="string">'2001-12-03'</span></span><br><span class="line">		, <span class="string">'9500.00'</span>, <span class="literal">NULL</span>, <span class="number">30</span>),</span><br><span class="line">	(<span class="number">1013</span>, <span class="string">'小白龙'</span>, <span class="number">4</span>, <span class="number">1004</span>, <span class="string">'2001-12-03'</span></span><br><span class="line">		, <span class="string">'30000.00'</span>, <span class="literal">NULL</span>, <span class="number">20</span>),</span><br><span class="line">	(<span class="number">1014</span>, <span class="string">'关羽'</span>, <span class="number">4</span>, <span class="number">1007</span>, <span class="string">'2002-01-23'</span></span><br><span class="line">		, <span class="string">'13000.00'</span>, <span class="literal">NULL</span>, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 工资等级表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> salary_grade (</span><br><span class="line">	grade <span class="built_in">INT</span> PRIMARY <span class="keyword">KEY</span>, <span class="comment">-- 级别</span></span><br><span class="line">	losalary <span class="built_in">INT</span>, <span class="comment">-- 最低工资</span></span><br><span class="line">	hisalary <span class="built_in">INT</span> <span class="comment">-- 最高工资</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">-- 添加5个工资等级</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> salarygrade (grade, losalary, hisalary)</span><br><span class="line"><span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">7000</span>, <span class="number">12000</span>),</span><br><span class="line">	(<span class="number">2</span>, <span class="number">12010</span>, <span class="number">14000</span>),</span><br><span class="line">	(<span class="number">3</span>, <span class="number">14010</span>, <span class="number">20000</span>),</span><br><span class="line">	(<span class="number">4</span>, <span class="number">20010</span>, <span class="number">30000</span>),</span><br><span class="line">	(<span class="number">5</span>, <span class="number">30010</span>, <span class="number">99990</span>);</span><br></pre></td></tr></table></figure>
+<p>创建成功后相应表以及数据为：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195150.png" alt="部门表dept" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195201.png" alt="职务表job" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195212.png" alt="员工表emp" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195225.png" alt="工资等级表salary_grade" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195235.png" alt="ER图表" /></p>
+<p>需求：</p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=527" target="_blank" rel="noopener">视频讲解</a></p>
+<h3 id="练习1"><a class="markdownIt-Anchor" href="#练习1"></a> 练习1</h3>
+<p>1.查询所有员工信息。（包括员工编号，员工姓名，工资，职务名称，职务描述）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 隐式内连接</span></span><br><span class="line"><span class="keyword">select</span> </span><br><span class="line">	emp.id,		<span class="comment">-- 员工编号</span></span><br><span class="line">	emp.ename,	<span class="comment">-- 员工姓名</span></span><br><span class="line">	emp.salary,	<span class="comment">-- 工资</span></span><br><span class="line">	job.jname,	<span class="comment">-- 职务名称</span></span><br><span class="line">	job.description	<span class="comment">-- 职务描述</span></span><br><span class="line"><span class="keyword">from</span> emp,job</span><br><span class="line"><span class="keyword">where</span> emp.job_id = job.id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195258.png" alt="" /></p>
+<h3 id="练习2"><a class="markdownIt-Anchor" href="#练习2"></a> 练习2</h3>
+<p>2.查询员工编号，员工姓名，工资，职务名称，职务描述，部门名称，部门位置</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 隐式内连接</span></span><br><span class="line"><span class="keyword">select</span> </span><br><span class="line">	emp.id,		<span class="comment">-- 员工编号</span></span><br><span class="line">	emp.ename,	<span class="comment">-- 员工姓名</span></span><br><span class="line">	emp.salary,	<span class="comment">-- 工资</span></span><br><span class="line">	job.jname,	<span class="comment">-- 职务名称</span></span><br><span class="line">	job.description,	<span class="comment">-- 职务描述</span></span><br><span class="line">	dept.dname,	<span class="comment">-- 部门名称</span></span><br><span class="line">	dept.loc	<span class="comment">-- 部门位置</span></span><br><span class="line"><span class="keyword">from</span> emp,job,dept</span><br><span class="line"><span class="keyword">where</span> emp.job_id = job.id <span class="keyword">and</span> emp.dept_id = dept.id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195309.png" alt="如果需要排序可以使用order by" /></p>
+<h3 id="练习3"><a class="markdownIt-Anchor" href="#练习3"></a> 练习3</h3>
+<p>3.查询员工姓名，工资，工资等级</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 隐式内连接</span></span><br><span class="line"><span class="keyword">select</span> </span><br><span class="line">	emp.ename,	<span class="comment">-- 员工姓名</span></span><br><span class="line">	emp.salary,	<span class="comment">-- 工资</span></span><br><span class="line">	salary_grade.grade	<span class="comment">-- 工资等级</span></span><br><span class="line"><span class="keyword">from</span> emp,salary_grade</span><br><span class="line"><span class="keyword">where</span> emp.salary <span class="keyword">between</span> salary_grade.losalary <span class="keyword">and</span> salary_grade.hisalary</span><br><span class="line"><span class="keyword">order</span> <span class="keyword">by</span> emp.salary <span class="keyword">desc</span>;	<span class="comment">-- 按工资降序排序</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195319.png" alt="" /></p>
+<h3 id="练习4"><a class="markdownIt-Anchor" href="#练习4"></a> 练习4</h3>
+<p>4.查询员工姓名，工资，职务名称，职务描述，部门名称，部门位置，工资等级</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 隐式内连接</span></span><br><span class="line"><span class="keyword">select</span> </span><br><span class="line">	emp.ename,	<span class="comment">-- 员工姓名</span></span><br><span class="line">	emp.salary,	<span class="comment">-- 工资</span></span><br><span class="line">	job.jname,	<span class="comment">-- 职务名称</span></span><br><span class="line">	job.description,	<span class="comment">-- 职务描述</span></span><br><span class="line">	dept.dname,	<span class="comment">-- 部门名称</span></span><br><span class="line">	dept.loc,	<span class="comment">-- 部门位置</span></span><br><span class="line">	salary_grade.grade	<span class="comment">-- 工资等级</span></span><br><span class="line"><span class="keyword">from</span> emp,salary_grade,job,dept</span><br><span class="line"><span class="keyword">where</span> (emp.salary <span class="keyword">between</span> salary_grade.losalary <span class="keyword">and</span> salary_grade.hisalary)</span><br><span class="line">		<span class="keyword">and</span> emp.job_id = job.id</span><br><span class="line">		<span class="keyword">and</span> emp.dept_id = dept.id</span><br><span class="line"><span class="keyword">order</span> <span class="keyword">by</span> emp.salary <span class="keyword">desc</span>;	<span class="comment">-- 按工资降序排序</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195330.png" alt="" /></p>
+<h3 id="练习5"><a class="markdownIt-Anchor" href="#练习5"></a> <mark>练习5</mark></h3>
+<p><strong>5.查询部门编号，部门名称，部门位置，部门人数</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 使用分组查询，按照emp.dept_id完成分组，查询count(id)求出部门人数</span></span><br><span class="line"><span class="comment">-- 使用子查询，将上述分组查询结果和dept表进行关联查询</span></span><br><span class="line"><span class="keyword">select</span></span><br><span class="line">	t1.id,	<span class="comment">-- 部门编号</span></span><br><span class="line">	t1.dname,	<span class="comment">-- 部门名称</span></span><br><span class="line">	t1.loc,		<span class="comment">-- 部门位置</span></span><br><span class="line">	t2.total	<span class="comment">-- 部门人数</span></span><br><span class="line"><span class="keyword">from</span></span><br><span class="line">	dept t1,</span><br><span class="line">	(<span class="keyword">select</span> emp.dept_id,<span class="keyword">count</span>(emp.id) <span class="keyword">as</span> total <span class="keyword">from</span> emp <span class="keyword">group</span> <span class="keyword">by</span> dept_id) t2</span><br><span class="line"><span class="keyword">where</span> t1.id = t2.dept_id;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220507195342.png" alt="" /></p>
+<h3 id="练习6"><a class="markdownIt-Anchor" href="#练习6"></a> <mark>练习6</mark></h3>
+<p><strong>6.查询所有员工的姓名及其直接上级的姓名，没有领导的员工也需要查询</strong></p>
+<p>（emp表中的mgr字段对应着员工的直接上级的id，即emp表的id和mgr是自关联）</p>
+<p><strong>因为没有领导的员工也需要查询所以可以使用左连接</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 即使是自关联同样需要两个表，使用关键字as(可省略)取别名来实现一表两用</span></span><br><span class="line"><span class="comment">-- 使用左连接</span></span><br><span class="line"><span class="keyword">select</span></span><br><span class="line">	t2.ename,	<span class="comment">-- 员工姓名</span></span><br><span class="line">	t1.ename leader	<span class="comment">-- 直接上级的姓名</span></span><br><span class="line"><span class="keyword">from</span> emp t2 <span class="keyword">left</span> <span class="keyword">outer</span> <span class="keyword">join</span> emp t1</span><br><span class="line"><span class="keyword">on</span> t1.id = t2.mgr</span><br><span class="line"><span class="keyword">order</span> <span class="keyword">by</span> t2.job_id <span class="keyword">desc</span>;		<span class="comment">-- 根据job_id进行降序排序</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220713181343.png" alt="" /></p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#内连接查询"><span class="toc-text"> 内连接查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#隐式内连接"><span class="toc-text"> 隐式内连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#显式内连接"><span class="toc-text"> 显式内连接</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#外连接查询"><span class="toc-text"> 外连接查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#左外连接"><span class="toc-text"> 左外连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#右外连接"><span class="toc-text"> 右外连接</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#子查询"><span class="toc-text"> 子查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#子查询分类"><span class="toc-text"> 子查询分类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#多表查询练习"><span class="toc-text"> 多表查询练习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#练习1"><span class="toc-text"> 练习1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习2"><span class="toc-text"> 练习2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习3"><span class="toc-text"> 练习3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习4"><span class="toc-text"> 练习4</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习5"><span class="toc-text"> 练习5</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#练习6"><span class="toc-text"> 练习6</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2022/08/15/SQL%E4%B9%8Bcount()%E7%B3%BB%E5%88%97/">
+            <span class="related-notes__meta">
+              <time datetime="2022-08-15T00:47:03.000Z">2022.08.15</time>
+              <span>#Database · #MySQL</span>
+            </span>
+            <strong>阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)?</strong>
+          </a>
+        
+          <a href="/2022/06/25/Gorm%20v2/">
+            <span class="related-notes__meta">
+              <time datetime="2022-06-25T00:47:03.000Z">2022.06.25</time>
+              <span>#Database · #MySQL</span>
+            </span>
+            <strong>GORM v2操作MySQL</strong>
+          </a>
+        
+          <a href="/2021/03/17/MySQL%EF%BC%88%E5%9B%9B%EF%BC%89/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-17T00:47:03.000Z">2021.03.17</time>
+              <span>#Database · #MySQL</span>
+            </span>
+            <strong>MySQL（四）</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/03/17/MySQL%EF%BC%88%E5%9B%9B%EF%BC%89/"><span>上一篇</span><strong>MySQL（四）</strong></a>
+    <a href="/2021/03/14/MySQL%EF%BC%88%E4%BA%8C%EF%BC%89/"><span>下一篇</span><strong>MySql（二）</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

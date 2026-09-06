@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>注解 · Quinn</title>
+<meta name="description" content="注解 定义：注解（Annotation），也叫元数据。一种代码级别的说明。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。它可以声明在包、类、字段、方法、局部变量、方法参数等的前面，用来对这些元素进行说明，注释。 …" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/01/23/%E6%B3%A8%E8%A7%A3/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="注解 · Quinn" />
+<meta property="og:description" content="注解 定义：注解（Annotation），也叫元数据。一种代码级别的说明。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。它可以声明在包、类、字段、方法、局部变量、方法参数等的前面，用来对这些元素进行说明，注释。 …" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/01/23/%E6%B3%A8%E8%A7%A3/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502103015.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220502103015.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        JavaSE · 2021.01.23
+      
+    </p>
+    <h1>注解</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“定义：注解（Annotation），也叫元数据。一种代码级别的说明。它是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。它可以声明在包、类、字段、方法、局部变量、方法参数等的前面，用来对这些元素进行说明，注释。 作用分类： ①编写文档：通过代码里标识的元数据生成文档【生成文档doc文档】 ② 代码分析：通过代码里标识的元数据对代码进行分析【使用反射】 ③编译检查：通过代码里标识的元数据让编译器能够实现基本的编译检查【Override】”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/JavaSE/">JavaSE</a>
+  
+  <span class="post-meta__item">6 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Java/">#Java</a>
+      
+        <a href="/tags/JavaSE/">#JavaSE</a>
+      
+        <a href="/tags/%E6%B3%A8%E8%A7%A3/">#注解</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+
+<ul>
+<li>注解：说明程序的（给计算机看）</li>
+<li>注释：用文字解释程序（给程序员看）</li>
+</ul>
+<p>使用注解：<code>@注解名称</code> （如<code>@Override</code>）</p>
+<h2 id="注释作用的分类"><a class="markdownIt-Anchor" href="#注释作用的分类"></a> 注释作用的分类</h2>
+<h3 id="编写文档"><a class="markdownIt-Anchor" href="#编写文档"></a> 编写文档</h3>
+<p>编写文档：通过代码里标识的元数据生成文档（生成文档doc文档）</p>
+<p>例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> demo04;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 注解Javadoc演示</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* <span class="doctag">@author</span> qing</span></span><br><span class="line"><span class="comment">* <span class="doctag">@version</span> 1.0</span></span><br><span class="line"><span class="comment">* <span class="doctag">@since</span> 1.5</span></span><br><span class="line"><span class="comment">* */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo01</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 计算两个整数之和</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> a</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> b</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a,<span class="keyword">int</span> b)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a+b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后在对应的文件目录下输入终端命令：<code>javadoc Demo01.java</code>，即可生成相关文档</p>
+<h3 id="代码分析"><a class="markdownIt-Anchor" href="#代码分析"></a> <mark>代码分析</mark></h3>
+<p><strong>代码分析：通过代码里标识的元数据对代码进行分析（使用反射）</strong></p>
+<p>（后续注解用的最多的还是这种）</p>
+<h3 id="编译检查"><a class="markdownIt-Anchor" href="#编译检查"></a> 编译检查</h3>
+<p>编译检查：通过代码里标识的元数据让编译器能够实现基本的编译检查（如<code>@Override</code>，可检查是否重写父类方法）</p>
+<h2 id="jdk中的预定义注解"><a class="markdownIt-Anchor" href="#jdk中的预定义注解"></a> JDK中的预定义注解</h2>
+<ul>
+<li>@Override					检测被该注解标注的方法是否是继承自父类（接口）的</li>
+<li>@Deprecated               该注解标注的内容，表示已过时</li>
+<li>@SuppressWarnings   压制警告（一般传递参数all  <code>@SuppressWarnings(&quot;all&quot;)</code>）</li>
+</ul>
+<p>例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> demo04;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SuppressWarnings</span>(<span class="string">"all"</span>)    <span class="comment">// 消除所有警告（warnings）</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo02</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.toString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">show1</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"该方法已过时"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">show2</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"新版本方法"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fun</span><span class="params">()</span></span>&#123;</span><br><span class="line">        show1();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="自定义注解"><a class="markdownIt-Anchor" href="#自定义注解"></a> 自定义注解</h2>
+<p>格式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">元注解</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> 注解名称&#123;</span><br><span class="line">    属性列表</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>元注解：用于描述注解的注解</strong></li>
+<li><strong>属性：接口中的抽象方法</strong></li>
+</ul>
+<p><strong>注解本质上就是一个接口</strong>，该接口默认继承Annotation接口（进过反编译（javap）之后，可看到：  <code>public interface MyAnno extends java.lang.annotation.Annotation</code>）</p>
+<p>(<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=471" target="_blank" rel="noopener">注解本质详细讲解</a>)</p>
+<h3 id="属性"><a class="markdownIt-Anchor" href="#属性"></a> 属性</h3>
+<p>（<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=472" target="_blank" rel="noopener">具体讲解</a>）</p>
+<p><strong>注解的属性：接口中的抽象方法</strong></p>
+<p><mark>要求</mark>：</p>
+<ol>
+<li>
+<p><strong>属性的返回类型只能是：基本数据类型，String，枚举，注解，以上类型的数组(如字符串数组)</strong></p>
+</li>
+<li>
+<p><strong>定义了属性，在使用时需要给属性赋值</strong></p>
+<ul>
+<li>如果定义属性时，使用default关键字给属性默认初始值，则使用注解时，可以不进行属性的赋值</li>
+<li>如果只有一个属性需要赋值，并且属性名称是value，则value可以省略，直接定义即可</li>
+<li>数组赋值时，值使用<code>{}</code>包裹。如果数组只有一个值，<code>{}</code>可以忽略</li>
+</ul>
+<p>例子：我们先创建自定义注释Myanno，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> demo04;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Myanno &#123;</span><br><span class="line">     <span class="function"><span class="keyword">int</span> <span class="title">age</span><span class="params">()</span></span>;    <span class="comment">// 定义一个抽象方法</span></span><br><span class="line">     <span class="function">String <span class="title">anme</span><span class="params">()</span> <span class="keyword">default</span> "jay"</span>;    <span class="comment">// 默认返回jay</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后创建Demo04.java，使用注解如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> demo04;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Myanno</span>(age = <span class="number">38</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo03</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="元注解"><a class="markdownIt-Anchor" href="#元注解"></a> 元注解</h3>
+<p>（<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=473" target="_blank" rel="noopener">详细讲解</a>）</p>
+<p><strong>元注解：用于描述注解的注解</strong></p>
+<p><mark>常用元注解</mark></p>
+<ul>
+<li><strong>@Target				 描述注解能够作用的位置</strong>
+<ul>
+<li>@Target只有一个属性：<code>ElementType[] value();</code>，取值为：
+<ul>
+<li>TYPE：可以作用于类上</li>
+<li>METHOD：可以作用于方法上</li>
+<li>FIELD：可以作用于成员变量上</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>@Retention          描述注解被保留的阶段</strong>
+<ul>
+<li>@Retention只有一个属性：<code>RetentionPolicy value();</code>，取值为
+<ul>
+<li>RUNTIME：当前被描述的注解，会保留到class字节码文件中，并被JVM读取到</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>@Documentd       描述注解是否被抽取到api文档中（若使用则表示抽取注解到api文档中）</strong></li>
+<li><strong>@Inherited            描述注解是否被子类继承（若使用则表示）</strong></li>
+</ul>
+<p>例子：我们创建Myanno2注解，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> demo04;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="comment">// @Target 描述注解能够作用的位置。ElementType取TYPE，表示Myanno2注解只能作用在类上</span></span><br><span class="line"><span class="meta">@Target</span>(value = &#123;ElementType.TYPE&#125;) <span class="comment">// 数组赋值时，值使用&#123;&#125;包裹。如果数组只有一个值，&#123;&#125;可以忽略</span></span><br><span class="line"><span class="meta">@Retention</span>(value = RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span>     <span class="comment">// 添加@Documented注解，Myanno2注解会被抽取到api文档中</span></span><br><span class="line"><span class="meta">@Inherited</span>      <span class="comment">// 添加@Inherite注解，表示Myanno2注解会被子类继承</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Myanno2 &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="注解的使用"><a class="markdownIt-Anchor" href="#注解的使用"></a> 注解的使用</h2>
+<p><strong>在程序中使用（解析）注解：获取注解定义的属性值</strong></p>
+<ol>
+<li>获取注解定义位置的对象（Class对象、Method对象、Field对象）</li>
+<li>获取指定的注解（如<code>getAnnotation(Pro.class)</code>）</li>
+<li>调用注解中的抽象方法获取配置的属性值</li>
+</ol>
+<p>在基于反射的那个<a href="https://www.qingbo1011.top/2021/01/22/%E5%8F%8D%E5%B0%84/#%E6%A1%88%E4%BE%8B">案例</a>中，我们可以使用注解来获取className和methodName。我们创建ReflectTest.java类，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> demo04;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Pro</span>(className = <span class="string">"domain.Person"</span>,methodName = <span class="string">"study"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReflectTest</span> </span>&#123;  <span class="comment">// 假定框架类</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException </span>&#123;</span><br><span class="line">        <span class="comment">// 解析注解</span></span><br><span class="line">        <span class="comment">// 1.获取类(ReflectTest类)的字节码文件对象</span></span><br><span class="line">        Class&lt;ReflectTest&gt; reflectTestClass = ReflectTest<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        <span class="comment">// 2.获取上边的注解对象</span></span><br><span class="line">        <span class="comment">// 在内存中生成了一个该注解接口的子类实现对象（当然重写了接口中的抽象方法，即className()和methodName()方法）</span></span><br><span class="line">        Pro annotation = reflectTestClass.getAnnotation(Pro<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        <span class="comment">// 3.调用注解对象中定义的抽象方法（属性），来获取返回值</span></span><br><span class="line">        String className = annotation.className();</span><br><span class="line">        String methodName = annotation.methodName();</span><br><span class="line"><span class="comment">//        System.out.println(className+"   "+methodName); // domain.Person   study</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取了className和methodName之后，步骤就和之前的一样了</span></span><br><span class="line">        <span class="comment">// 使用反射加载该类进内存</span></span><br><span class="line">        Class aClass = Class.forName(className);</span><br><span class="line">        <span class="comment">// 创建对象</span></span><br><span class="line">        Object obj = aClass.newInstance();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 执行方法</span></span><br><span class="line">        Method method = aClass.getMethod(methodName);   <span class="comment">// 获取方法对象</span></span><br><span class="line">        method.invoke(obj);     <span class="comment">// 执行方法</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中第2步，获取上边的注解对象，在内存中生成了一个该注解接口的子类实现对象（当然重写了接口中的抽象方法，即className()和methodName()方法）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Pro annotation = reflectTestClass.getAnnotation(Pro<span class="class">.<span class="keyword">class</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>这一步实际上可以这么理解，在内存中生成了这样一段代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProImpl</span> <span class="keyword">implements</span> <span class="title">Pro</span></span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">className</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"domain.Person"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">String <span class="title">methodName</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"study"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>我们第2步生成的annotation对象，实际上就是ProImpl类</strong></p>
+<p>（<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=474" target="_blank" rel="noopener">具体讲解</a>）</p>
+<h2 id="案例"><a class="markdownIt-Anchor" href="#案例"></a> 案例</h2>
+<p>（<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=475" target="_blank" rel="noopener">具体讲解</a>）</p>
+<p>小结：</p>
+<ol>
+<li><strong>以后大多数时候，我们会使用注解，而不是自定义注解</strong></li>
+<li>注解是给编译器和解析程序用的</li>
+<li>注解我们认为不是程序的一部分（可以理解成注解就是一个标签）（了解即可）</li>
+</ol>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#注释作用的分类"><span class="toc-text"> 注释作用的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#编写文档"><span class="toc-text"> 编写文档</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码分析"><span class="toc-text"> 代码分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#编译检查"><span class="toc-text"> 编译检查</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jdk中的预定义注解"><span class="toc-text"> JDK中的预定义注解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自定义注解"><span class="toc-text"> 自定义注解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#属性"><span class="toc-text"> 属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#元注解"><span class="toc-text"> 元注解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#注解的使用"><span class="toc-text"> 注解的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#案例"><span class="toc-text"> 案例</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/01/22/%E5%8F%8D%E5%B0%84/">
+            <span class="related-notes__meta">
+              <time datetime="2021-01-22T00:47:03.000Z">2021.01.22</time>
+              <span>#Java · #JavaSE</span>
+            </span>
+            <strong>反射</strong>
+          </a>
+        
+          <a href="/2021/01/21/Junit/">
+            <span class="related-notes__meta">
+              <time datetime="2021-01-21T00:47:03.000Z">2021.01.21</time>
+              <span>#Java · #JavaSE</span>
+            </span>
+            <strong>Junit测试</strong>
+          </a>
+        
+          <a href="/2021/11/26/LeetCode%E5%88%B7%E9%A2%98%E8%AE%B0%E5%BD%95/">
+            <span class="related-notes__meta">
+              <time datetime="2021-11-26T00:47:03.000Z">2021.11.26</time>
+              <span>#Java</span>
+            </span>
+            <strong>LeetCode刷题记录（Java）</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/01/24/Git%E4%BB%A3%E7%90%86/"><span>上一篇</span><strong>Git代理</strong></a>
+    <a href="/2021/01/22/%E5%8F%8D%E5%B0%84/"><span>下一篇</span><strong>反射</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

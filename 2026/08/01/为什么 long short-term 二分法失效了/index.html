@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读 · Quinn</title>
+<meta name="description" content="为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读 一个 Agent 的三种失忆 假想一个帮电商卖家做推广视频的 Agent：接自然语言指令，规划分镜，串起素材分析、图像生成、视频合成一堆工…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/08/01/%E4%B8%BA%E4%BB%80%E4%B9%88%20long%20short-term%20%E4%BA%8C%E5%88%86%E6%B3%95%E5%A4%B1%E6%95%88%E4%BA%86/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读 · Quinn" />
+<meta property="og:description" content="为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读 一个 Agent 的三种失忆 假想一个帮电商卖家做推广视频的 Agent：接自然语言指令，规划分镜，串起素材分析、图像生成、视频合成一堆工…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/08/01/%E4%B8%BA%E4%BB%80%E4%B9%88%20long%20short-term%20%E4%BA%8C%E5%88%86%E6%B3%95%E5%A4%B1%E6%95%88%E4%BA%86/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" />
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Memory · 2026.08.01
+      
+    </p>
+    <h1>为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Memory/">Memory</a>
+  
+  <span class="post-meta__item">21 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Memory/">#Memory</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">#论文阅读</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="一个-agent-的三种失忆"><a class="markdownIt-Anchor" href="#一个-agent-的三种失忆"></a> 一个 Agent 的三种失忆</h2>
+<p>假想一个帮电商卖家做推广视频的 Agent：接自然语言指令，规划分镜，串起素材分析、图像生成、视频合成一堆工具，最后交付成片。运营一段时间后，它会暴露三种完全不同的&quot;失忆&quot;。</p>
+<ol>
+<li>第一种，用户上周明确说过&quot;我的品牌调性偏冷，别用红色&quot;，这周开新会话做新品视频，Agent 满屏红色喜庆风。跨会话的用户事实丢了。</li>
+<li>第二种，一次长会话里改了六十多轮，第 5 轮确认过&quot;成片控制在 30 秒以内&quot;，到第 50 轮 Agent 交出一版 90 秒的。约束其实还在上下文里，只是沉在中段，压不住模型的生成惯性。会话内的任务状态失焦了。</li>
+<li>第三种最隐蔽：同类型的产品视频这个 Agent 已经做了几百单，第 300 单和第 1 单的做法一模一样。同样从零摸索，同样在&quot;先锁定产品主体还是先定背景风格&quot;上反复试错，同样踩中转场时长的坑。几百次执行历史，没有变成任何可复用的东西。</li>
+</ol>
+<p>遇到这类问题，工程上的第一反应通常是&quot;上一个记忆模块&quot;：选个向量数据库，把对话切块存进去，run 开始时按相似度捞 Top-K 塞进 prompt。这套做法对第一种失忆有缓解；对第二种基本无效，因为问题不在&quot;想不起来&quot;，在&quot;看见了但不起作用&quot;；对第三种完全不沾边，执行轨迹从来没被加工成过经验。</p>
+<p>再用传统的 long-term / short-term 框架来分析，也说不清这三种失忆的区别。第一种和第三种都算长期记忆，但一个存的是&quot;用户是谁&quot;，一个存的是&quot;任务怎么做&quot;，形态、写入方式、消费方式没有一处相同；第二种算短期记忆，可一个会话的任务状态完全可以存活几个月。时间长短回答不了真正的设计问题：记什么、存在哪、怎么活。</p>
+<p>这正是这篇综述的出发点。论文明确指出，long/short-term 这类传统分类已经不足以刻画当代 Agent Memory 系统的多样性，转而提出三个互补的视角：功能（Functions）回答记忆为什么存在，形式（Forms）回答记忆由什么承载，动态（Dynamics）回答记忆如何形成、演化和被取用。一个记忆设计，就是在这三个轴上的一组坐标。本文顺着这套坐标系走一遍，最后再回头看这三种失忆分别缺了哪一环。</p>
+<h2 id="先划边界四个概念各自优化什么"><a class="markdownIt-Anchor" href="#先划边界四个概念各自优化什么"></a> 先划边界：四个概念各自优化什么</h2>
+<p>聊 Agent Memory 之前得先解决一个更基础的混乱：这个词和 LLM Memory、RAG、上下文工程（Context Engineering）经常被混着用。论文用一张 Venn 图划了边界。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260811215529406.png" alt="图 1：Agent Memory 与 LLM Memory、RAG、Context Engineering 的概念关系（来源：arXiv:2512.13564, Figure 2）" /></p>
+<p>这张图不是严格的集合论划分，四个圆有大量交集，图上列的系统也只是代表性例子。看它的正确姿势是看四个概念各自的优化目标：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>核心问题</th>
+<th>典型手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM Memory</td>
+<td>模型内部如何随序列变长保持信息</td>
+<td>长上下文架构、KV 管理、Mamba/RWKV 这类结构改造</td>
+</tr>
+<tr>
+<td>RAG</td>
+<td>如何从外部知识源找回与当前问题相关的信息</td>
+<td>索引、向量检索、重排</td>
+</tr>
+<tr>
+<td>Context Engineering</td>
+<td>这一次推理该给模型看什么</td>
+<td>压缩、选择、组装上下文</td>
+</tr>
+<tr>
+<td>Agent Memory</td>
+<td>如何维护一个跨时间持续演化、参与决策的认知状态</td>
+<td>形成、演化、检索的完整生命周期</td>
+</tr>
+</tbody>
+</table>
+<p>论文对三组关系各有一个值得记住的判断。</p>
+<ol>
+<li>Agent Memory 和 LLM Memory：前者几乎完全吞并了后者的历史地盘。2023 年那批自称&quot;LLM 记忆机制&quot;的工作（MemoryBank、MemGPT），用今天的术语看做的就是 Agent Memory：跟踪用户偏好、维护对话状态、跨轮积累经验。真正留在 LLM Memory 范畴的，是那些直接改模型内部机制的工作，比如 KV cache 管理和长上下文架构，它们扩展的是模型的表示容量，不是给一个决策主体配备可演化的记忆库。</li>
+<li>Agent Memory 和 RAG：经典 RAG 检索的是相对固定的外部知识源，目标是让生成有据可依；Agent Memory 的库来自 Agent 自己的交互和行动，随交互持续生长。这条边界正在变模糊（HippoRAG 同时被两个社区认领），论文给出的实用判别是看任务域：在 HotpotQA 这类单次知识问答上评测的偏 RAG，在 LoCoMo、LongMemEval、GAIA、SWE-bench 这类要求持续多轮交互和时间依赖的任务上评测的偏 Agent Memory。</li>
+<li>Agent Memory 和 Context Engineering：一个是认知建模范式，管理 Agent 知道什么、经历过什么；一个是资源管理范式，把上下文窗口当稀缺资源调度。两者在工作记忆的实现上大量共用技术（滚动摘要既是缓冲区管理策略，也是临时情景记忆），但从上下文工程的视角看，记忆只是上下文组装函数里的一个变量；从 Agent 的视角看，上下文工程是保证认知连续性不超物理限制的实现层。</li>
+</ol>
+<p>对工程师来说，这一节可以压缩成一条判别规则：判断一个系统是不是在做 Memory，不看它用了什么组件，看信息之后如何存在和被使用。把固定文档切块、embedding、按查询取 Top-K 塞 prompt，这是 RAG；当系统开始从交互中形成新记忆、处理新旧冲突、决定遗忘什么，才进入 Memory 的领地。向量数据库只是基础设施，它出现在哪个环节，决定了它服务于谁。</p>
+<h2 id="一张地图functions-forms-dynamics"><a class="markdownIt-Anchor" href="#一张地图functions-forms-dynamics"></a> 一张地图：Functions、Forms、Dynamics</h2>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260811215418959.png" alt="图 2：论文把近两年的记忆研究放进同一个坐标系（来源：arXiv:2512.13564, Figure 1）" /></p>
+<p>这张全景图初看密集，读法其实简单：底边是三种 Forms（Token-level、Parametric、Latent），斜向是三类 Functions（Factual、Experiential、Working），散布其中的系统名不用记，重点是任何一个系统都能在这两个轴上找到自己的位置，而贯穿运行过程的 Dynamics 是第三个轴。</p>
+<p>论文第 2 节用几条公式把 Agent 和记忆的耦合关系形式化了。抛开符号细节，可以归成两条链。</p>
+<p>读取与决策链：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>o</mi><mi>t</mi></msub><mo>=</mo><mi>O</mi><mo stretchy="false">(</mo><msub><mi>s</mi><mi>t</mi></msub><mo separator="true">,</mo><msub><mi>h</mi><mi>t</mi></msub><mo separator="true">,</mo><mi>Q</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"/><msub><mi>m</mi><mi>t</mi></msub><mo>=</mo><mi>R</mi><mo stretchy="false">(</mo><msub><mi>M</mi><mi>t</mi></msub><mo separator="true">,</mo><msub><mi>o</mi><mi>t</mi></msub><mo separator="true">,</mo><mi>Q</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"/><msub><mi>a</mi><mi>t</mi></msub><mo>=</mo><mi>π</mi><mo stretchy="false">(</mo><msub><mi>o</mi><mi>t</mi></msub><mo separator="true">,</mo><msub><mi>m</mi><mi>t</mi></msub><mo separator="true">,</mo><mi>Q</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">o_t = O(s_t, h_t, Q), \qquad m_t = R(M_t, o_t, Q), \qquad a_t = \pi(o_t, m_t, Q)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">o</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">h</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">Q</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:2em;"></span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.00773em;">R</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">o</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">Q</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:2em;"></span><span class="mord"><span class="mord mathdefault">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">π</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">o</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">Q</span><span class="mclose">)</span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>o</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">o_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">o</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是 Agent 此刻观察到的环境和历史，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>M</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">M_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是完整记忆状态，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>m</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">m_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是本次决策实际取出的记忆信号，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>Q</mi></mrow><annotation encoding="application/x-tex">Q</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">Q</span></span></span></span> 是任务描述，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>a</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">a_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是最终动作。观察和记忆被拆成两个输入：现在看到什么，和从过去想起什么，来源不同，也应该分开设计。</p>
+<p>写入与演化链：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>M</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mrow><mi>f</mi><mi>o</mi><mi>r</mi><mi>m</mi></mrow></msubsup><mo>=</mo><mi>F</mi><mo stretchy="false">(</mo><msub><mi>M</mi><mi>t</mi></msub><mo separator="true">,</mo><msub><mi>ϕ</mi><mi>t</mi></msub><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"/><msub><mi>M</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>E</mi><mo stretchy="false">(</mo><msubsup><mi>M</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mrow><mi>f</mi><mi>o</mi><mi>r</mi><mi>m</mi></mrow></msubsup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">M^{form}_{t+1} = F(M_t, \phi_t), \qquad M_{t+1} = E(M^{form}_{t+1})
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.291655em;vertical-align:-0.324639em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9670159999999999em;"><span style="top:-2.433692em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.1809080000000005em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight" style="margin-right:0.02778em;">r</span><span class="mord mathdefault mtight">m</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.324639em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">ϕ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace" style="margin-right:2em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.291655em;vertical-align:-0.324639em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9670159999999999em;"><span style="top:-2.433692em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.1809080000000005em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight" style="margin-right:0.02778em;">r</span><span class="mord mathdefault mtight">m</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.324639em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ϕ</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">\phi_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault">ϕ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是本步产生的新材料（用户指令、工具结果、执行反馈）。上标 form 是 formation 的标记，不是数学运算：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>M</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mrow><mi>f</mi><mi>o</mi><mi>r</mi><mi>m</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">M^{form}_{t+1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.291655em;vertical-align:-0.324639em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9670159999999999em;"><span style="top:-2.433692em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.1809080000000005em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight" style="margin-right:0.02778em;">r</span><span class="mord mathdefault mtight">m</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.324639em;"><span></span></span></span></span></span></span></span></span></span> 表示刚由 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span></span></span></span> 形成、尚未整合进库的候选态记忆；<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span></span></span> 再把候选整合进已有记忆库，才得到正式的 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>M</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">M_{t+1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.891661em;vertical-align:-0.208331em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span></span></span></span>。形成和整合拆成两步，提取事实和解决冲突就不会混在同一个 prompt 里。</p>
+<p>这套形式化里藏着论文对 long/short-term 二分法最直接的否定：三个算子 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span></span></span></span>、<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span></span></span>、<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>R</mi></mrow><annotation encoding="application/x-tex">R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.00773em;">R</span></span></span></span> 不必在每个时间步都被调用，有的系统只在任务开始时检索一次，有的持续检索；有的只在任务边界写入，有的边跑边写。所谓长期记忆、短期记忆，是这些算子不同调用节奏涌现出来的现象，不是两个需要分开建造的架构模块。换句话说，<strong>long/short-term 是结果的描述</strong>，<strong>Functions、Forms、Dynamics 才是设计的输入</strong>。</p>
+<h2 id="functionsagent-为什么需要记忆"><a class="markdownIt-Anchor" href="#functionsagent-为什么需要记忆"></a> Functions：Agent 为什么需要记忆</h2>
+<p>功能视角问的是最根本的问题：这段记忆存在，是为了让 Agent 获得什么能力？论文分出三类，恰好和开头的三种失忆一一对应：</p>
+<ol>
+<li>Factual Memory 缺位：跨会话忘事实</li>
+<li>Working Memory 缺位：会话内失焦</li>
+<li>Experiential Memory 缺位：经验不积累</li>
+</ol>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260811215838585.png" alt="图 3：Agent Memory 的功能分类（来源：arXiv:2512.13564, Figure 6）" /></p>
+<h3 id="factual-memoryagent-知道什么"><a class="markdownIt-Anchor" href="#factual-memoryagent-知道什么"></a> Factual Memory：Agent 知道什么</h3>
+<p>事实记忆（Factual Memory）保存可明确陈述的事实，让 Agent 表现出一致性（不自相矛盾）、连贯性（能接住历史）和适应性（越用越贴合这个用户）。论文按事实指向的实体分成两类。</p>
+<ol>
+<li>用户事实（user factual memory）覆盖身份、稳定偏好、任务约束和历史承诺。这里有个容易踩的作用域陷阱：用户在一次任务里说&quot;背景改成科技感&quot;，这首先是当前任务的事实，不足以推出这个用户长期偏爱科技感。只有跨任务反复出现、来源可靠、当前仍有效的信息，才配升级成长期用户事实。</li>
+<li>环境事实（environment factual memory）描述用户之外的世界：文档当前版本、某个资源是否可用、其他 Agent 具备什么能力。它的主要敌人是时效，同一条信息昨天为真今天可能已失效，所以来源、有效期和版本往往和内容本身同样重要。多智能体协作里的共享黑板、共享消息池，论文也归在这一类。</li>
+</ol>
+<p>值得一提的是论文对认知科学的借用方式：人类陈述性记忆分情景记忆（episodic，带时间地点的亲历事件）和语义记忆（semantic，脱离获取场景的一般知识），而工程系统里这不是两个柜子，是一条加工流水线。系统先把对话轮次、用户操作记成情景痕迹，再通过摘要、反思、实体抽取逐步提炼成语义事实库。原始日志和事实条目的关系是原料和成品，不是两种并列的存储。</p>
+<h3 id="working-memoryagent-当前在处理什么"><a class="markdownIt-Anchor" href="#working-memoryagent-当前在处理什么"></a> Working Memory：Agent 当前在处理什么</h3>
+<p>工作记忆（Working Memory）管的是单个任务或会话内的活跃状态。论文这里的立场比较锋利：上下文窗口本质上是个被动的只读缓冲区，模型能消费里面的内容，但缺少主动选择、维持、改写当前工作区的机制，而认知科学意义上的工作记忆恰恰是一个容量受限、被主动控制的系统。所以工作记忆不等于&quot;上下文够长&quot;，它是一组把被动缓冲区改造成可控工作区的机制。</p>
+<ol>
+<li>单轮场景（single-turn）处理一次推理面对的巨量输入：长文档、长视频、高维观察。手段分两路，输入压缩（input condensation）直接砍 token（LLMLingua 按困惑度删词，Gist 把长 prompt 压成几个特殊 token），观察抽象（observation abstraction）把原始观察改写成结构化状态（把 HTML DOM 树重写成任务相关的状态摘要，把视频流转成时间线事件描述）。</li>
+<li>多轮场景（multi-turn）维护随交互演进的任务状态，这正是开头第二种失忆的处理办法。三种机制递进：
+<ol>
+<li>状态整合（state consolidation）把无限增长的轨迹滚动折叠进固定预算的状态（MemAgent、ReSum，不少已经用 RL 训练摘要策略）；</li>
+<li>分层折叠（hierarchical folding）按子目标组织，活跃子任务保留细节，完成的折叠成摘要（HiAgent、Context-Folding）；</li>
+<li>认知规划（cognitive planning）更进一步，让工作区里放的不是历史摘要而是一份向前看的计划或世界表示，比如用 3D 场景图当可查询的环境记忆（SayPlan）。</li>
+</ol>
+</li>
+</ol>
+<p>一个工程上常见的混淆：thread、session、run 是工程作用域，Working Memory 是功能。一个 thread 的状态可以存活几个月，但它承担的仍是工作记忆功能；一个 run 内的 KV cache 转瞬即逝，也属于工作记忆。不能拿工程对象直接对号入座功能分类。</p>
+<h3 id="experiential-memoryagent-如何变得更强"><a class="markdownIt-Anchor" href="#experiential-memoryagent-如何变得更强"></a> Experiential Memory：Agent 如何变得更强</h3>
+<p>经验记忆（Experiential Memory）是三类里工程界认知最薄弱的一块，也是我认为这篇综述对从业者最有价值的一章。多数团队说&quot;我们做了记忆&quot;，指的都是用户偏好持久化，也就是 Factual 的一个子集；而 Agent 区别于 Chatbot 的地方恰恰在于它执行任务，执行就会产生轨迹、成败和教训，这些东西的归宿就是经验记忆。论文把它和&quot;经验时代&quot;（era of experience）的叙事直接挂钩：经验记忆是不改参数就能持续学习的路径。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260812210924177.png" alt="图 4：Experiential Memory 按抽象层级分类（来源：arXiv:2512.13564, Figure 7）" /></p>
+<p>按抽象程度从低到高分四类：</p>
+<ol>
+<li>案例记忆（case-based）保留最少加工的完整记录：轨迹、问题、解法。保真度最高，可以直接回放、模仿、当 few-shot 示例。视频 Agent 可以保存一次成功复刻广告片的完整输入、工具调用序列、结果和用户评价，下次遇到相似需求整案取用。</li>
+<li>策略记忆（strategy-based）从多个案例里蒸馏出可迁移的做事方法，形态包括原子洞察（insight，“这类任务先做 X 会失败”）、工作流（workflow，动作序列骨架）和推理模式（pattern，可实例化的解题模板）。十次成功任务如果共同表明&quot;先锁定产品外观，再改背景风格，最后生成镜头运动&quot;，这条原则就不再绑定任何一单。代表工作如 AWM 从成功轨迹里归纳可复用工作流，ReasoningBank 把成败都抽象成推理单元。</li>
+<li>技能记忆（skill-based）把经验封装成可调用、可验证、可组合的执行体：代码片段、函数、API、MCP 工具。判据有三条，Agent 能调用、结果能验证、能和其他技能组合。策略指导规划，技能直接执行，这是两者的分界。</li>
+<li>混合记忆（hybrid）同时维护以上多层表示，并且存在自动升级路径：反复成功的案例逐渐被编译成技能，从&quot;重检索&quot;过渡到&quot;快执行&quot;（G-Memory、Memp）。</li>
+</ol>
+<p><strong>把对话日志和执行轨迹存进数据库，得到的只是历史记录；经过反思、归纳或训练之后，它才成为经验。</strong></p>
+<blockquote>
+<p>存储不等于学习，这是第三种失忆的病理。</p>
+</blockquote>
+<h2 id="forms同一个用途三种载体"><a class="markdownIt-Anchor" href="#forms同一个用途三种载体"></a> Forms：同一个用途，三种载体</h2>
+<p>形式视角问的是：记忆物理上存在哪里？论文按存储位置分三种，它们不是又一套长短期分类，而是三种可以并存的载体。</p>
+<ol>
+<li>
+<p>Token-level Memory 把信息保存在模型参数之外，形成离散、可寻址、可检查、可修改的单元。这里的 token 是广义表示单元：对话块、JSON 档案、事实三元组、经验轨迹、代码，甚至离散化的多模态单元。论文按单元之间的拓扑复杂度再分三层：</p>
+<ol>
+<li>Flat（1D）没有显式关系，就是列表、集合、对话流水；</li>
+<li>Planar（2D）在单层内建立结构，图、树、表都算；</li>
+<li>Hierarchical（3D）跨多个抽象层级互联，比如原始对话层、事件摘要层、长期知识层三层贯通（GraphRAG 的社区分层、Zep 的时序知识图谱）。</li>
+</ol>
+<p>Token-level 透明、可审计、即插即用，代价是规模膨胀后的检索噪声和过期条目。</p>
+</li>
+<li>
+<p>Parametric Memory 把知识写进参数，读取隐含在前向计算里。</p>
+<ul>
+<li>内部参数化（internal）直接改基础模型权重，从预训练注入到 ROME/MEMIT 这类定点知识编辑都算；</li>
+<li>外部参数化（external）把记忆放进增量参数，Adapter、LoRA、外挂小模型。</li>
+</ul>
+<p>LoRA 算记忆吗？算，它用一组新增参数承载了可泛化的行为，属于 External Parametric；向量库里的记录不算 Parametric，它们靠显式检索进上下文，是 Token-level。参数化记忆适合把大量经验固化成稳定能力，代价是更新要训练、难以定点删除、有灾难性遗忘风险。</p>
+</li>
+<li>
+<p>Latent Memory 活在隐藏状态、KV cache、连续向量或可演化的 memory slot 里，人不可读，但表示紧凑、天然适合多模态融合。论文按潜在状态的来源分三种构造方式：</p>
+<ol>
+<li>Generate 由专门模块生成新潜在表示（把长文档压成几个 summary vector）；</li>
+<li>Reuse 直接复用先前计算的激活，典型就是 KV cache 复用；</li>
+<li>Transform 把已有潜在状态裁剪、聚合、压缩成新表示（SnapKV、H2O 这类 KV 压缩）。</li>
+</ol>
+<p>KV cache 算什么？它由文本 token 产生，但模型后续消费的是内部 key/value 状态，人无法直接编辑其语义，所以是 Latent，不是 Token-level。</p>
+</li>
+</ol>
+<p>三种载体的工程权衡可以压成一张表：</p>
+<table>
+<thead>
+<tr>
+<th>Form</th>
+<th>更新方式</th>
+<th>主要风险</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Token-level</td>
+<td>增删改查显式记录</td>
+<td>库变脏：过期、冲突、噪声召回</td>
+<td>高频更新、需审计追溯、高风险领域</td>
+</tr>
+<tr>
+<td>Parametric</td>
+<td>训练、模型编辑、Adapter</td>
+<td>改坏已有能力，难精确删除</td>
+<td>大量经验固化为稳定能力、风格与角色</td>
+</tr>
+<tr>
+<td>Latent</td>
+<td>推理中生成/继承/变换内部状态</td>
+<td>不可解释，压缩丢关键信息</td>
+<td>多模态、端侧部署、性能敏感场景</td>
+</tr>
+</tbody>
+</table>
+<p>论文特意强调选型不只是技术决策：选哪种 Form，隐含表达了设计者希望这段信息以什么方式改变 Agent 的行为。真实系统几乎必然三者混用，用户偏好放 Token-level，训练成型的规划能力放 Parametric，视觉表示和 KV cache 走 Latent。</p>
+<h2 id="dynamics记忆是活的"><a class="markdownIt-Anchor" href="#dynamics记忆是活的"></a> Dynamics：记忆是活的</h2>
+<p>前两个视角是静态的：为什么记、存在哪。动态视角回答的是记忆系统凭什么区别于一个数据库：它会自己形成、演化、并在恰当的时机被取用。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260812101800119.png" alt="图 5：Formation、Evolution、Retrieval 构成闭环（来源：arXiv:2512.13564, Figure 8）" /></p>
+<p>这张图值得多看一分钟：左侧 Formation 把原始交互变成记忆单元，下方 Evolution 把新单元整合进已有库，右侧 Retrieval 在任务中取回信息，Agent 的行动和环境反馈又产生新材料，回到左侧。<strong>记忆不是一个终点站，是一条循环。</strong></p>
+<h3 id="formation什么值得变成记忆"><a class="markdownIt-Anchor" href="#formation什么值得变成记忆"></a> Formation：什么值得变成记忆</h3>
+<p>形成环节把原始上下文编码成紧凑知识，论文整理出五类操作。</p>
+<ol>
+<li>
+<p>语义摘要（semantic summarization）保留全局脉络，回答&quot;整体发生了什么&quot;，实现上分增量式（新块不断融进现有摘要，Mem0、MemAgent，后者已用 RL 优化摘要策略）和分区式（按天、按话题切开分别摘要，MemoryBank）。</p>
+</li>
+<li>
+<p>知识蒸馏（knowledge distillation）提取面向未来的认知资产，可以蒸事实（把对话变成用户意图、把第一人称视频变成物品位置），也可以蒸经验（从成功轨迹提炼规划原则、从失败对比里提取反思洞察）。</p>
+<p>摘要和蒸馏的区别不在输入在输出目标，同一份市场调研报告，语义摘要产出&quot;这份报告讲了什么&quot;，知识蒸馏产出&quot;核心受众是 6 到 9 岁儿童&quot;这样的事实和&quot;前五秒必须出现主角&quot;这样的可执行策略。</p>
+</li>
+<li>
+<p>结构化构建（structured construction）把无定形信息组织成图或树（实体级抽三元组建知识图谱，块级聚类建层次树，RAPTOR、MemTree）。</p>
+</li>
+<li>
+<p>潜在表示（latent representation）直接编码成向量或 KV 状态。</p>
+</li>
+<li>
+<p>参数内化（parametric internalization）通过训练或模型编辑写进权重，又分知识内化（记住事实）和能力内化（学会做法）。</p>
+</li>
+</ol>
+<p>五类操作对应五种 Forms 的入口，共同点是选择性：Formation 的本质是判断什么信息有未来效用，而不是把所有消息原样落库。</p>
+<h3 id="evolution整合-冲突与遗忘"><a class="markdownIt-Anchor" href="#evolution整合-冲突与遗忘"></a> Evolution：整合、冲突与遗忘</h3>
+<p>新记忆进库不是 append 就完事，论文把演化拆成三个机制。</p>
+<ol>
+<li>巩固（consolidation）把相关记忆合并成更一般的知识，粒度从局部（高相似条目两两合并）、聚类（把一簇记忆融成更高阶单元）到全局（维护一份随交互演进的全局画像或原则库）。巩固的风险是过度平滑，把罕见但重要的例外事件抹掉了。</li>
+<li>更新（updating）处理新旧冲突。论文梳理的演进路径本身就是一部工程史：早期系统让 LLM 检测冲突后直接替换删除（MemGPT、Mem0），破坏了历史连续性；Zep 改成带时间戳的软失效，冲突事实标记 invalid 而不物理删除；MOOM、LightMem 引入双阶段更新，在线软更新保响应，离线反思批量合并解冲突；到 Mem-α 干脆把&quot;何时更新、如何更新、要不要更新&quot;整个建成 RL 策略学习问题。核心矛盾是稳定性与可塑性的两难：<strong>什么时候该覆盖旧知识，什么时候该把新信息当噪声。</strong></li>
+<li>遗忘（forgetting）清理过时和冗余。三种依据：基于时间（创建时间衰减）、基于频率（LRU/LFU 淘汰低访问条目）、基于重要性（综合时间、频率和语义价值打分）。论文点破了单用频率策略的坑：LRU 会误删很少被访问但决策关键的长尾知识，访问少只说明不常用，不说明不重要。所以存储成本不敏感时，很多系统选择软遗忘（降权、归档）而非物理删除。</li>
+</ol>
+<h3 id="retrieval远不止向量-top-k"><a class="markdownIt-Anchor" href="#retrieval远不止向量-top-k"></a> Retrieval：远不止向量 Top-K</h3>
+<p>检索环节论文拆成四个阶段，这个拆法对工程评审特别好用。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260812220728444.png" alt="图 6：Memory Retrieval 的四阶段分类（来源：arXiv:2512.13564, Figure 10）" /></p>
+<ol>
+<li>时机与意图（timing &amp; intent）：什么时候检索、查哪个库。每个 run 开始固定读一次是 always-on，是所有策略里最保守的一种；MemGPT 让模型自己决定何时调检索函数；ComoRAG 先快答再自评，不够了才触发深检索。论文提醒了一个对称风险：自主时机省了开销，但 Agent 高估自己知道的东西而漏检索时，系统会进入静默失败，缺口直接变成幻觉。</li>
+<li>查询构造（query construction）：把当前需求翻译成检索信号。复杂问题拆成子查询（decomposition），或者改写查询乃至生成假设性答案拿去检索（rewriting，HyDE 是代表）。</li>
+<li>检索策略（strategies）：词法（BM25，精确匹配强）、语义（embedding，模糊泛化强）、图检索（沿关系边和时间约束走多跳）、以及组合多路信号的混合检索。对&quot;当前项目最近一次确认的口播文案&quot;这种字段明确的查询，元数据过滤加时间排序可能比向量相似度可靠得多。</li>
+<li>检索后处理（post-retrieval）：重排、过滤、聚合、压缩。普通 Top-K 只保证语义相似，不保证当前有效，作用域、状态、有效期、冲突关系都应该在装入 prompt 之前处理掉。</li>
+</ol>
+<p>拿一条虚构指令走一遍全流程：用户说&quot;沿用上次广告的口播结尾，但背景改成科技感&quot;。时机与意图阶段识别出&quot;上次的口播结尾&quot;是跨会话指代，需要查项目历史，而&quot;科技感&quot;是本轮新指令，不需要检索；查询构造阶段拼出&quot;当前项目 + 口播结尾 + 已确认 + 当前有效&quot;，字段明确，不必额外调一次 LLM；策略阶段用元数据过滤加时间排序，必要时补语义召回；后处理阶段丢掉待确认的、已被替代的和其他项目的条目，只把唯一有效的那条放进上下文。四个阶段各有各的失败方式，向量召回率只覆盖了其中一段。</p>
+<h2 id="用这套坐标系读四个真实系统"><a class="markdownIt-Anchor" href="#用这套坐标系读四个真实系统"></a> 用这套坐标系读四个真实系统</h2>
+<p>框架的价值要在使用中检验。拿四个公开系统各标一组坐标，可以看到&quot;都叫 Memory&quot;的系统之间差异有多大。</p>
+<ul>
+<li>Mem0 是目前最流行的开源记忆框架之一，主打对话记忆。坐标：Function 上几乎纯 Factual（从对话里抽用户事实和摘要）；Form 上 Token-level Flat，图变体 Mem0g 升级到 Planar；Dynamics 上有完整的 Formation（LLM 抽取）和 Updating（ADD/UPDATE/DELETE 判定），检索是查询驱动的语义召回。读出的空白：不碰经验，不管任务内状态，检索时机固定。</li>
+<li>MemGPT（现在的 Letta）用操作系统隐喻组织记忆：主上下文相当于内存，外部存储相当于磁盘，模型自己调用分页函数决定什么信息换入换出。坐标：Factual 加 Working；Token-level 分层结构；Dynamics 上最大的贡献在检索时机，它是自主检索（agent 决定何时读写）的早期标杆。空白同样是 Experiential。</li>
+<li>Claude Code 的 <a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a> 与记忆目录是个反差样本：没有向量库，没有 embedding，纯 Markdown 文件。坐标：Factual 为主（项目约定、环境事实）加少量 Experiential（踩坑教训以&quot;以后要怎么做&quot;的形式沉淀）；Form 是 Token-level Flat；Dynamics 上 Formation 和 Evolution 由人和 Agent 共同编辑，检索是 always-on 全量注入，不做相似度筛选。它证明了 Dynamics 设计到位时，最朴素的 Form 也能工作，前提是记忆规模被刻意约束在全量注入放得下的范围。</li>
+<li>Voyager 是 Minecraft 里的自我演化 Agent，核心是一个技能库：探索成功的行为被固化成可执行代码，按任务语义索引，新任务先检索可复用技能再组合改进。坐标：Function 是纯 Experiential 的 Skill 级；Form 是 Token-level（代码就是广义 token）；Dynamics 上 Formation（轨迹到代码）和 Consolidation（技能迭代精化）是主角。空白：完全不管用户是谁。</li>
+</ul>
+<p>四个系统两两之间几乎没有坐标重叠，Mem0 和 Voyager 甚至没有一个轴取值相同。这就是三维坐标系的实用价值：它把&quot;我们要不要用 X 做记忆&quot;这种问题，换成了&quot;我们缺的是哪个 Function、打算用什么 Form 承载、生命周期哪几环要自己建&quot;。选型讨论的颗粒度会立刻不一样。</p>
+<h2 id="评测recallk-之外的盲区"><a class="markdownIt-Anchor" href="#评测recallk-之外的盲区"></a> 评测：Recall@K 之外的盲区</h2>
+<p>论文第 6 节整理了几十个 benchmark 和二十多个开源框架，资源表本身不必复述，有两个判断值得带走。</p>
+<p>一是 benchmark 分两类：直接评记忆的（LoCoMo、LongMemEval 评长对话记忆，PrefEval 评偏好保持，HaluMem 专测记忆幻觉）可以控制&quot;正确记忆是什么&quot;，从而分别观察形成、演化、检索各环节；而 WebArena、SWE-bench、GAIA 这类通用 Agent 任务里记忆只是隐含能力，任务成功无法归因到记忆机制。二是开源框架清单适合当选型入口，不适合排名，多数框架没有公开评测，公开的也不在统一 benchmark 上。</p>
+<p>在论文之外补一个我自己的工程视角：记忆系统的指标应该分三层看。记忆操作层（提取准确率、冲突判定、错误召回率）、Agent 行为层（约束保持率、同一错误的复发率、跨会话任务完成率）、资源层（延迟、token、存储和额外 LLM 调用）。只盯 Recall@K 会漏掉一个关键风险：召回对了，Agent 可能根本没用它，或者用错了。检索命中和行为改变之间还隔着一整段因果链，这段链条目前没有任何现成指标覆盖。</p>
+<h2 id="前沿记忆正在从组件变成可学习的策略"><a class="markdownIt-Anchor" href="#前沿记忆正在从组件变成可学习的策略"></a> 前沿：记忆正在从组件变成可学习的策略</h2>
+<p>论文第 7 节用八个小节讨论前沿，每节按&quot;回望加展望&quot;组织。很多解读会把这部分一笔带过，我的看法相反：前面五节整理的是已经发生的共识，这一节押注的是正在发生的转向，是全文信息密度最高的部分。下面按我自己的关注权重展开，检索与生成、自动管理、多模态、多智能体先走，RL 和世界模型放在最后详谈，它们是我认定值得长期投入的两条线。</p>
+<h3 id="从检索到生成"><a class="markdownIt-Anchor" href="#从检索到生成"></a> 从检索到生成</h3>
+<p>检索范式的隐含假设是记忆库已经建好，问题只剩查得准不准。生成范式质疑的正是这个假设：存下来的东西往往嘈杂、冗余、和当前任务错位，与其检索后原样拼接，不如让 Agent 按需合成记忆表示。已有工作走两条路：先检索再重构，检索结果只当原材料，重新整合成面向当前任务的紧凑表示（ComoRAG、G-Memory）；直接生成，跳过显式检索，从当前上下文和潜在状态直接产出记忆 token（MemGen）。</p>
+<p>论文给未来的生成式记忆开了三个条件：</p>
+<ol>
+<li>上下文自适应：按任务和阶段调整记忆的粒度、抽象层级和语义重点，而不是存一份通用摘要。</li>
+<li>跨异构信号整合：把文本、代码、工具输出、环境反馈融成统一表示，论文认为 Latent Memory 是这条路的天然载体。</li>
+<li>可学习、自优化：何时生成、生成什么，由 RL 或长程任务表现来学，记忆生成从此成为 Agent 策略的一部分，与推理决策共同演化。代价同样清楚：可追溯性变差、可能凭空生成、额外算力。</li>
+</ol>
+<h3 id="从手工规则到自动管理"><a class="markdownIt-Anchor" href="#从手工规则到自动管理"></a> 从手工规则到自动管理</h3>
+<p>今天的记忆系统大多由固定阈值、chunk 策略和人写 prompt 驱动。论文点破了一个扎心的现象：很多系统里 LLM 参与记忆管理的样子看起来很 agentic，底层却完全是 prompt 驱动，模型从没为记忆控制受过任何训练。</p>
+<p>论文给出两个演进方向。其一，把记忆操作做成显式工具调用放进 Agent 的决策回路：add、update、delete、retrieve 都由 Agent 自己推理触发，它清楚地知道自己执行了什么记忆动作，而不是被一套旁路流水线代管。我特别认同这条路背后的哲学：<strong>该检索什么，应该由当前推理上下文判断，而不是只由用户 query 判断</strong>；run 开始时读一次然后一成不变，等于把这个判断写死在了工程里。其二，自组织的记忆结构：让记忆库自己动态链接、索引、重构，减少对人工设计 schema 的依赖。</p>
+<h3 id="多模态记忆"><a class="markdownIt-Anchor" href="#多模态记忆"></a> 多模态记忆</h3>
+<p>现有工作分两个互补方向。一是让多模态 Agent 存取感知记忆：视觉最成熟，已支撑视觉定位、时间跟踪、长期场景一致性这类任务；音频和其他模态明显欠开发。二是把记忆当成生成模型的赋能组件：在图像视频生成里维持实体一致性、跨帧世界状态和长程连贯，记忆充当把当前生成锚定在已生成内容上的稳定结构。做内容生成的读者不妨盯住第二个方向，它离产品最近。</p>
+<p>论文的判断是目前不存在真正全模态（omnimodal）的记忆系统，多数方法要么单模态要么松耦合；统一表示、语义对齐、时间连贯三件事同时做到，还是未解的题。顺带一个有意思的信号：DeepSeek-OCR 用光学二维映射压缩长上下文，提示压缩未必要发生在文本空间。</p>
+<h3 id="多智能体共享记忆"><a class="markdownIt-Anchor" href="#多智能体共享记忆"></a> 多智能体共享记忆</h3>
+<p>演化路径三段。早期是各 Agent 私有记忆加显式消息传递，冗余、上下文碎片化、通信开销随团队规模上涨。然后是集中式共享：全局向量库、黑板系统、共享文档（MetaGPT 的消息池），换来了联合注意力和去重，也带来新问题：记忆混乱、写入争用、没有按角色和权限的访问控制。论文预期的下一步是 agent-aware 的共享记忆，读写行为按角色、专长和信任度调节；再往后是基于学习的贡献策略，何时贡献、贡献什么、如何贡献，由长期团队表现来学。</p>
+<h3 id="rl-与记忆一场双向的融合"><a class="markdownIt-Anchor" href="#rl-与记忆一场双向的融合"></a> RL 与记忆：一场双向的融合</h3>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260811104714384.png" alt="图 7：RL-enabled 记忆系统的演化谱系（来源：arXiv:2512.13564, Figure 11）" /></p>
+<p>先拆开三个容易混成一团的概念：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>核心问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Memory for RL</td>
+<td>部分可观测环境下，如何用历史构造出足以决策的状态表示（belief state）</td>
+</tr>
+<tr>
+<td>RL for Memory</td>
+<td>如何用任务收益优化记忆管理本身：何时写、何时读、何时更新、何时遗忘</td>
+</tr>
+<tr>
+<td>World Model 的记忆</td>
+<td>如何维护对环境隐状态及其转移规律的内部估计（见下一小节）</td>
+</tr>
+</tbody>
+</table>
+<p>论文按 RL 介入程度给出一条谱系：</p>
+<ol>
+<li>RL-free：启发式加 prompt 驱动，MemGPT、Mem0、MemoBase 都在这档，也是当下工程实践的绝对主流。</li>
+<li>RL-assisted：RL 接管流水线的某一环，最早是 RMM 用策略梯度训练检索后的重排器，随后 Mem-α 把整个记忆构建交给 RL 训练的 agent，Memory-R1 训练记忆管理器；增长最快的一支在工作记忆上，Context-Folding、Memory-as-Action、MemSearcher、IterResearch 都用 RL 学习超长任务里何时折叠、压缩、重建上下文。</li>
+<li>Fully RL-driven：连记忆架构本身都由优化过程涌现，目前还是设想。</li>
+</ol>
+<p>这里要拆一个高频混淆：采用 MDP 语言描述系统，不等于用了 RL。IterResearch 是最好的例子，它每轮丢弃完整历史、把重要发现综合进一份固定预算的演进报告，这是&quot;战略性遗忘&quot;的状态表示设计，论文作者自己也报告了纯 prompting 就能跑；真正属于 RL 的是它配套的训练方法，用折扣奖励鼓励更短更有效的搜索轨迹。判断标准只有一条：有没有奖励信号在学策略。</p>
+<p>论文为 fully RL-driven 阶段提出的两个特性，我认为是整个第 7 节最激进也最值得琢磨的判断。第一，摆脱人类先验：现有框架大量继承认知科学的类比，海马体结构、episodic/semantic/core 的预定义分层，这些抽象帮助了早期研究，但对人工 Agent 未必是最优结构，完全 RL 驱动的设定允许 Agent 从优化动力学中长出新的记忆组织方式，而不是从人类直觉里继承。第二，全生命周期控制：现有 RL-assisted 方法都只干预一小段，Mem-α 管写入但检索仍是手工流水线，MemSearcher 只管工作记忆不管长期巩固；<strong>让 Agent 以集成方式自主处理形成、演化、检索的全部环节，几乎必然要求端到端 RL</strong>，因为启发式方法协调不了这些组件在长时程下的复杂交互。</p>
+<p>就我自己而言，RL 与 Memory 的交叉是我从 Agent 工程走向算法研究的路径选择，所以多说两句工程师怎么上这条船。正确的打开方式不是直接端到端 RL，而是一条阶梯：先给手工记忆流水线建立评测基线，跨任务约束保持率、错误写入率、陈旧召回率、任务成功率、token 和延迟成本，没有基线就没有可靠的 reward；然后用历史日志做监督学习，训练&quot;这条记忆值不值得写&quot;&quot;这条召回有没有帮到任务&quot;这类局部判断；再把单次记忆选择建成 contextual bandit，动作空间就是 retrieve、write、update、skip、forget，奖励是任务收益减去 token 成本、延迟和错误记忆惩罚各自的加权；最后才是多步 RL。每一级都踩在已有工程系统上，手工流水线不是要被推翻的旧物，它是 baseline，也是 reward 的来源。</p>
+<h3 id="世界模型的记忆从记住到维持一个世界"><a class="markdownIt-Anchor" href="#世界模型的记忆从记住到维持一个世界"></a> 世界模型的记忆：从&quot;记住&quot;到&quot;维持一个世界&quot;</h3>
+<p>世界模型（World Model）的目标是构建一个能高保真模拟环境的内部系统，它和传统视频生成的本质区别在于交互方式：不是一次生成固定长度的片段，<strong>而是迭代运行，每一步接收动作、预测下一状态、给出持续反馈。在这个迭代框架里，记忆是基石：下一片段的生成必须与之前的场景布局、对象属性、运动逻辑长期一致，而这些信息全部来自历史。</strong></p>
+<p>我习惯用 MDP 的语言来理解这件事，它能把&quot;世界模型为什么需要记忆&quot;说得非常干净。理想的马尔可夫决策过程要求 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>s</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>∣</mo><msub><mi>s</mi><mi>t</mi></msub><mo separator="true">,</mo><msub><mi>a</mi><mi>t</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">P(s_{t+1} \mid s_t, a_t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>：当前状态加当前动作足以预测下一状态，不需要回头看历史。但模型实际拿到的从来不是状态，是观察。摄像头转向另一边之后，杯子还在不在桌上？单看当前帧不可能知道。观察不等于状态，这正是 POMDP（部分可观测马尔可夫决策过程）的设定。于是记忆的理论目标可以一句话说清：<strong>把历史观察和动作压缩成一个近似充分的马尔可夫状态，使得&quot;给定这个状态，预测未来不再需要重看历史&quot;。</strong></p>
+<p>顺着这个视角还能回答一个常见质疑：模型足够强了，记忆是不是就没用了？不是，有三个消不掉的理由。其一，信息不在当前输入里，再强的模型也不能凭空恢复已经离开视野的东西；其二，就算把十小时历史全部塞进上下文理论上可行，计算成本和注意力预算也不允许，记忆本质上是状态压缩器；其三，长程一致性需要锚点，没有记忆的自回归生成会让桌子的位置慢慢漂移、人物的衣服悄悄变化。</p>
+<p>技术演化也确实沿着&quot;状态表示越来越结构化&quot;的方向走：早期是帧采样，条件在少数历史帧上，细节丢失导致上下文碎片化和感知漂移；然后是滑动窗口，把 attention sink、局部 KV cache 这些 LLM 技术搬过来，解决了算力却把记忆锁死在窗口内，物体一出窗就被遗忘，闭环（loop closure）这类任务直接做不了。到 2025 年末，领域转向三条结构化路径：</p>
+<ol>
+<li>状态空间模型用 Mamba 式骨干把无限历史压进固定大小的递归状态，常数推理成本换理论无限的记忆容量；</li>
+<li>显式记忆库维护历史表示的外部存储支持精确回溯，UniWM 用分层设计分离短期感知和长期历史，WorldMem 和 Context-as-Memory 用几何检索（视场重叠）动态选帧来保 3D 场景一致；</li>
+<li>稀疏记忆与检索在两者之间取平衡，Genie Envisioner、Ctrl-World 注入稀疏采样的历史帧或位姿条件上下文来锚定预测。</li>
+</ol>
+<p>论文把这场转变概括为从数据缓存（被动保留）到状态模拟（主动维护），并给出两个正在成型的范式：双系统架构，系统一用 SSM 这类高效骨干处理即时物理和流畅交互，系统二用大规模 VLM 或显式记忆库处理复杂推理、规划和世界一致性；主动记忆管理，把记忆从盲存最近历史的固定缓冲区，改造成按任务相关性主动策划、总结、丢弃信息的认知工作区，实证上已经显著优于静态检索。</p>
+<p>最后点破一层关系：世界模型的记忆和&quot;记住用户偏好&quot;不是一回事，前者维护的是世界的隐状态和动态规律，后者维护的是知识和经验。但放回论文的坐标系，它们又是同一个问题的两端：都是跨时间的状态管理，只是被管理的&quot;状态&quot;一个是世界，一个是认知。这也是我看好这条线的原因，它把 Memory 研究和具身智能的底层需求直接焊在了一起。</p>
+<h3 id="可信记忆与人类认知两块压舱石"><a class="markdownIt-Anchor" href="#可信记忆与人类认知两块压舱石"></a> 可信记忆与人类认知：两块压舱石</h3>
+<p>可信记忆。长期记忆比 RAG 更容易沉淀用户特定、持久且敏感的内容，已有工作演示了通过间接 prompt 攻击从记忆模块泄露隐私。论文把可信性拆成三个支柱：隐私保护（分级权限、用户可治理的保留策略、可验证遗忘）、可解释性（记忆的访问路径可追踪，能回答&quot;哪条记忆影响了这次生成&quot;甚至&quot;没有这条记忆会怎样&quot;）、幻觉鲁棒性（冲突检测、低置信时弃答）。远期图景是操作系统式的记忆抽象：分段、版本控制、可审计、由 Agent 和用户共同治理。这些需求在架构初期不考虑，后期几乎补不上。</p>
+<p>人类认知连接。论文的观察是：结构上，工程系统已经和认知科学趋同，有限上下文加外部大容量存储对应多存储记忆模型，交互日志、世界知识、技能代码对应情景、语义、程序性记忆的三分；但动态上存在根本分歧，人类记忆是建构过程，大脑按当前认知状态主动重构过去，而 Agent 依赖逐字检索，把记忆当成不可变 token 的仓库。由此论文给出一个很有画面感的预测：下一代系统需要类似睡眠的离线巩固机制，在脱离交互的窗口里做记忆重组、生成式回放和主动遗忘，把庞大的情景流周期性地压缩成高效的&quot;参数化直觉&quot;。</p>
+<h3 id="收束八个方向一个趋势"><a class="markdownIt-Anchor" href="#收束八个方向一个趋势"></a> 收束：八个方向，一个趋势</h3>
+<p>检索让位于生成、手工规则让位于自动管理、启发式流水线让位于 RL 策略、文本扩展到全模态、单 Agent 扩展到多 Agent 共享、记录历史升级为维持世界、可信从附加项变成前提、逐字回放走向建构式重构。八个方向合起来指向同一个趋势：Memory 管理正在从固定规则的外围组件，变成 Agent 可学习、可优化的策略本身。</p>
+<p>对我自己，这一节最终凝练成一个研究问题，也是 RL 和具身两条兴趣线的交汇点：在部分可观测的具身环境中，能否通过 RL 学习主动记忆策略，让 Agent 在固定记忆预算下决定保存、更新、检索和遗忘哪些多模态状态，从而提高长程任务成功率与世界一致性。这不是一个马上能开工的项目，但它是一条成立的研究路线，前面 RL 小节里那条阶梯的每一级，都在朝它走。</p>
+<h2 id="回到三种失忆"><a class="markdownIt-Anchor" href="#回到三种失忆"></a> 回到三种失忆</h2>
+<p>现在可以给开头的三种失忆各开一张坐标系诊断书。</p>
+<ol>
+<li>跨会话忘偏好，缺的是 Factual（user）× Token-level × Formation + Updating + 检索注入。这是三种失忆里最好治的，也是市面上工具最密集的地方，Mem0 们解决的就是它。</li>
+<li>长对话失焦，病灶根本不在存储，在 Working Memory × Dynamics：约束&quot;在上下文里&quot;和约束&quot;参与本步决策&quot;是两回事，需要的是状态整合、分层折叠这类主动的工作区管理机制，加一个确定性的约束校验，而不是更大的向量库。</li>
+<li>经验不积累，缺的是整个 Experiential 功能族：轨迹要被蒸馏成案例，案例要被巩固成策略，策略要被封装成技能。这条加工链的每一环都是 Formation 和 Consolidation 的工作，没有任何一环会因为&quot;日志都存着呢&quot;而自动发生。</li>
+</ol>
+<p>三张诊断书用的是同一套语言，这就是这篇综述的价值：它没有发明任何新算法，但它给了从业者一套坐标系，让&quot;我们的 Agent 需要什么样的记忆&quot;从一句感觉，变成三个轴上可以逐项检查、逐项验证的设计决策。Memory 的目标从来不是存下更多，而是让 Agent 跨时间保持并改变自身的状态。向量数据库、长上下文、LoRA、KV cache 都可能参与其中，但任何单一组件都替代不了在 Functions、Forms、Dynamics 三个维度上的完整回答。</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li>Hu, Y. et al. (2025). <em>Memory in the Age of AI Agents: A Survey. Forms, Functions and Dynamics</em>. <a href="https://arxiv.org/abs/2512.13564" target="_blank" rel="noopener">arXiv:2512.13564</a></li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一个-agent-的三种失忆"><span class="toc-text"> 一个 Agent 的三种失忆</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#先划边界四个概念各自优化什么"><span class="toc-text"> 先划边界：四个概念各自优化什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一张地图functions-forms-dynamics"><span class="toc-text"> 一张地图：Functions、Forms、Dynamics</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#functionsagent-为什么需要记忆"><span class="toc-text"> Functions：Agent 为什么需要记忆</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#factual-memoryagent-知道什么"><span class="toc-text"> Factual Memory：Agent 知道什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#working-memoryagent-当前在处理什么"><span class="toc-text"> Working Memory：Agent 当前在处理什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#experiential-memoryagent-如何变得更强"><span class="toc-text"> Experiential Memory：Agent 如何变得更强</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#forms同一个用途三种载体"><span class="toc-text"> Forms：同一个用途，三种载体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dynamics记忆是活的"><span class="toc-text"> Dynamics：记忆是活的</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#formation什么值得变成记忆"><span class="toc-text"> Formation：什么值得变成记忆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#evolution整合-冲突与遗忘"><span class="toc-text"> Evolution：整合、冲突与遗忘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#retrieval远不止向量-top-k"><span class="toc-text"> Retrieval：远不止向量 Top-K</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#用这套坐标系读四个真实系统"><span class="toc-text"> 用这套坐标系读四个真实系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#评测recallk-之外的盲区"><span class="toc-text"> 评测：Recall@K 之外的盲区</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#前沿记忆正在从组件变成可学习的策略"><span class="toc-text"> 前沿：记忆正在从组件变成可学习的策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#从检索到生成"><span class="toc-text"> 从检索到生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#从手工规则到自动管理"><span class="toc-text"> 从手工规则到自动管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多模态记忆"><span class="toc-text"> 多模态记忆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多智能体共享记忆"><span class="toc-text"> 多智能体共享记忆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rl-与记忆一场双向的融合"><span class="toc-text"> RL 与记忆：一场双向的融合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#世界模型的记忆从记住到维持一个世界"><span class="toc-text"> 世界模型的记忆：从&quot;记住&quot;到&quot;维持一个世界&quot;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#可信记忆与人类认知两块压舱石"><span class="toc-text"> 可信记忆与人类认知：两块压舱石</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#收束八个方向一个趋势"><span class="toc-text"> 收束：八个方向，一个趋势</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#回到三种失忆"><span class="toc-text"> 回到三种失忆</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text"> 参考</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-02T04:00:00.000Z">2026.08.02</time>
+              <span>#Agent · #Memory · #论文阅读</span>
+            </span>
+            <strong>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读</strong>
+          </a>
+        
+          <a href="/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-30T04:40:50.000Z">2026.08.30</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测</strong>
+          </a>
+        
+          <a href="/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-04T09:23:38.000Z">2026.08.04</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/"><span>上一篇</span><strong>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读</strong></a>
+    <a href="/2026/05/09/chapter-09-engineering-patterns/"><span>下一篇</span><strong>第九章：工程实践——值得学习的设计模式</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

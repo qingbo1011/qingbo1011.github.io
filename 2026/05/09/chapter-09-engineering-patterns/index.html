@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>第九章：工程实践——值得学习的设计模式 · Quinn</title>
+<meta name="description" content="第九章：工程实践——值得学习的设计模式 “好的代码不仅正确，还能让读它的人学到东西。” 9.1 快速路径分发（Fast Path Dispatch） 设计目标 CLI 工具对启动速度极其敏感。用户敲 claude --version 不应该…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/05/09/chapter-09-engineering-patterns/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="第九章：工程实践——值得学习的设计模式 · Quinn" />
+<meta property="og:description" content="第九章：工程实践——值得学习的设计模式 “好的代码不仅正确，还能让读它的人学到东西。” 9.1 快速路径分发（Fast Path Dispatch） 设计目标 CLI 工具对启动速度极其敏感。用户敲 claude --version 不应该…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/05/09/chapter-09-engineering-patterns/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Claude Code 源码学习 · 09 / 09
+      
+    </p>
+    <h1>第九章：工程实践——值得学习的设计模式</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“好的代码不仅正确，还能让读它的人学到东西。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/AI%E5%BA%94%E7%94%A8/">AI应用</a>
+  
+  <span class="post-meta__item">34 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Claude-Code/">#Claude Code</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="91-快速路径分发fast-path-dispatch"><a class="markdownIt-Anchor" href="#91-快速路径分发fast-path-dispatch"></a> 9.1 快速路径分发（Fast Path Dispatch）</h2>
+<h3 id="设计目标"><a class="markdownIt-Anchor" href="#设计目标"></a> 设计目标</h3>
+<p>CLI 工具对启动速度极其敏感。用户敲 <code>claude --version</code> 不应该等待 50 万行代码加载完毕。快速路径分发的核心思想是：<strong>为轻量请求提供捷径，避免加载重量模块</strong>。</p>
+<h3 id="实现机制"><a class="markdownIt-Anchor" href="#实现机制"></a> 实现机制</h3>
+<p><code>src/entrypoints/cli.tsx</code> 的设计原则是：<strong>所有 import 都是动态的（<code>await import()</code>），没有任何静态导入重模块</strong>。</p>
+<div class="mermaid">
+flowchart TD
+    Entry["cli.tsx 入口<br/>（零静态导入）"] --> CheckArgs{"检查 process.argv"}
+    
+    CheckArgs -->|"--version"| FastPath1["直接输出 MACRO.VERSION<br/>零模块加载，毫秒返回"]
+    CheckArgs -->|"--daemon-worker"| FastPath2["仅加载 workerRegistry.js"]
+    CheckArgs -->|"--dump-system-prompt"| FastPath3["仅加载 config + model + prompts"]
+    CheckArgs -->|"bridge/remote-control"| FastPath4["仅加载 auth + bridge"]
+    CheckArgs -->|"daemon"| FastPath5["仅加载 config + sinks + daemon"]
+    CheckArgs -->|"ps/logs/attach/kill"| FastPath6["仅加载 config + bg.js"]
+    CheckArgs -->|"无匹配"| FullLoad["加载完整 main.tsx<br/>（~135ms）"]
+    
+    style FastPath1 fill:#e8f5e9
+    style FullLoad fill:#fff3e0
+</div>
+<h3 id="关键代码"><a class="markdownIt-Anchor" href="#关键代码"></a> 关键代码</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Bootstrap entrypoint - checks for special flags before loading the full CLI.</span></span><br><span class="line"><span class="comment"> * All imports are dynamic to minimize module evaluation for fast paths.</span></span><br><span class="line"><span class="comment"> * Fast-path for --version has zero imports beyond this file.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 最快路径：零动态导入，直接返回</span></span><br><span class="line"><span class="keyword">if</span> (args.length === <span class="number">1</span> &amp;&amp; (args[<span class="number">0</span>] === <span class="string">'--version'</span> || args[<span class="number">0</span>] === <span class="string">'-v'</span>)) &#123;</span><br><span class="line">  <span class="comment">// MACRO.VERSION 在构建时内联</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;MACRO.VERSION&#125;</span> (Claude Code)`</span>)</span><br><span class="line">  <span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 次级快速路径：仅加载最小模块集</span></span><br><span class="line"><span class="keyword">if</span> (args[<span class="number">0</span>] === <span class="string">'--daemon-worker'</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; startWorker &#125; = <span class="keyword">await</span> <span class="keyword">import</span>(<span class="string">'../daemon/workerRegistry.js'</span>)</span><br><span class="line">  <span class="keyword">await</span> startWorker(args.slice(<span class="number">1</span>))</span><br><span class="line">  <span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ... 其他快速路径 ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 全功能路径（仅在无匹配时才触发）</span></span><br><span class="line"><span class="keyword">const</span> &#123; startCapturingEarlyInput &#125; = <span class="keyword">await</span> <span class="keyword">import</span>(<span class="string">'../utils/earlyInput.js'</span>)</span><br><span class="line">startCapturingEarlyInput()</span><br><span class="line"><span class="keyword">const</span> &#123; main: cliMain &#125; = <span class="keyword">await</span> <span class="keyword">import</span>(<span class="string">'../main.js'</span>)</span><br><span class="line"><span class="keyword">await</span> cliMain()</span><br></pre></td></tr></table></figure>
+<h3 id="设计原则"><a class="markdownIt-Anchor" href="#设计原则"></a> 设计原则</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>零静态导入</strong></td>
+<td>入口文件不 <code>import</code> 任何重模块，全部用 <code>await import()</code></td>
+</tr>
+<tr>
+<td><strong>分层拦截</strong></td>
+<td>最快的路径（<code>--version</code>）最先检查，逐步递进</td>
+</tr>
+<tr>
+<td><strong>最小依赖</strong></td>
+<td>每个快速路径只加载该路径必需的模块</td>
+</tr>
+<tr>
+<td><strong>延迟加载</strong></td>
+<td>只有确认需要完整功能时才加载主模块</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="92-并行预取parallel-prefetch"><a class="markdownIt-Anchor" href="#92-并行预取parallel-prefetch"></a> 9.2 并行预取（Parallel Prefetch）</h2>
+<h3 id="设计目标-2"><a class="markdownIt-Anchor" href="#设计目标-2"></a> 设计目标</h3>
+<p>即使需要加载完整功能，也可以通过<strong>将 I/O 等待与 CPU 计算重叠</strong>来优化启动时间。并行预取的核心思想是：<strong>尽早发起 I/O，在其完成之前做其他有用的事</strong>。</p>
+<h3 id="三阶段并行策略"><a class="markdownIt-Anchor" href="#三阶段并行策略"></a> 三阶段并行策略</h3>
+<div class="mermaid">
+sequenceDiagram
+    participant Main as main.tsx 模块求值
+    participant MDM as MDM 子进程
+    participant KC as Keychain 子进程
+    participant Import as 180+ import 语句
+    participant Init as init() 初始化
+    participant Prefetch as 延迟预取
+
+    Note over Main: Phase 1: 模块求值时启动子进程
+    Main->>MDM: startMdmRawRead()（plutil/reg query）
+    Main->>KC: startKeychainPrefetch()（security 命令）
+    Main->>Import: 开始执行 180+ import 语句（~135ms）
+    
+    Note over MDM,Import: 子进程与 import 并行执行
+    MDM-->>MDM: 执行中（~65ms）
+    KC-->>KC: 执行中（~65ms）
+    
+    Note over Main: Phase 2: preAction Hook 等待结果
+    Import-->>Main: import 完成
+    Main->>MDM: await ensureMdmSettingsLoaded()
+    MDM-->>Main: 已完成（几乎零等待）
+    Main->>KC: await ensureKeychainPrefetchCompleted()
+    KC-->>Main: 已完成（几乎零等待）
+    Main->>Init: await init()
+    
+    Note over Main: Phase 3: REPL 就绪后延迟预取
+    Init-->>Main: 初始化完成
+    Main->>Prefetch: startDeferredPrefetches()
+    Prefetch->>Prefetch: initUser() / getUserContext()
+    Prefetch->>Prefetch: prefetchSystemContext()
+    Prefetch->>Prefetch: prefetchAwsCredentials()
+    Prefetch->>Prefetch: refreshModelCapabilities()
+</div>
+<h3 id="关键代码-2"><a class="markdownIt-Anchor" href="#关键代码-2"></a> 关键代码</h3>
+<p><strong>Phase 1：模块求值时火速启动子进程</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main.tsx 顶部 —— 在所有 import 之前！</span></span><br><span class="line"><span class="keyword">import</span> &#123; profileCheckpoint &#125; <span class="keyword">from</span> <span class="string">'./utils/startupProfiler.js'</span></span><br><span class="line">profileCheckpoint(<span class="string">'main_tsx_entry'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; startMdmRawRead &#125; <span class="keyword">from</span> <span class="string">'./utils/settings/mdm/rawRead.js'</span></span><br><span class="line">startMdmRawRead()  <span class="comment">// 启动 plutil 子进程（macOS）或 reg query（Windows）</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; startKeychainPrefetch &#125; <span class="keyword">from</span> <span class="string">'./utils/secureStorage/keychainPrefetch.js'</span></span><br><span class="line">startKeychainPrefetch()  <span class="comment">// 启动两个 security find-generic-password 子进程</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 接下来是 180+ 个 import 语句（~135ms CPU 时间）</span></span><br><span class="line"><span class="comment">// 此时子进程已在后台并行执行...</span></span><br></pre></td></tr></table></figure>
+<p><strong>Keychain 预取的并行实现</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">startKeychainPrefetch</span>(<span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (process.platform !== <span class="string">'darwin'</span> || prefetchPromise || isBareMode()) <span class="keyword">return</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 同时启动两个 keychain 读取（OAuth + Legacy）</span></span><br><span class="line">  <span class="keyword">const</span> oauthSpawn = spawnSecurity(getMacOsKeychainStorageServiceName(CREDENTIALS_SERVICE_SUFFIX))</span><br><span class="line">  <span class="keyword">const</span> legacySpawn = spawnSecurity(getMacOsKeychainStorageServiceName())</span><br><span class="line">  </span><br><span class="line">  prefetchPromise = <span class="built_in">Promise</span>.all([oauthSpawn, legacySpawn]).then(<span class="function">(<span class="params">[oauth, legacy]</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!oauth.timedOut) primeKeychainCacheFromPrefetch(oauth.stdout)</span><br><span class="line">    <span class="keyword">if</span> (!legacy.timedOut) legacyApiKeyPrefetch = &#123; stdout: legacy.stdout &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Phase 2：在需要时等待（几乎零等待）</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">program.hook(<span class="string">'preAction'</span>, <span class="keyword">async</span> thisCommand =&gt; &#123;</span><br><span class="line">  <span class="comment">// 子进程在 import 期间已完成，这里几乎不阻塞</span></span><br><span class="line">  <span class="keyword">await</span> <span class="built_in">Promise</span>.all([ensureMdmSettingsLoaded(), ensureKeychainPrefetchCompleted()])</span><br><span class="line">  <span class="keyword">await</span> init()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><strong>Phase 3：REPL 就绪后的延迟预取</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">startDeferredPrefetches</span>(<span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 这些预取在用户开始输入时后台执行</span></span><br><span class="line">  <span class="built_in">void</span> initUser()                              <span class="comment">// 用户信息</span></span><br><span class="line">  <span class="built_in">void</span> getUserContext()                        <span class="comment">// 用户上下文</span></span><br><span class="line">  <span class="built_in">void</span> prefetchSystemContextIfSafe()           <span class="comment">// 系统上下文</span></span><br><span class="line">  <span class="built_in">void</span> prefetchAwsCredentialsAndBedRockInfo()  <span class="comment">// AWS 凭证</span></span><br><span class="line">  <span class="built_in">void</span> countFilesRoundedRg(getCwd(), AbortSignal.timeout(<span class="number">3000</span>), [])  <span class="comment">// 文件计数</span></span><br><span class="line">  <span class="built_in">void</span> refreshModelCapabilities()              <span class="comment">// 模型能力</span></span><br><span class="line">  <span class="built_in">void</span> settingsChangeDetector.initialize()     <span class="comment">// 设置监听</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="时间线可视化"><a class="markdownIt-Anchor" href="#时间线可视化"></a> 时间线可视化</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">时间轴 ────────────────────────────────────────────────────→</span><br><span class="line"></span><br><span class="line">Phase 1 (模块求值):</span><br><span class="line">  ├─ MDM 子进程 ─────── (~65ms) ─┐</span><br><span class="line">  ├─ Keychain 子进程 ── (~65ms) ─┤  ← 与 import 并行</span><br><span class="line">  └─ 180+ import 语句 ─ (~135ms) ┘</span><br><span class="line"></span><br><span class="line">Phase 2 (Commander preAction):</span><br><span class="line">  ├─ await MDM ─── (0ms，已完成)</span><br><span class="line">  ├─ await KC ──── (0ms，已完成)</span><br><span class="line">  └─ init() ────── (~50ms)</span><br><span class="line"></span><br><span class="line">Phase 3 (用户输入时):</span><br><span class="line">  ├─ initUser() ──── 后台</span><br><span class="line">  ├─ prefetchAWS() ─ 后台</span><br><span class="line">  └─ ... 其他预取 ── 后台</span><br><span class="line">                          ↓</span><br><span class="line">                   用户可以开始输入</span><br><span class="line">                   （首次 API 调用时预取已完成）</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="93-异步生成器实现流式处理asyncgenerator-pipeline"><a class="markdownIt-Anchor" href="#93-异步生成器实现流式处理asyncgenerator-pipeline"></a> 9.3 异步生成器实现流式处理（AsyncGenerator Pipeline）</h2>
+<h3 id="设计目标-3"><a class="markdownIt-Anchor" href="#设计目标-3"></a> 设计目标</h3>
+<p>Agent 循环需要<strong>一边执行一边向 UI 推送中间结果</strong>——LLM 的流式文本、工具调用进度、状态变化事件。异步生成器（<code>async function*</code>）完美解决了这个&quot;生产者-消费者&quot;问题。</p>
+<h3 id="生成器管道架构"><a class="markdownIt-Anchor" href="#生成器管道架构"></a> 生成器管道架构</h3>
+<div class="mermaid">
+flowchart LR
+    subgraph 最内层["queryLoop()"]
+        direction TB
+        A1["while(true)"] --> A2["yield stream_request_start"]
+        A2 --> A3["for await (model response)<br/>yield 每个 token"]
+        A3 --> A4["for await (tool results)<br/>yield 工具进度"]
+        A4 --> A5{"terminal?"}
+        A5 -->|No| A1
+        A5 -->|Yes| A6["return Terminal"]
+    end
+    
+    subgraph 中间层["query()"]
+        B1["yield* queryLoop(...)"]
+    end
+    
+    subgraph 外层["QueryEngine.submitMessage()"]
+        C1["for await (query(...))<br/>transform → SDKMessage"]
+    end
+    
+    subgraph UI层["REPL / SDK Consumer"]
+        D1["for await (engine.submitMessage(...))<br/>渲染到终端"]
+    end
+    
+    最内层 -->|"yield events"| 中间层
+    中间层 -->|"yield events"| 外层
+    外层 -->|"yield SDKMessage"| UI层
+</div>
+<h3 id="关键代码-3"><a class="markdownIt-Anchor" href="#关键代码-3"></a> 关键代码</h3>
+<p><strong>最内层：<code>queryLoop()</code> —— 状态机 + 流式产出</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span>* <span class="title">queryLoop</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  params: QueryParams,</span></span></span><br><span class="line"><span class="function"><span class="params">  consumedCommandUuids: <span class="built_in">string</span>[],</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">AsyncGenerator</span>&lt;</span></span><br><span class="line"><span class="function">  <span class="title">StreamEvent</span> | <span class="title">RequestStartEvent</span> | <span class="title">Message</span> | <span class="title">TombstoneMessage</span> | <span class="title">ToolUseSummaryMessage</span>,</span></span><br><span class="line"><span class="function">  <span class="title">Terminal</span>  // 返回类型：循环终止原因</span></span><br><span class="line"><span class="function">&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> state: LoopState = &#123; <span class="keyword">type</span>: <span class="string">'initial'</span> &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="comment">// 通知 UI：新的 API 请求开始</span></span><br><span class="line">    <span class="keyword">yield</span> &#123; <span class="keyword">type</span>: <span class="string">'stream_request_start'</span> &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 流式消费 LLM 响应，逐个 yield 给上层</span></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> message of deps.callModel(...)) &#123;</span><br><span class="line">      <span class="keyword">yield</span> message  <span class="comment">// 每个 token 都实时推送</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 流式消费工具执行结果</span></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> update of toolUpdates) &#123;</span><br><span class="line">      <span class="keyword">yield</span> update  <span class="comment">// 工具进度实时推送</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 状态转移：决定继续循环还是终止</span></span><br><span class="line">    <span class="keyword">const</span> next = computeNextState(state, toolResults)</span><br><span class="line">    <span class="keyword">if</span> (next.type === <span class="string">'terminal'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> next  <span class="comment">// 返回终止原因（completed / max_turns / aborted）</span></span><br><span class="line">    &#125;</span><br><span class="line">    state = next</span><br><span class="line">    <span class="keyword">continue</span>  <span class="comment">// 回到循环顶部</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>中间层：<code>query()</code> —— 委托 + 后处理</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>* <span class="title">query</span>(<span class="params">params: QueryParams</span>): <span class="title">AsyncGenerator</span>&lt;...&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> consumedCommandUuids: <span class="built_in">string</span>[] = []</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// yield* 将内层所有事件透传给外层</span></span><br><span class="line">  <span class="keyword">const</span> terminal = <span class="keyword">yield</span>* queryLoop(params, consumedCommandUuids)</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 循环结束后的清理工作</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> uuid of consumedCommandUuids) &#123;</span><br><span class="line">    notifyCommandLifecycle(uuid, <span class="string">'completed'</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> terminal</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>外层：<code>QueryEngine.submitMessage()</code> —— 事件转换</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> *submitMessage(prompt, options): AsyncGenerator&lt;SDKMessage, <span class="built_in">void</span>, unknown&gt; &#123;</span><br><span class="line">  <span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> event of query(&#123; messages, systemPrompt, ... &#125;)) &#123;</span><br><span class="line">    <span class="comment">// 将内部事件格式转换为 SDK 公共消息格式</span></span><br><span class="line">    <span class="keyword">const</span> sdkMessage = transformToSDKMessage(event)</span><br><span class="line">    <span class="keyword">if</span> (sdkMessage) <span class="keyword">yield</span> sdkMessage</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="为什么用生成器而不用回调eventemitter"><a class="markdownIt-Anchor" href="#为什么用生成器而不用回调eventemitter"></a> 为什么用生成器而不用回调/EventEmitter？</h3>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>回调/EventEmitter</th>
+<th>AsyncGenerator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>控制流</strong></td>
+<td>调用方被动接收</td>
+<td>消费方主动拉取（<code>for await</code>）</td>
+</tr>
+<tr>
+<td><strong>背压</strong></td>
+<td>需要手动实现</td>
+<td>天然具备（消费方不拉取，生产方自动暂停）</td>
+</tr>
+<tr>
+<td><strong>可组合性</strong></td>
+<td>难以链式组合</td>
+<td><code>yield*</code> 委托，管道式组合</td>
+</tr>
+<tr>
+<td><strong>错误传播</strong></td>
+<td>需要特殊错误事件</td>
+<td>标准 try/catch</td>
+</tr>
+<tr>
+<td><strong>状态机表达</strong></td>
+<td>外部变量 + switch</td>
+<td>while + continue，流程自然</td>
+</tr>
+<tr>
+<td><strong>返回值</strong></td>
+<td>无法返回最终结果</td>
+<td><code>return Terminal</code>（终止原因）</td>
+</tr>
+<tr>
+<td><strong>可读性</strong></td>
+<td>事件分散，难追踪</td>
+<td>线性执行流，一目了然</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="94-依赖注入提高可测试性dependency-injection"><a class="markdownIt-Anchor" href="#94-依赖注入提高可测试性dependency-injection"></a> 9.4 依赖注入提高可测试性（Dependency Injection）</h2>
+<h3 id="设计目标-4"><a class="markdownIt-Anchor" href="#设计目标-4"></a> 设计目标</h3>
+<p>Agent 循环的核心 <code>query()</code> 函数依赖 LLM API 调用、上下文压缩等外部 I/O。测试时需要替换为 mock 实现，但传统的 <code>jest.spyOn(module, 'function')</code> 方式存在问题：</p>
+<ul>
+<li>每个测试文件都需要 6-8 行 spy 设置样板代码</li>
+<li>模块级 mock 容易产生意外副作用</li>
+<li>签名变更时 mock 不会报类型错误</li>
+</ul>
+<h3 id="实现方案"><a class="markdownIt-Anchor" href="#实现方案"></a> 实现方案</h3>
+<p><code>src/query/deps.ts</code> 实现了一个<strong>精简的依赖注入容器</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用 typeof 保持签名自动同步</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> QueryDeps = &#123;</span><br><span class="line">  <span class="comment">// -- model</span></span><br><span class="line">  callModel: <span class="keyword">typeof</span> queryModelWithStreaming</span><br><span class="line"></span><br><span class="line">  <span class="comment">// -- compaction</span></span><br><span class="line">  microcompact: <span class="keyword">typeof</span> microcompactMessages</span><br><span class="line">  autocompact: <span class="keyword">typeof</span> autoCompactIfNeeded</span><br><span class="line"></span><br><span class="line">  <span class="comment">// -- platform</span></span><br><span class="line">  uuid: <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 生产环境工厂</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">productionDeps</span>(<span class="params"></span>): <span class="title">QueryDeps</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    callModel: queryModelWithStreaming,</span><br><span class="line">    microcompact: microcompactMessages,</span><br><span class="line">    autocompact: autoCompactIfNeeded,</span><br><span class="line">    uuid: randomUUID,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>消费方（query.ts）</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// deps 是可选参数，默认使用生产实现</span></span><br><span class="line"><span class="keyword">const</span> deps = params.deps ?? productionDeps()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 内部通过 deps 调用，而非直接 import</span></span><br><span class="line"><span class="keyword">for</span> <span class="keyword">await</span> (<span class="keyword">const</span> message of deps.callModel(...)) &#123; ... &#125;</span><br><span class="line"><span class="keyword">await</span> deps.autocompact(messages, model, ...)</span><br><span class="line"><span class="keyword">const</span> id = deps.uuid()</span><br></pre></td></tr></table></figure>
+<p><strong>测试使用</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 测试中直接注入 fake，零 spy 样板</span></span><br><span class="line"><span class="keyword">const</span> result = <span class="keyword">yield</span>* query(&#123;</span><br><span class="line">  ...baseParams,</span><br><span class="line">  deps: &#123;</span><br><span class="line">    callModel: <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>*(<span class="params"></span>) </span>&#123; <span class="keyword">yield</span> fakeResponse &#125;,</span><br><span class="line">    microcompact: <span class="keyword">async</span> (msgs) =&gt; msgs,  <span class="comment">// 跳过压缩</span></span><br><span class="line">    autocompact: <span class="keyword">async</span> () =&gt; (&#123; wasCompacted: <span class="literal">false</span> &#125;),</span><br><span class="line">    uuid: <span class="function"><span class="params">()</span> =&gt;</span> <span class="string">'test-uuid-001'</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="类型安全保证"><a class="markdownIt-Anchor" href="#类型安全保证"></a> 类型安全保证</h3>
+<div class="mermaid">
+flowchart LR
+    Real["queryModelWithStreaming<br/>（真实实现）"] -->|"typeof"| Type["QueryDeps.callModel<br/>（类型定义）"]
+    Type -->|"约束"| Fake["testCallModel<br/>（测试 fake）"]
+    
+    Real -.->|"签名变更"| Type
+    Type -.->|"编译错误"| Fake
+    
+    style Type fill:#e3f2fd
+</div>
+<p><code>typeof fn</code> 模式的精妙之处：当真实函数签名变更时，所有不匹配的测试 fake 都会产生<strong>编译期错误</strong>，无需运行时才发现 mock 不匹配。</p>
+<h3 id="设计原则-2"><a class="markdownIt-Anchor" href="#设计原则-2"></a> 设计原则</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>范围最小化</strong></td>
+<td>只注入 4 个真正需要 mock 的 I/O 依赖，不过度抽象</td>
+</tr>
+<tr>
+<td><strong>类型驱动</strong></td>
+<td><code>typeof</code> 自动同步签名，零维护成本</td>
+</tr>
+<tr>
+<td><strong>默认生产</strong></td>
+<td><code>params.deps ?? productionDeps()</code>，调用方无感知</td>
+</tr>
+<tr>
+<td><strong>渐进扩展</strong></td>
+<td>注释明确说&quot;后续 PR 可加入 runTools, logEvent 等&quot;</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="95-工具即数据tool-as-data"><a class="markdownIt-Anchor" href="#95-工具即数据tool-as-data"></a> 9.5 工具即数据（Tool as Data）</h2>
+<h3 id="设计目标-5"><a class="markdownIt-Anchor" href="#设计目标-5"></a> 设计目标</h3>
+<p>传统面向对象设计中，44 个工具会形成一个继承体系（<code>BaseTool → ReadOnlyTool → FileReadTool</code>）。Claude Code 选择了另一条路：<strong>工具不是类实例，是符合接口的数据对象</strong>。</p>
+<h3 id="实现方案-2"><a class="markdownIt-Anchor" href="#实现方案-2"></a> 实现方案</h3>
+<div class="mermaid">
+flowchart TB
+    subgraph 传统OOP["传统 OOP 方式 ❌"]
+        Base["class BaseTool"] --> ReadOnly["class ReadOnlyTool"]
+        ReadOnly --> FileRead["class FileReadTool"]
+        ReadOnly --> Grep["class GrepTool"]
+        Base --> Writable["class WritableTool"]
+        Writable --> FileEdit["class FileEditTool"]
+        Writable --> Bash["class BashTool"]
+    end
+    
+    subgraph DataPattern["Tool as Data 方式 ✓"]
+        Factory["buildTool(def)"] --> Tool1["GlobTool 对象"]
+        Factory --> Tool2["GrepTool 对象"]
+        Factory --> Tool3["BashTool 对象"]
+        Factory --> Tool4["FileReadTool 对象"]
+        Defaults["TOOL_DEFAULTS<br/>（共享默认行为）"] --> Factory
+    end
+    
+    style 传统OOP fill:#ffebee
+    style DataPattern fill:#e8f5e9
+</div>
+<p><strong><code>buildTool()</code> 工厂：合并默认值，而非继承</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> TOOL_DEFAULTS = &#123;</span><br><span class="line">  isEnabled: <span class="function"><span class="params">()</span> =&gt;</span> <span class="literal">true</span>,</span><br><span class="line">  isConcurrencySafe: <span class="function"><span class="params">()</span> =&gt;</span> <span class="literal">false</span>,</span><br><span class="line">  isReadOnly: <span class="function"><span class="params">()</span> =&gt;</span> <span class="literal">false</span>,</span><br><span class="line">  isDestructive: <span class="function"><span class="params">()</span> =&gt;</span> <span class="literal">false</span>,</span><br><span class="line">  checkPermissions: <span class="function">(<span class="params">input</span>) =&gt;</span> <span class="built_in">Promise</span>.resolve(&#123; behavior: <span class="string">'allow'</span>, updatedInput: input &#125;),</span><br><span class="line">  userFacingName: <span class="function"><span class="params">()</span> =&gt;</span> <span class="string">''</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">buildTool</span>&lt;<span class="title">D</span> <span class="title">extends</span> <span class="title">AnyToolDef</span>&gt;(<span class="params">def: D</span>): <span class="title">BuiltTool</span>&lt;<span class="title">D</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    ...TOOL_DEFAULTS,</span><br><span class="line">    userFacingName: <span class="function"><span class="params">()</span> =&gt;</span> def.name,</span><br><span class="line">    ...def,  <span class="comment">// 用户定义覆盖默认值</span></span><br><span class="line">  &#125; <span class="keyword">as</span> BuiltTool&lt;D&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>具体工具：一个对象字面量</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> GlobTool = buildTool(&#123;</span><br><span class="line">  name: <span class="string">'Glob'</span>,</span><br><span class="line">  searchHint: <span class="string">'find files by name pattern or wildcard'</span>,</span><br><span class="line">  maxResultSizeChars: <span class="number">100</span>_000,</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">async</span> description() &#123; <span class="keyword">return</span> DESCRIPTION &#125;,</span><br><span class="line">  <span class="keyword">get</span> inputSchema() &#123; <span class="keyword">return</span> inputSchema() &#125;,</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 覆盖默认值</span></span><br><span class="line">  isConcurrencySafe() &#123; <span class="keyword">return</span> <span class="literal">true</span> &#125;,</span><br><span class="line">  isReadOnly() &#123; <span class="keyword">return</span> <span class="literal">true</span> &#125;,</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">async</span> call(input, context) &#123;</span><br><span class="line">    <span class="comment">// 具体执行逻辑</span></span><br><span class="line">  &#125;,</span><br><span class="line">  </span><br><span class="line">  mapToolResultToToolResultBlockParam(output, toolUseID) &#123; ... &#125;,</span><br><span class="line">&#125; satisfies ToolDef&lt;InputSchema, Output&gt;)</span><br></pre></td></tr></table></figure>
+<p><strong>工具注册：平坦数组 + 条件组合</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getAllBaseTools</span>(<span class="params"></span>): <span class="title">Tools</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> [</span><br><span class="line">    AgentTool,</span><br><span class="line">    BashTool,</span><br><span class="line">    ...(hasEmbeddedSearchTools() ? [] : [GlobTool, GrepTool]),</span><br><span class="line">    FileReadTool,</span><br><span class="line">    FileEditTool,</span><br><span class="line">    <span class="comment">// ... 条件包含更多工具</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 合并内置工具 + MCP 外部工具，去重</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">assembleToolPool</span>(<span class="params">permissionContext, mcpTools</span>): <span class="title">Tools</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> builtInTools = getTools(permissionContext)</span><br><span class="line">  <span class="keyword">const</span> allowedMcpTools = filterToolsByDenyRules(mcpTools, permissionContext)</span><br><span class="line">  <span class="keyword">return</span> uniqBy([...builtInTools].sort(byName).concat(allowedMcpTools.sort(byName)), <span class="string">'name'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="数据对象-vs-类实例的优势"><a class="markdownIt-Anchor" href="#数据对象-vs-类实例的优势"></a> 数据对象 vs 类实例的优势</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>类实例</th>
+<th>数据对象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>注册</strong></td>
+<td>需要工厂/容器</td>
+<td>直接放入数组</td>
+</tr>
+<tr>
+<td><strong>过滤</strong></td>
+<td>需要类型检查</td>
+<td><code>tools.filter(t =&gt; t.isReadOnly())</code></td>
+</tr>
+<tr>
+<td><strong>排序</strong></td>
+<td>需要 Comparable 接口</td>
+<td><code>tools.sort((a, b) =&gt; a.name.localeCompare(b.name))</code></td>
+</tr>
+<tr>
+<td><strong>序列化</strong></td>
+<td>需要序列化器</td>
+<td>天然可 JSON 化（inputSchema → JSON Schema）</td>
+</tr>
+<tr>
+<td><strong>条件包含</strong></td>
+<td>条件 new + 注册</td>
+<td><code>...(condition ? [Tool] : [])</code></td>
+</tr>
+<tr>
+<td><strong>组合</strong></td>
+<td>多重继承/Mixin</td>
+<td>对象展开 <code>{ ...defaults, ...specific }</code></td>
+</tr>
+<tr>
+<td><strong>类型安全</strong></td>
+<td><code>extends/implements</code></td>
+<td><code>satisfies ToolDef&lt;Input, Output&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="96-深度不可变deepimmutable"><a class="markdownIt-Anchor" href="#96-深度不可变deepimmutable"></a> 9.6 深度不可变（DeepImmutable）</h2>
+<h3 id="设计目标-6"><a class="markdownIt-Anchor" href="#设计目标-6"></a> 设计目标</h3>
+<p><code>AppState</code>、<code>ToolPermissionContext</code> 等核心数据结构在 50+ 个文件中被传递和读取。如果任何消费方意外修改了这些状态，将导致难以追踪的 bug。<code>DeepImmutable&lt;T&gt;</code> 在<strong>编译期</strong>防止一切意外修改。</p>
+<h3 id="实现机制-2"><a class="markdownIt-Anchor" href="#实现机制-2"></a> 实现机制</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 递归地将所有属性标记为 readonly</span></span><br><span class="line"><span class="keyword">type</span> DeepImmutable&lt;T&gt; =</span><br><span class="line">  T <span class="keyword">extends</span> <span class="built_in">Function</span> ? T :</span><br><span class="line">  T <span class="keyword">extends</span> Map&lt;infer K, infer V&gt; ? ReadonlyMap&lt;K, DeepImmutable&lt;V&gt;&gt; :</span><br><span class="line">  T <span class="keyword">extends</span> Set&lt;infer V&gt; ? ReadonlySet&lt;DeepImmutable&lt;V&gt;&gt; :</span><br><span class="line">  T <span class="keyword">extends</span> <span class="built_in">Array</span>&lt;infer V&gt; ? readonly DeepImmutable&lt;V&gt;[] :</span><br><span class="line">  T <span class="keyword">extends</span> object ? &#123; readonly [K <span class="keyword">in</span> keyof T]: DeepImmutable&lt;T[K]&gt; &#125; :</span><br><span class="line">  T</span><br></pre></td></tr></table></figure>
+<h3 id="应用场景"><a class="markdownIt-Anchor" href="#应用场景"></a> 应用场景</h3>
+<p><strong>1. 权限上下文——全局共享，绝对不可变</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> ToolPermissionContext = DeepImmutable&lt;&#123;</span><br><span class="line">  mode: PermissionMode</span><br><span class="line">  additionalWorkingDirectories: Map&lt;<span class="built_in">string</span>, AdditionalWorkingDirectory&gt;</span><br><span class="line">  alwaysAllowRules: ToolPermissionRulesBySource</span><br><span class="line">  alwaysDenyRules: ToolPermissionRulesBySource</span><br><span class="line">  alwaysAskRules: ToolPermissionRulesBySource</span><br><span class="line">  isBypassPermissionsModeAvailable: <span class="built_in">boolean</span></span><br><span class="line">  shouldAvoidPermissionPrompts?: <span class="built_in">boolean</span></span><br><span class="line">&#125;&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>2. AppState——交集类型逃逸阀</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 主体使用 DeepImmutable（50+ 字段）</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> AppState = DeepImmutable&lt;&#123;</span><br><span class="line">  settings: SettingsJson</span><br><span class="line">  verbose: <span class="built_in">boolean</span></span><br><span class="line">  mainLoopModel: ModelSetting</span><br><span class="line">  toolPermissionContext: ToolPermissionContext</span><br><span class="line">  <span class="comment">// ... ~50 more fields</span></span><br><span class="line">&#125;&gt; &amp; &#123;</span><br><span class="line">  <span class="comment">// 包含函数类型的字段排除在外（函数不能 readonly）</span></span><br><span class="line">  tasks: &#123; [taskId: <span class="built_in">string</span>]: TaskState &#125;</span><br><span class="line">  agentNameRegistry: Map&lt;<span class="built_in">string</span>, AgentId&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>3. 组件 Props——快照语义</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 组件接收只读快照，无法修改 store 中的原始数据</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">BackgroundTasksDialog</span>(<span class="params">&#123; task &#125;: &#123;</span></span></span><br><span class="line"><span class="function"><span class="params">  task: DeepImmutable&lt;LocalShellTaskState&gt;</span></span></span><br><span class="line"><span class="function"><span class="params">&#125;</span>) </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ShellDetailDialog</span>(<span class="params">&#123; shell &#125;: &#123;</span></span></span><br><span class="line"><span class="function"><span class="params">  shell: DeepImmutable&lt;LocalShellTaskState&gt;</span></span></span><br><span class="line"><span class="function"><span class="params">&#125;</span>) </span>&#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="状态修改的唯一路径"><a class="markdownIt-Anchor" href="#状态修改的唯一路径"></a> 状态修改的唯一路径</h3>
+<div class="mermaid">
+flowchart LR
+    subgraph 只读消费["只读消费（编译期强制）"]
+        C1["query.ts"]
+        C2["tools/*"]
+        C3["components/*"]
+    end
+    
+    subgraph 状态所有者["状态所有者（唯一写入点）"]
+        Store["AppStateStore<br/>setState(updater)"]
+    end
+    
+    Store -->|"DeepImmutable<AppState>"| C1
+    Store -->|"DeepImmutable<AppState>"| C2
+    Store -->|"DeepImmutable<AppState>"| C3
+    
+    C1 -.->|"❌ 编译错误<br/>Cannot assign to readonly"| Store
+    
+    style 只读消费 fill:#e8f5e9
+    style 状态所有者 fill:#e3f2fd
+</div>
+<h3 id="设计原则-3"><a class="markdownIt-Anchor" href="#设计原则-3"></a> 设计原则</h3>
+<table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>编译期保护</strong></td>
+<td>不依赖运行时 <code>Object.freeze()</code>，零性能开销</td>
+</tr>
+<tr>
+<td><strong>交集逃逸</strong></td>
+<td><code>&amp; { mutableFields }</code> 为函数类型/不可冻结字段提供出口</td>
+</tr>
+<tr>
+<td><strong>快照语义</strong></td>
+<td>组件拿到的是快照引用，生命周期内数据不变</td>
+</tr>
+<tr>
+<td><strong>单一写入点</strong></td>
+<td>只有 <code>setState(updater)</code> 能产生新状态</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="97-构建时特性裁剪build-time-feature-gating"><a class="markdownIt-Anchor" href="#97-构建时特性裁剪build-time-feature-gating"></a> 9.7 构建时特性裁剪（Build-time Feature Gating）</h2>
+<h3 id="设计目标-7"><a class="markdownIt-Anchor" href="#设计目标-7"></a> 设计目标</h3>
+<p>同一份代码可能需要产出不同功能集的产品（内部版 vs 公开版）。不需要的功能代码<strong>应该在编译阶段就被删除</strong>，不增加安装包体积，也不泄露内部实现细节。</p>
+<h3 id="两层门控架构"><a class="markdownIt-Anchor" href="#两层门控架构"></a> 两层门控架构</h3>
+<div class="mermaid">
+flowchart TD
+    subgraph BuildTime["构建时（Bun Bundler）"]
+        Feature["feature('KAIROS')"] -->|"内部构建: true"| Include["代码保留"]
+        Feature -->|"外部构建: false"| DCE["Dead Code Elimination<br/>代码 + 字符串被删除"]
+    end
+    
+    subgraph Runtime["运行时（GrowthBook/Statsig）"]
+        Include --> GB["getFeatureValue('tengu_xxx', false)"]
+        GB -->|"true"| Enable["功能启用"]
+        GB -->|"false"| Disable["功能禁用"]
+    end
+    
+    DCE --> Never["永远不执行<br/>（代码不存在于产物中）"]
+    
+    style DCE fill:#ffebee
+    style Never fill:#ffcdd2
+    style Enable fill:#e8f5e9
+</div>
+<h3 id="关键代码模式"><a class="markdownIt-Anchor" href="#关键代码模式"></a> 关键代码模式</h3>
+<p><strong>模式 1：正向三元表达式（推荐）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; feature &#125; <span class="keyword">from</span> <span class="string">'bun:bundle'</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 正向三元模式 —— 确保 DCE 能消除字符串字面量</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">isUltrathinkEnabled</span>(<span class="params"></span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> feature(<span class="string">'ULTRATHINK'</span>)</span><br><span class="line">    ? getFeatureValue_CACHED_MAY_BE_STALE(<span class="string">'tengu_turtle_carbon'</span>, <span class="literal">true</span>)</span><br><span class="line">    : <span class="literal">false</span>  <span class="comment">// 外部构建：整个函数体被优化为 return false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>注意</strong>：负向模式 <code>if (!feature(...)) return</code> 无法让 bundler 消除后续代码中的字符串字面量。文档明确要求使用正向三元。</p>
+</blockquote>
+<p><strong>模式 2：条件模块导入（整个模块 DCE）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 外部构建中，这些 require() 及其目标模块被完全删除</span></span><br><span class="line"><span class="keyword">const</span> reactiveCompact = feature(<span class="string">'REACTIVE_COMPACT'</span>)</span><br><span class="line">  ? (<span class="built_in">require</span>(<span class="string">'./services/compact/reactiveCompact.js'</span>) <span class="keyword">as</span> <span class="keyword">typeof</span> <span class="keyword">import</span>(<span class="string">'./services/compact/reactiveCompact.js'</span>))</span><br><span class="line">  : <span class="literal">null</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> contextCollapse = feature(<span class="string">'CONTEXT_COLLAPSE'</span>)</span><br><span class="line">  ? (<span class="built_in">require</span>(<span class="string">'./services/contextCollapse/index.js'</span>) <span class="keyword">as</span> <span class="keyword">typeof</span> <span class="keyword">import</span>(<span class="string">'./services/contextCollapse/index.js'</span>))</span><br><span class="line">  : <span class="literal">null</span></span><br></pre></td></tr></table></figure>
+<p><strong>模式 3：条件数组元素（工具/配置 DCE）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> FOREGROUND_529_RETRY_SOURCES = <span class="keyword">new</span> Set&lt;QuerySource&gt;([</span><br><span class="line">  <span class="string">'repl_main_thread'</span>,</span><br><span class="line">  <span class="string">'sdk'</span>,</span><br><span class="line">  <span class="string">'compact'</span>,</span><br><span class="line">  <span class="comment">// bash_classifier 是内部专属，feature gate 确保字符串不泄露到外部构建</span></span><br><span class="line">  ...(feature(<span class="string">'BASH_CLASSIFIER'</span>) ? ([<span class="string">'bash_classifier'</span>] <span class="keyword">as</span> <span class="keyword">const</span>) : []),</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+<p><strong>模式 4：入口级特性开关</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cli.tsx：消融实验基线模式（仅内部构建存在）</span></span><br><span class="line"><span class="keyword">if</span> (feature(<span class="string">'ABLATION_BASELINE'</span>) &amp;&amp; process.env.CLAUDE_CODE_ABLATION_BASELINE) &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> k of [<span class="string">'CLAUDE_CODE_SIMPLE'</span>, <span class="string">'CLAUDE_CODE_DISABLE_THINKING'</span>, ...]) &#123;</span><br><span class="line">    process.env[k] ??= <span class="string">'1'</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="已知特性标志50"><a class="markdownIt-Anchor" href="#已知特性标志50"></a> 已知特性标志（50+）</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>标志名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>核心功能</strong></td>
+<td><code>BRIDGE_MODE</code>, <code>COORDINATOR_MODE</code>, <code>VOICE_MODE</code></td>
+<td>IDE 桥接、协调者模式、语音输入</td>
+</tr>
+<tr>
+<td><strong>模型增强</strong></td>
+<td><code>ULTRATHINK</code>, <code>REACTIVE_COMPACT</code>, <code>CONTEXT_COLLAPSE</code></td>
+<td>超长思考、响应式压缩、上下文折叠</td>
+</tr>
+<tr>
+<td><strong>内部工具</strong></td>
+<td><code>KAIROS</code>, <code>KAIROS_BRIEF</code>, <code>BASH_CLASSIFIER</code></td>
+<td>内部专属工具和分类器</td>
+</tr>
+<tr>
+<td><strong>实验功能</strong></td>
+<td><code>ABLATION_BASELINE</code>, <code>QUICK_SEARCH</code>, <code>TERMINAL_PANEL</code></td>
+<td>A/B 测试、快速搜索、终端面板</td>
+</tr>
+<tr>
+<td><strong>基础设施</strong></td>
+<td><code>UDS_INBOX</code>, <code>MONITOR_TOOL</code>, <code>CCR_MIRROR</code></td>
+<td>Unix 域套接字、监控工具、镜像</td>
+</tr>
+<tr>
+<td><strong>数据</strong></td>
+<td><code>PROMPT_CACHE_BREAK_DETECTION</code>, <code>TRANSCRIPT_CLASSIFIER</code></td>
+<td>缓存击穿检测、转录分类</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="98-多层记忆化tiered-memoization"><a class="markdownIt-Anchor" href="#98-多层记忆化tiered-memoization"></a> 9.8 多层记忆化（Tiered Memoization）</h2>
+<h3 id="设计目标-8"><a class="markdownIt-Anchor" href="#设计目标-8"></a> 设计目标</h3>
+<p>CLI 工具中大量操作是<strong>重复性 I/O</strong>（查找 git 根目录、解析 JSON、读取配置）。但简单的 <code>lodash.memoize</code> 有严重问题：<strong>无界缓存会导致内存泄漏</strong>（曾出现 300MB+ 内存占用）。</p>
+<h3 id="三种记忆化原语"><a class="markdownIt-Anchor" href="#三种记忆化原语"></a> 三种记忆化原语</h3>
+<div class="mermaid">
+flowchart TD
+    subgraph TTL["memoizeWithTTL（时间失效）"]
+        direction LR
+        TTL1["首次调用"] -->|"缓存 miss"| TTL2["计算 + 缓存"]
+        TTL2 -->|"TTL 内"| TTL3["直接返回"]
+        TTL3 -->|"TTL 过期"| TTL4["返回旧值 + 后台刷新"]
+    end
+    
+    subgraph TTLAsync["memoizeWithTTLAsync（异步 + 去重）"]
+        direction LR
+        TTLA1["并发请求 A"] -->|"缓存 miss"| TTLA2["发起计算"]
+        TTLA3["并发请求 B"] -->|"检查 inFlight"| TTLA2
+        TTLA2 --> TTLA4["共享同一个 Promise"]
+    end
+    
+    subgraph LRU["memoizeWithLRU（空间有界）"]
+        direction LR
+        LRU1["缓存满"] -->|"淘汰最旧"| LRU2["LRU 驱逐"]
+        LRU2 --> LRU3["插入新条目"]
+    end
+    
+    style TTL fill:#e3f2fd
+    style TTLAsync fill:#e8f5e9
+    style LRU fill:#fff3e0
+</div>
+<h3 id="核心实现"><a class="markdownIt-Anchor" href="#核心实现"></a> 核心实现</h3>
+<p><strong>memoizeWithTTL —— 写入时刷新（Stale-While-Revalidate）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">memoizeWithTTL</span>&lt;<span class="title">Args</span> <span class="title">extends</span> <span class="title">unknown</span>[], <span class="title">Result</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  f: (...args: Args) =&gt; Result,</span></span></span><br><span class="line"><span class="function"><span class="params">  cacheLifetimeMs: <span class="built_in">number</span> = 5 * 60 * 1000,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">MemoizedFunction</span>&lt;<span class="title">Args</span>, <span class="title">Result</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> cache = <span class="keyword">new</span> Map&lt;<span class="built_in">string</span>, CacheEntry&lt;Result&gt;&gt;()</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> (...args: Args): <span class="function"><span class="params">Result</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> key = jsonStringify(args)</span><br><span class="line">    <span class="keyword">const</span> cached = cache.get(key)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!cached) &#123;</span><br><span class="line">      <span class="comment">// 冷启动：阻塞计算</span></span><br><span class="line">      <span class="keyword">const</span> value = f(...args)</span><br><span class="line">      cache.set(key, &#123; value, timestamp: <span class="built_in">Date</span>.now(), refreshing: <span class="literal">false</span> &#125;)</span><br><span class="line">      <span class="keyword">return</span> value</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">Date</span>.now() - cached.timestamp &gt; cacheLifetimeMs &amp;&amp; !cached.refreshing) &#123;</span><br><span class="line">      cached.refreshing = <span class="literal">true</span></span><br><span class="line">      <span class="comment">// 后台刷新（不阻塞当前调用）</span></span><br><span class="line">      <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> newValue = f(...args)</span><br><span class="line">        <span class="keyword">if</span> (cache.get(key) === cached) &#123;  <span class="comment">// 防止覆盖并发更新</span></span><br><span class="line">          cache.set(key, &#123; value: newValue, timestamp: <span class="built_in">Date</span>.now(), refreshing: <span class="literal">false</span> &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;).catch(<span class="function"><span class="params">e</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (cache.get(key) === cached) cache.delete(key)</span><br><span class="line">      &#125;)</span><br><span class="line">      <span class="keyword">return</span> cached.value  <span class="comment">// 立即返回旧值</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> cached.value</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>memoizeWithTTLAsync —— 防雷群（Thundering Herd Prevention）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">memoizeWithTTLAsync</span>&lt;<span class="title">Args</span> <span class="title">extends</span> <span class="title">unknown</span>[], <span class="title">Result</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  f: (...args: Args) =&gt; <span class="built_in">Promise</span>&lt;Result&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  cacheLifetimeMs: <span class="built_in">number</span> = 5 * 60 * 1000,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): ... </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> cache = <span class="keyword">new</span> Map&lt;<span class="built_in">string</span>, CacheEntry&lt;Result&gt;&gt;()</span><br><span class="line">  <span class="keyword">const</span> inFlight = <span class="keyword">new</span> Map&lt;<span class="built_in">string</span>, <span class="built_in">Promise</span>&lt;Result&gt;&gt;()  <span class="comment">// 去重并发请求</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">async</span> (...args): <span class="built_in">Promise</span>&lt;Result&gt; =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> key = jsonStringify(args)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 并发请求共享同一个 Promise（防止雷群）</span></span><br><span class="line">    <span class="keyword">const</span> existing = inFlight.get(key)</span><br><span class="line">    <span class="keyword">if</span> (existing) <span class="keyword">return</span> existing</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">const</span> promise = f(...args)</span><br><span class="line">    inFlight.set(key, promise)</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> value = <span class="keyword">await</span> promise</span><br><span class="line">      cache.set(key, &#123; value, timestamp: <span class="built_in">Date</span>.now(), refreshing: <span class="literal">false</span> &#125;)</span><br><span class="line">      <span class="keyword">return</span> value</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      inFlight.delete(key)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>memoizeWithLRU —— 有界缓存（防内存泄漏）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">memoizeWithLRU</span>&lt;<span class="title">Args</span> <span class="title">extends</span> <span class="title">unknown</span>[], <span class="title">Result</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  f: (...args: Args) =&gt; Result,</span></span></span><br><span class="line"><span class="function"><span class="params">  cacheFn: (...args: Args) =&gt; <span class="built_in">string</span>,  <span class="comment">// 自定义 key 函数</span></span></span></span><br><span class="line"><span class="function"><span class="params">  maxCacheSize: <span class="built_in">number</span> = 100,          <span class="comment">// 最大条目数</span></span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">LRUMemoizedFunction</span>&lt;<span class="title">Args</span>, <span class="title">Result</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> cache = <span class="keyword">new</span> LRUCache&lt;<span class="built_in">string</span>, Result&gt;(&#123; max: maxCacheSize &#125;)</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">const</span> memoized = (...args: Args): <span class="function"><span class="params">Result</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> key = cacheFn(...args)</span><br><span class="line">    <span class="keyword">const</span> cached = cache.get(key)</span><br><span class="line">    <span class="keyword">if</span> (cached !== <span class="literal">undefined</span>) <span class="keyword">return</span> cached</span><br><span class="line">    <span class="keyword">const</span> value = f(...args)</span><br><span class="line">    cache.set(key, value)</span><br><span class="line">    <span class="keyword">return</span> value</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  memoized.cache = &#123;</span><br><span class="line">    clear: <span class="function"><span class="params">()</span> =&gt;</span> cache.clear(),</span><br><span class="line">    size: <span class="function"><span class="params">()</span> =&gt;</span> cache.size,</span><br><span class="line">    <span class="keyword">delete</span>: <span class="function">(<span class="params">key</span>) =&gt;</span> cache.delete(key),</span><br><span class="line">    <span class="keyword">get</span>: <span class="function">(<span class="params">key</span>) =&gt;</span> cache.get(key),</span><br><span class="line">    has: <span class="function">(<span class="params">key</span>) =&gt;</span> cache.has(key),</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> memoized</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="使用场景分布"><a class="markdownIt-Anchor" href="#使用场景分布"></a> 使用场景分布</h3>
+<table>
+<thead>
+<tr>
+<th>原语</th>
+<th>适用场景</th>
+<th>典型使用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>memoizeWithTTL</code></td>
+<td>配置类数据（变化慢）</td>
+<td>设置读取、能力检查</td>
+</tr>
+<tr>
+<td><code>memoizeWithTTLAsync</code></td>
+<td>网络凭证（过期刷新）</td>
+<td>AWS 凭证、GCP Token、OAuth</td>
+</tr>
+<tr>
+<td><code>memoizeWithLRU</code></td>
+<td>路径/解析类（调用频繁、参数多样）</td>
+<td><code>findGitRoot</code>、JSON 解析、Shell 前缀</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="99-弹性错误恢复resilient-error-recovery"><a class="markdownIt-Anchor" href="#99-弹性错误恢复resilient-error-recovery"></a> 9.9 弹性错误恢复（Resilient Error Recovery）</h2>
+<h3 id="设计目标-9"><a class="markdownIt-Anchor" href="#设计目标-9"></a> 设计目标</h3>
+<p>与 LLM API 的通信面临多种失败模式：限流（429）、过载（529）、认证过期、上下文溢出。系统需要<strong>优雅降级</strong>而不是直接崩溃。</p>
+<h3 id="多策略恢复架构"><a class="markdownIt-Anchor" href="#多策略恢复架构"></a> 多策略恢复架构</h3>
+<div class="mermaid">
+flowchart TD
+    APICall["API 调用"] --> Error{"错误类型?"}
+    
+    Error -->|"429 限流"| Retry["指数退避重试<br/>base × 2^attempt + jitter"]
+    Error -->|"529 过载"| Check529{"前台请求?"}
+    Check529 -->|"是"| Retry529["重试（最多 3 次）"]
+    Check529 -->|"否（后台任务）"| Bail["立即放弃<br/>（防止级联放大）"]
+    Retry529 -->|"超过 3 次"| Fallback["模型降级<br/>Opus → Sonnet"]
+    
+    Error -->|"401 认证"| AuthRefresh["清除缓存<br/>重新认证"]
+    Error -->|"413 上下文溢出"| Compact["触发 reactive compact<br/>压缩后重试"]
+    Error -->|"fast-mode 拒绝"| FastDeg["Fast 模式降级<br/>切换标准速度"]
+    
+    Error -->|"连接错误"| ConnRetry["退避重试<br/>禁用 Keep-Alive"]
+    
+    subgraph Unattended["无人值守模式"]
+        PersistRetry["无限重试<br/>max backoff 5min<br/>心跳 30s"]
+    end
+    
+    Retry --> PersistRetry
+    
+    style Bail fill:#ffebee
+    style Fallback fill:#fff3e0
+    style FastDeg fill:#fff3e0
+</div>
+<h3 id="关键实现"><a class="markdownIt-Anchor" href="#关键实现"></a> 关键实现</h3>
+<p><strong>指数退避 + 抖动</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getRetryDelay</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  attempt: <span class="built_in">number</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  retryAfterHeader?: <span class="built_in">string</span> | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  maxDelayMs = 32000,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">number</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 优先使用服务端建议的重试时间</span></span><br><span class="line">  <span class="keyword">if</span> (retryAfterHeader) &#123;</span><br><span class="line">    <span class="keyword">const</span> seconds = <span class="built_in">parseInt</span>(retryAfterHeader, <span class="number">10</span>)</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">isNaN</span>(seconds)) <span class="keyword">return</span> seconds * <span class="number">1000</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 指数退避 + 25% 随机抖动（防止惊群）</span></span><br><span class="line">  <span class="keyword">const</span> baseDelay = <span class="built_in">Math</span>.min(BASE_DELAY_MS * <span class="built_in">Math</span>.pow(<span class="number">2</span>, attempt - <span class="number">1</span>), maxDelayMs)</span><br><span class="line">  <span class="keyword">const</span> jitter = <span class="built_in">Math</span>.random() * <span class="number">0.25</span> * baseDelay</span><br><span class="line">  <span class="keyword">return</span> baseDelay + jitter</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>后台任务 529 抑制（防级联放大）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 只有前台请求才重试 529</span></span><br><span class="line"><span class="comment">// 后台任务（摘要、标题、建议）立即放弃：</span></span><br><span class="line"><span class="comment">// 容量级联期间，每次重试是 3-10× 网关放大</span></span><br><span class="line"><span class="keyword">const</span> FOREGROUND_529_RETRY_SOURCES = <span class="keyword">new</span> Set&lt;QuerySource&gt;([</span><br><span class="line">  <span class="string">'repl_main_thread'</span>, <span class="string">'sdk'</span>, <span class="string">'compact'</span>, <span class="string">'auto_mode'</span>, ...</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">shouldRetry529</span>(<span class="params">querySource: QuerySource | <span class="literal">undefined</span></span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> querySource === <span class="literal">undefined</span> || FOREGROUND_529_RETRY_SOURCES.has(querySource)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>无人值守心跳（防宿主超时）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 长等待分块为 30s 心跳，防止宿主环境判定会话空闲</span></span><br><span class="line"><span class="keyword">let</span> remaining = delayMs</span><br><span class="line"><span class="keyword">while</span> (remaining &gt; <span class="number">0</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (options.signal?.aborted) <span class="keyword">throw</span> <span class="keyword">new</span> APIUserAbortError()</span><br><span class="line">  <span class="keyword">yield</span> createSystemAPIErrorMessage(error, remaining, reportedAttempt, maxRetries)</span><br><span class="line">  <span class="keyword">const</span> chunk = <span class="built_in">Math</span>.min(remaining, HEARTBEAT_INTERVAL_MS)</span><br><span class="line">  <span class="keyword">await</span> sleep(chunk, options.signal, &#123; abortError &#125;)</span><br><span class="line">  remaining -= chunk</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>熔断器（Circuit Breaker）</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// autoCompact 连续失败 3 次后停止重试</span></span><br><span class="line"><span class="comment">// 背景：曾出现 1,279 个会话连续失败 50+ 次，每天浪费 ~250K API 调用</span></span><br><span class="line"><span class="keyword">const</span> MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (tracking?.consecutiveFailures &gt;= MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES) &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123; wasCompacted: <span class="literal">false</span> &#125;  <span class="comment">// 熔断，不再尝试</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="910-轻量事件系统lightweight-event-architecture"><a class="markdownIt-Anchor" href="#910-轻量事件系统lightweight-event-architecture"></a> 9.10 轻量事件系统（Lightweight Event Architecture）</h2>
+<h3 id="设计目标-10"><a class="markdownIt-Anchor" href="#设计目标-10"></a> 设计目标</h3>
+<p>传统的 <code>EventEmitter</code> 对于大多数内部通知场景过于重量。Claude Code 实现了三层事件原语，按粒度选择：</p>
+<h3 id="三层抽象"><a class="markdownIt-Anchor" href="#三层抽象"></a> 三层抽象</h3>
+<div class="mermaid">
+flowchart TB
+    subgraph Layer1["第一层：createSignal<br/>（纯事件通知）"]
+        S1["subscribe(listener)"]
+        S2["emit(...args)"]
+        S3["clear()"]
+        S1 --- S2 --- S3
+    end
+    
+    subgraph Layer2["第二层：createStore<br/>（可观察状态）"]
+        ST1["getState()"]
+        ST2["setState(updater)"]
+        ST3["subscribe(listener)"]
+        ST1 --- ST2 --- ST3
+    end
+    
+    subgraph Layer3["第三层：EventEmitter<br/>（复杂 UI 事件）"]
+        E1["on(type, handler)"]
+        E2["emit(type, event)"]
+        E3["stopImmediatePropagation()"]
+        E1 --- E2 --- E3
+    end
+    
+    Layer1 -->|"需要存储状态"| Layer2
+    Layer2 -->|"需要传播控制"| Layer3
+    
+    style Layer1 fill:#e8f5e9
+    style Layer2 fill:#e3f2fd
+    style Layer3 fill:#fff3e0
+</div>
+<h3 id="createsignal-42-行实现的发布订阅"><a class="markdownIt-Anchor" href="#createsignal-42-行实现的发布订阅"></a> createSignal —— 42 行实现的发布/订阅</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createSignal</span>&lt;<span class="title">Args</span> <span class="title">extends</span> <span class="title">unknown</span>[] = []&gt;(<span class="params"></span>): <span class="title">Signal</span>&lt;<span class="title">Args</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> listeners = <span class="keyword">new</span> Set&lt;<span class="function">(<span class="params">...args: Args</span>) =&gt;</span> <span class="built_in">void</span>&gt;()</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    subscribe(listener) &#123;</span><br><span class="line">      listeners.add(listener)</span><br><span class="line">      <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123; listeners.delete(listener) &#125;  <span class="comment">// 返回取消订阅函数</span></span><br><span class="line">    &#125;,</span><br><span class="line">    emit(...args) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">const</span> listener of listeners) listener(...args)</span><br><span class="line">    &#125;,</span><br><span class="line">    clear() &#123;</span><br><span class="line">      listeners.clear()</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>使用场景（20+ 处）</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置变更通知</span></span><br><span class="line"><span class="keyword">const</span> settingsChanged = createSignal&lt;[SettingSource]&gt;()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> onSettingsChanged = settingsChanged.subscribe</span><br><span class="line"></span><br><span class="line"><span class="comment">// Fast Mode 状态变化</span></span><br><span class="line"><span class="keyword">const</span> fastModeChanged = createSignal()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> onFastModeChanged = fastModeChanged.subscribe</span><br><span class="line"></span><br><span class="line"><span class="comment">// 技能文件变更</span></span><br><span class="line"><span class="keyword">const</span> skillChanged = createSignal&lt;[<span class="built_in">string</span>]&gt;()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> onSkillChanged = skillChanged.subscribe</span><br></pre></td></tr></table></figure>
+<h3 id="createstore-35-行实现的状态容器"><a class="markdownIt-Anchor" href="#createstore-35-行实现的状态容器"></a> createStore —— 35 行实现的状态容器</h3>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createStore</span>&lt;<span class="title">T</span>&gt;(<span class="params">initialState: T, onChange?: OnChange&lt;T&gt;</span>): <span class="title">Store</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> state = initialState</span><br><span class="line">  <span class="keyword">const</span> listeners = <span class="keyword">new</span> Set&lt;Listener&gt;()</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    getState: <span class="function"><span class="params">()</span> =&gt;</span> state,</span><br><span class="line">    setState: <span class="function">(<span class="params">updater: (<span class="params">prev: T</span>) =&gt; T</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> prev = state</span><br><span class="line">      <span class="keyword">const</span> next = updater(prev)</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">Object</span>.is(next, prev)) <span class="keyword">return</span>  <span class="comment">// 引用相等则跳过通知</span></span><br><span class="line">      state = next</span><br><span class="line">      onChange?.(&#123; newState: next, oldState: prev &#125;)</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">const</span> listener of listeners) listener()</span><br><span class="line">    &#125;,</span><br><span class="line">    subscribe: <span class="function">(<span class="params">listener: Listener</span>) =&gt;</span> &#123;</span><br><span class="line">      listeners.add(listener)</span><br><span class="line">      <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> listeners.delete(listener)</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="选择指南"><a class="markdownIt-Anchor" href="#选择指南"></a> 选择指南</h3>
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>选择</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“某事发生了”，无状态</td>
+<td><code>createSignal</code></td>
+<td>最轻量，无内存开销</td>
+</tr>
+<tr>
+<td>“状态变了”，需要当前值</td>
+<td><code>createStore</code></td>
+<td>有 <code>getState()</code>，支持 React 集成</td>
+</tr>
+<tr>
+<td>复杂 UI 事件（键盘、鼠标）</td>
+<td><code>EventEmitter</code></td>
+<td>支持 <code>stopImmediatePropagation()</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="911-上下文压缩系统context-compression"><a class="markdownIt-Anchor" href="#911-上下文压缩系统context-compression"></a> 9.11 上下文压缩系统（Context Compression）</h2>
+<h3 id="设计目标-11"><a class="markdownIt-Anchor" href="#设计目标-11"></a> 设计目标</h3>
+<p>LLM 有上下文窗口限制。当对话变长时，需要<strong>自动压缩</strong>以保持在限制内，同时尽可能保留重要信息。</p>
+<h3 id="多层压缩策略"><a class="markdownIt-Anchor" href="#多层压缩策略"></a> 多层压缩策略</h3>
+<div class="mermaid">
+flowchart LR
+    subgraph 策略["压缩策略（成本递增）"]
+        direction TB
+        M1["Micro-compact<br/>清除旧工具结果<br/>（零 API 调用）"]
+        M2["Session Memory Compact<br/>基于记忆裁剪消息<br/>（零 API 调用）"]
+        M3["Full Compact<br/>LLM 摘要整个对话<br/>（1次 API 调用）"]
+        M4["Reactive Compact<br/>响应 413 错误<br/>（紧急压缩）"]
+    end
+    
+    TokenCount["Token 计数"] -->|"接近阈值"| M1
+    M1 -->|"仍然超限"| M2
+    M2 -->|"仍然超限"| M3
+    API413["API 返回 413"] --> M4
+    
+    style M1 fill:#e8f5e9
+    style M2 fill:#e3f2fd
+    style M3 fill:#fff3e0
+    style M4 fill:#ffebee
+</div>
+<p><strong>Micro-compact（最轻量）</strong>：选择性清除旧工具结果</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 只清除这些工具的历史输出（它们的结果通常很大且时效性弱）</span></span><br><span class="line"><span class="keyword">const</span> COMPACTABLE_TOOLS = <span class="keyword">new</span> Set&lt;<span class="built_in">string</span>&gt;([</span><br><span class="line">  FILE_READ_TOOL_NAME,</span><br><span class="line">  ...SHELL_TOOL_NAMES,</span><br><span class="line">  GREP_TOOL_NAME, GLOB_TOOL_NAME,</span><br><span class="line">  WEB_SEARCH_TOOL_NAME, WEB_FETCH_TOOL_NAME,</span><br><span class="line">  FILE_EDIT_TOOL_NAME, FILE_WRITE_TOOL_NAME,</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+<p><strong>Auto-compact 阈值计算</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getAutoCompactThreshold</span>(<span class="params">model: <span class="built_in">string</span></span>): <span class="title">number</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> effectiveContextWindow = getEffectiveContextWindowSize(model)</span><br><span class="line">  <span class="keyword">return</span> effectiveContextWindow - AUTOCOMPACT_BUFFER_TOKENS  <span class="comment">// 13,000 token 缓冲</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 有效窗口 = 上下文窗口 - 预留输出 token（20,000）</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getEffectiveContextWindowSize</span>(<span class="params">model: <span class="built_in">string</span></span>): <span class="title">number</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> getContextWindowForModel(model) - <span class="built_in">Math</span>.min(getMaxOutputTokens(model), <span class="number">20</span>_000)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>熔断保护</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 防止无限重试压缩（曾浪费 250K API 调用/天）</span></span><br><span class="line"><span class="keyword">const</span> MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> AUTOCOMPACT_BUFFER_TOKENS = <span class="number">13</span>_000      <span class="comment">// 触发阈值缓冲</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> WARNING_THRESHOLD_BUFFER_TOKENS = <span class="number">20</span>_000 <span class="comment">// 黄色警告</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> ERROR_THRESHOLD_BUFFER_TOKENS = <span class="number">20</span>_000   <span class="comment">// 红色警告</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="912-设计模式总结"><a class="markdownIt-Anchor" href="#912-设计模式总结"></a> 9.12 设计模式总结</h2>
+<div class="mermaid">
+mindmap
+  root((工程实践))
+    启动优化
+      快速路径分发
+        零静态导入
+        分层拦截
+      并行预取
+        子进程与import重叠
+        延迟预取
+    核心架构
+      AsyncGenerator管道
+        生产者-消费者解耦
+        背压天然支持
+      工具即数据
+        buildTool工厂
+        平坦数组组合
+      依赖注入
+        typeof签名同步
+        精简4依赖
+    类型安全
+      DeepImmutable
+        编译期不可变
+        交集逃逸阀
+      构建时裁剪
+        feature门控
+        两层策略
+    运行时健壮
+      多层记忆化
+        TTL写入刷新
+        LRU防泄漏
+        异步去重
+      弹性恢复
+        指数退避+抖动
+        模型降级
+        熔断器
+      上下文压缩
+        多策略递进
+        阈值自适应
+    事件通信
+      createSignal
+      createStore
+      EventEmitter
+</div>
+<h3 id="核心原则提炼"><a class="markdownIt-Anchor" href="#核心原则提炼"></a> 核心原则提炼</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>模式</th>
+<th>核心思想</th>
+<th>关键收益</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>快速路径分发</td>
+<td>为轻量请求提供捷径</td>
+<td>–version 零加载，毫秒响应</td>
+</tr>
+<tr>
+<td>2</td>
+<td>并行预取</td>
+<td>I/O 等待与 CPU 计算重叠</td>
+<td>启动时间减少 ~65ms</td>
+</tr>
+<tr>
+<td>3</td>
+<td>AsyncGenerator</td>
+<td>生产者-消费者的优雅实现</td>
+<td>流式 UI 更新 + 背压控制</td>
+</tr>
+<tr>
+<td>4</td>
+<td>依赖注入</td>
+<td>接口抽象外部依赖</td>
+<td>测试零 spy 样板 + 类型安全</td>
+</tr>
+<tr>
+<td>5</td>
+<td>工具即数据</td>
+<td>数据对象取代类继承</td>
+<td>注册/过滤/排序/序列化全简化</td>
+</tr>
+<tr>
+<td>6</td>
+<td>深度不可变</td>
+<td>编译期防止状态突变</td>
+<td>零运行时开销 + 100% 安全</td>
+</tr>
+<tr>
+<td>7</td>
+<td>构建时裁剪</td>
+<td>两层门控（构建+运行时）</td>
+<td>外部构建无内部代码泄露</td>
+</tr>
+<tr>
+<td>8</td>
+<td>多层记忆化</td>
+<td>TTL/LRU/异步去重三种原语</td>
+<td>防内存泄漏 + 防雷群</td>
+</tr>
+<tr>
+<td>9</td>
+<td>弹性恢复</td>
+<td>退避/降级/熔断/抑制</td>
+<td>250K API 调用/天 → 0 浪费</td>
+</tr>
+<tr>
+<td>10</td>
+<td>轻量事件</td>
+<td>按粒度选择 Signal/Store/Emitter</td>
+<td>42 行代码覆盖 80% 场景</td>
+</tr>
+<tr>
+<td>11</td>
+<td>上下文压缩</td>
+<td>多策略递进（成本递增）</td>
+<td>对话无限长而不溢出</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="913-核心文件速查表"><a class="markdownIt-Anchor" href="#913-核心文件速查表"></a> 9.13 核心文件速查表</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>职责</th>
+<th>模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/entrypoints/cli.tsx</code></td>
+<td>入口分发：快速路径 + 动态导入</td>
+<td>快速路径</td>
+</tr>
+<tr>
+<td><code>src/main.tsx</code></td>
+<td>启动：并行预取 + 延迟加载</td>
+<td>并行预取</td>
+</tr>
+<tr>
+<td><code>src/query.ts</code></td>
+<td>Agent 循环：AsyncGenerator 状态机</td>
+<td>异步生成器</td>
+</tr>
+<tr>
+<td><code>src/query/deps.ts</code></td>
+<td>依赖注入容器（4 个 I/O 依赖）</td>
+<td>DI</td>
+</tr>
+<tr>
+<td><code>src/Tool.ts</code></td>
+<td>工具类型定义 + <code>buildTool()</code> 工厂</td>
+<td>工具即数据</td>
+</tr>
+<tr>
+<td><code>src/tools.ts</code></td>
+<td>工具注册表：平坦数组 + 条件组合</td>
+<td>工具即数据</td>
+</tr>
+<tr>
+<td><code>src/state/AppStateStore.ts</code></td>
+<td><code>DeepImmutable&lt;AppState&gt;</code> 定义</td>
+<td>深度不可变</td>
+</tr>
+<tr>
+<td><code>src/state/store.ts</code></td>
+<td><code>createStore</code> 可观察状态容器</td>
+<td>轻量事件</td>
+</tr>
+<tr>
+<td><code>src/utils/signal.ts</code></td>
+<td><code>createSignal</code> 发布/订阅原语</td>
+<td>轻量事件</td>
+</tr>
+<tr>
+<td><code>src/utils/memoize.ts</code></td>
+<td>三种记忆化原语实现</td>
+<td>记忆化</td>
+</tr>
+<tr>
+<td><code>src/services/api/withRetry.ts</code></td>
+<td>重试/退避/降级/熔断</td>
+<td>弹性恢复</td>
+</tr>
+<tr>
+<td><code>src/services/compact/autoCompact.ts</code></td>
+<td>自动压缩阈值 + 熔断器</td>
+<td>上下文压缩</td>
+</tr>
+<tr>
+<td><code>src/services/compact/microCompact.ts</code></td>
+<td>轻量压缩（清除工具结果）</td>
+<td>上下文压缩</td>
+</tr>
+<tr>
+<td><code>src/utils/settings/mdm/rawRead.ts</code></td>
+<td>MDM 子进程并行读取</td>
+<td>并行预取</td>
+</tr>
+<tr>
+<td><code>src/utils/secureStorage/keychainPrefetch.ts</code></td>
+<td>Keychain 并行预取</td>
+<td>并行预取</td>
+</tr>
+<tr>
+<td><code>src/utils/thinking.ts</code></td>
+<td><code>feature()</code> 两层门控示例</td>
+<td>构建时裁剪</td>
+</tr>
+<tr>
+<td><code>src/ink/events/emitter.ts</code></td>
+<td>自定义 EventEmitter（传播控制）</td>
+<td>轻量事件</td>
+</tr>
+</tbody>
+</table>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#91-快速路径分发fast-path-dispatch"><span class="toc-text"> 9.1 快速路径分发（Fast Path Dispatch）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现机制"><span class="toc-text"> 实现机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键代码"><span class="toc-text"> 关键代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设计原则"><span class="toc-text"> 设计原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#92-并行预取parallel-prefetch"><span class="toc-text"> 9.2 并行预取（Parallel Prefetch）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-2"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三阶段并行策略"><span class="toc-text"> 三阶段并行策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键代码-2"><span class="toc-text"> 关键代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#时间线可视化"><span class="toc-text"> 时间线可视化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#93-异步生成器实现流式处理asyncgenerator-pipeline"><span class="toc-text"> 9.3 异步生成器实现流式处理（AsyncGenerator Pipeline）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-3"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成器管道架构"><span class="toc-text"> 生成器管道架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键代码-3"><span class="toc-text"> 关键代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#为什么用生成器而不用回调eventemitter"><span class="toc-text"> 为什么用生成器而不用回调&#x2F;EventEmitter？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#94-依赖注入提高可测试性dependency-injection"><span class="toc-text"> 9.4 依赖注入提高可测试性（Dependency Injection）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-4"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现方案"><span class="toc-text"> 实现方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#类型安全保证"><span class="toc-text"> 类型安全保证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设计原则-2"><span class="toc-text"> 设计原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#95-工具即数据tool-as-data"><span class="toc-text"> 9.5 工具即数据（Tool as Data）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-5"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现方案-2"><span class="toc-text"> 实现方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据对象-vs-类实例的优势"><span class="toc-text"> 数据对象 vs 类实例的优势</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#96-深度不可变deepimmutable"><span class="toc-text"> 9.6 深度不可变（DeepImmutable）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-6"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现机制-2"><span class="toc-text"> 实现机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#应用场景"><span class="toc-text"> 应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#状态修改的唯一路径"><span class="toc-text"> 状态修改的唯一路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设计原则-3"><span class="toc-text"> 设计原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#97-构建时特性裁剪build-time-feature-gating"><span class="toc-text"> 9.7 构建时特性裁剪（Build-time Feature Gating）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-7"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#两层门控架构"><span class="toc-text"> 两层门控架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键代码模式"><span class="toc-text"> 关键代码模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#已知特性标志50"><span class="toc-text"> 已知特性标志（50+）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#98-多层记忆化tiered-memoization"><span class="toc-text"> 9.8 多层记忆化（Tiered Memoization）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-8"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三种记忆化原语"><span class="toc-text"> 三种记忆化原语</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#核心实现"><span class="toc-text"> 核心实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用场景分布"><span class="toc-text"> 使用场景分布</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#99-弹性错误恢复resilient-error-recovery"><span class="toc-text"> 9.9 弹性错误恢复（Resilient Error Recovery）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-9"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多策略恢复架构"><span class="toc-text"> 多策略恢复架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键实现"><span class="toc-text"> 关键实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#910-轻量事件系统lightweight-event-architecture"><span class="toc-text"> 9.10 轻量事件系统（Lightweight Event Architecture）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-10"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三层抽象"><span class="toc-text"> 三层抽象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#createsignal-42-行实现的发布订阅"><span class="toc-text"> createSignal —— 42 行实现的发布&#x2F;订阅</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#createstore-35-行实现的状态容器"><span class="toc-text"> createStore —— 35 行实现的状态容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#选择指南"><span class="toc-text"> 选择指南</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#911-上下文压缩系统context-compression"><span class="toc-text"> 9.11 上下文压缩系统（Context Compression）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设计目标-11"><span class="toc-text"> 设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多层压缩策略"><span class="toc-text"> 多层压缩策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#912-设计模式总结"><span class="toc-text"> 9.12 设计模式总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#核心原则提炼"><span class="toc-text"> 核心原则提炼</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#913-核心文件速查表"><span class="toc-text"> 9.13 核心文件速查表</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/05/08/chapter-08-extension-mechanisms/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-08T04:30:00.000Z">2026.05.08</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第八章：扩展机制——Plugins、Skills与Multi-Agent</strong>
+          </a>
+        
+          <a href="/2026/05/07/chapter-07-config-system/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-07T04:30:00.000Z">2026.05.07</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第七章：配置系统——灵活性的来源</strong>
+          </a>
+        
+          <a href="/2026/05/06/chapter-06-terminal-ui/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-06T04:30:00.000Z">2026.05.06</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第六章：终端 UI——在命令行里做&#34;前端&#34;</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/08/01/%E4%B8%BA%E4%BB%80%E4%B9%88%20long%20short-term%20%E4%BA%8C%E5%88%86%E6%B3%95%E5%A4%B1%E6%95%88%E4%BA%86/"><span>上一篇</span><strong>为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读</strong></a>
+    <a href="/2026/05/08/chapter-08-extension-mechanisms/"><span>下一篇</span><strong>第八章：扩展机制——Plugins、Skills与Multi-Agent</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

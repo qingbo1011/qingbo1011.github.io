@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>TencentDB-Agent-Memory的记忆设计 · Quinn</title>
+<meta name="description" content="TencentDB-Agent-Memory的记忆设计 记忆系统要回答的两个问题 给 Agent 加记忆，绕不开两个问题：一段对话过去之后，什么值得留下；下一轮开始之前，该把什么塞回上下文。前一个问题决定写链路，后一个决定读链路。腾讯开源的…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/08/03/TencentDB-Agent-Memory%E7%9A%84%E8%AE%B0%E5%BF%86%E8%AE%BE%E8%AE%A1/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="TencentDB-Agent-Memory的记忆设计 · Quinn" />
+<meta property="og:description" content="TencentDB-Agent-Memory的记忆设计 记忆系统要回答的两个问题 给 Agent 加记忆，绕不开两个问题：一段对话过去之后，什么值得留下；下一轮开始之前，该把什么塞回上下文。前一个问题决定写链路，后一个决定读链路。腾讯开源的…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/08/03/TencentDB-Agent-Memory%E7%9A%84%E8%AE%B0%E5%BF%86%E8%AE%BE%E8%AE%A1/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Memory · 2026.08.03
+      
+    </p>
+    <h1>TencentDB-Agent-Memory的记忆设计</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Memory/">Memory</a>
+  
+  <span class="post-meta__item">14 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Memory/">#Memory</a>
+      
+        <a href="/tags/TencentDB-Agent-Memory/">#TencentDB-Agent-Memory</a>
+      
+        <a href="/tags/Agent-Runtime/">#Agent Runtime</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="记忆系统要回答的两个问题"><a class="markdownIt-Anchor" href="#记忆系统要回答的两个问题"></a> 记忆系统要回答的两个问题</h2>
+<p>给 Agent 加记忆，绕不开两个问题：一段对话过去之后，什么值得留下；下一轮开始之前，该把什么塞回上下文。前一个问题决定写链路，后一个决定读链路。腾讯开源的 <a href="https://github.com/TencentCloud/TencentDB-Agent-Memory" target="_blank" rel="noopener">TencentDB-Agent-Memory</a>（下文简称 TAM）在这两条链路上做了一套完整的设计，本文以 v2.0.1 和 v3 数据面为准，讲清楚它是怎么写、怎么读，以及三种不同形态的 Agent 该怎么接上去。</p>
+<p>TAM 把记忆分成四层：</p>
+<ol>
+<li>L0 是原始对话，逐条保存；</li>
+<li>L1 是从对话里抽出来的原子记忆，只有 persona、episodic、instruction 三类，分别对应用户的稳定属性、客观发生的事件和用户对 AI 的长期要求；</li>
+<li>L2 是按场景组织的 Markdown 文件，一个场景一个文件；</li>
+<li>L3 是一份用户画像。</li>
+</ol>
+<p>L0 由接入方写入，L1 到 L3 全部由服务端异步生成，接入方不参与。</p>
+<p>整个系统由三个服务组成：</p>
+<ul>
+<li>Memory Core 负责存储和 L1 到 L3 的提炼管线，对外只有一套 HTTP 接口；</li>
+<li>Memory Proxy 是一个 LLM 请求代理，给改不了代码的黑盒 Agent 用；</li>
+<li>Memory Hub 是管理面板。Skill、Wiki、CodeGraph 这些资产也挂在同一套体系下，本文不展开。</li>
+</ul>
+<div class="mermaid">
+flowchart LR
+    subgraph clients["Agent 接入方"]
+        OC["OpenClaw 插件"]
+        CC["Claude Code 等黑盒 Agent"]
+        RT["自研 Agent Runtime"]
+    end
+    Proxy["Memory Proxy\nLLM 请求代理"]
+    Core["Memory Core\nL0 存储 + L1/L2/L3 管线"]
+    Hub["Memory Hub\n管理面板"]
+    LLM["上游 LLM"]
+
+    OC -- "SDK / HTTP" --> Core
+    CC -- "改 base URL" --> Proxy
+    Proxy -- "透明转发" --> LLM
+    Proxy -- "注入 / 回写" --> Core
+    RT -- "SDK" --> Core
+    Hub --> Core
+
+    classDef client fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
+    classDef svc fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef ext fill:#FFF8E1,stroke:#F9A825,color:#7F6000
+    class OC,CC,RT client
+    class Proxy,Core,Hub svc
+    class LLM ext
+</div>
+<h2 id="写链路接入方切增量服务端分层提炼"><a class="markdownIt-Anchor" href="#写链路接入方切增量服务端分层提炼"></a> 写链路：接入方切增量，服务端分层提炼</h2>
+<h3 id="接入方只负责把这一轮的对话交出去"><a class="markdownIt-Anchor" href="#接入方只负责把这一轮的对话交出去"></a> 接入方只负责把这一轮的对话交出去</h3>
+<p>写接口只有一个，接收一个 session 下的一组消息，每条只有 role 和 content，外加可选时间戳。v3 数据面强制要求 team、agent、user 三个隔离维度，L0 和 L1 还强制要求 session_id。服务端收到之后落 L0，返回一组消息 ID，然后异步通知管线。接口没有幂等键，同一批消息发两次就会有两份 L0。</p>
+<p>因此接入方要做的事集中在&quot;发什么&quot;上。TAM 的官方插件和 SDK 指南给出的做法是三步：先按位置切片，只取这一轮新增的消息；再把用户消息换回干净版本，因为召回结果会被拼在用户消息前面，如果原样写回 L0，下一轮检索就会拿这段被污染的文本去做 embedding，形成反馈环；最后清洗，去掉图片的 base64、助手回复里的代码块、太短或纯符号的消息。这三步里，服务端对切片边界完全无感知，它只看到一批已经切好的消息。</p>
+<div class="mermaid">
+flowchart TD
+    A["Agent 一轮结束\n拿到完整消息历史"] --> B["按位置切片\n只保留本轮新增消息"]
+    B --> C["还原被召回污染的用户消息"]
+    C --> D["清洗：去 base64 / 代码块 / 噪声"]
+    D --> E{"还有消息吗"}
+    E -- "没有" --> F["跳过本轮写入"]
+    E -- "有" --> G["调用写接口\n携带 team / agent / user / session"]
+    G --> H["Memory Core 落 L0\n写向量索引"]
+    H --> I["通知管线\n累加会话轮数、重置空闲定时器"]
+
+    classDef step fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef decision fill:#FFF8E1,stroke:#F9A825,color:#7F6000
+    classDef store fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+    classDef skip fill:#FFEBEE,stroke:#C62828,color:#B71C1C
+    class A,B,C,D,G step
+    class E decision
+    class H,I store
+    class F skip
+</div>
+<h3 id="服务端l0-之后的异步管线"><a class="markdownIt-Anchor" href="#服务端l0-之后的异步管线"></a> 服务端：L0 之后的异步管线</h3>
+<p>L0 落库之后，管线的状态机按 session 维护。L1 的触发有两个条件，满足任一即可：</p>
+<ol>
+<li>这个 session 累计的对话轮数达到阈值
+<ul>
+<li>阈值有一个 warm-up 机制：新 session 从 1 开始，每跑完一次 L1 翻一倍，直到达到配置值（默认 5）为止。这样一个新用户聊完第一轮就能有 L1，不用等攒够五轮。</li>
+</ul>
+</li>
+<li>session 空闲超过一段时间（默认十分钟）</li>
+</ol>
+<p>L1 抽取用一次 LLM 调用完成两件事。第一件是情境切分，模型拿到上一个情境的名字、一段背景消息和待处理的新消息，判断新消息是延续上一个情境还是切换到了新情境，情境名的格式固定为&quot;我在和某某做某事&quot;。第二件是在情境内提取记忆，每条记忆带类型、优先级分数和来源消息 ID。提示词对三类记忆各有一套打分规则和丢弃线，比如 episodic 低于 60 分直接丢，instruction 低于 70 分丢，而 -1 分保留给&quot;极其严格的全局死命令&quot;。<strong>抽取原则里最重要的一条是&quot;跳出当前对话依然成立&quot;</strong>，所以主语必须是&quot;用户（姓名）“或&quot;AI”。</p>
+<p>抽出来的记忆不直接入库，要先过一道<strong>冲突检测</strong>。每条新记忆先用向量检索找出最相似的 5 条已有记忆，没有 embedding 服务就退化成 BM25，两者都没有就跳过检测。然后把所有新记忆和各自的候选池打包，用一次 LLM 调用批量判定，每条给出四种决策之一：<strong>新增、更新已有记录、与多条已有记录合并、跳过</strong>。合并时类型和优先级都可以变。</p>
+<p>L1 完成后不会立刻跑 L2，而是推进一个定时器。L2 有三个时间参数：L1 完成后的延迟（默认 10 秒）、两次 L2 之间的最小间隔（默认 15 分钟）、即使没有新对话也要跑一次的最大间隔（默认 1 小时）。说人话就是：**L1 一跑完，十秒后 L2 就想跟上，但两次 L2 至少隔十五分钟，所以对话再密集，场景文件最多每15钟整理一次；对话停了，L2 每小时还会兜底跑一次，把没归档的记忆收进场景，直到这个 session 一整天没动静才停。**L2 的执行方式和 L1 不同，它不是一次结构化输出，而是一个带文件工具的 LLM，工作目录被限定在场景文件目录内，其它系统文件对它不可见。它读场景索引和新的 L1 记忆，自己决定是新建场景文件、追加到已有文件，还是合并两个场景。每个场景有一个热度值，记录它被记忆命中的累计次数，索引按热度排序。如果 L2 在处理过程中判断画像该更新了，可以在输出里留一个信号，L3 会优先响应。</p>
+<p>L2 完成后直接把 L3 任务入队。L3 有自己的触发判断，按优先级依次是：</p>
+<ol>
+<li>L2 主动请求</li>
+<li>首次冷启动，即已有场景文件但还没有画像</li>
+<li>画像文件正文丢失需要恢复</li>
+<li>第一次 L2 完成时画像已经存在（比如通过接口或面板手写、从旧版本迁移），用第一批场景立刻重做一次画像，不等阈值</li>
+<li>自上次生成画像以来累计的新记忆达到阈值（默认 50 条）</li>
+</ol>
+<p>L3 生成器同样是一个带工具的 LLM，读全部场景文件，输出一份画像，末尾附上场景导航。</p>
+<div class="mermaid">
+flowchart TD
+    L0["L0 写入\n累加轮数、重置空闲定时器"] --> T1{"轮数达到阈值\n或空闲超时"}
+    T1 -- "否" --> Wait["等待下一次写入"]
+    T1 -- "是" --> L1["L1 抽取\n情境切分 + 三类记忆 + 打分"]
+    L1 --> Dedup["冲突检测\n向量 / BM25 召回候选\n批量判定 新增 / 更新 / 合并 / 跳过"]
+    Dedup --> Store1["写 L1 记录\n翻倍 warm-up 阈值"]
+    Store1 --> T2{"L2 定时器\n延迟 / 最小间隔 / 最大间隔"}
+    T2 --> L2["L2 场景整理\n沙箱文件工具 LLM 维护场景文件与索引"]
+    L2 --> Empty{"有新数据吗"}
+    Empty -- "没有" --> Stop["不推进 L3"]
+    Empty -- "有" --> T3{"L3 触发判断\n主动请求 / 冷启动 / 恢复 / 已有画像时的首场景 / 阈值"}
+    T3 -- "不满足" --> Stop
+    T3 -- "满足" --> L3["L3 生成画像\n末尾附场景导航"]
+
+    classDef step fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef decision fill:#FFF8E1,stroke:#F9A825,color:#7F6000
+    classDef store fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+    classDef idle fill:#ECEFF1,stroke:#546E7A,color:#263238
+    class L1,Dedup,L2,L3 step
+    class T1,T2,T3,Empty decision
+    class L0,Store1 store
+    class Wait,Stop idle
+</div>
+<p>L1 任务按 session 加锁，L2 和 L3 按 agent 加锁，因为同一个 agent 的场景目录和画像文件是共享的，不同 session 的 L2 同时写会撞文件。管线状态有本地和远程两种后端，单机用进程内的 Map 和定时器，服务化部署用 Redis 的分片 ZSET 做定时器，所有节点都跑扫描器，靠 Lua 原子认领避免重复消费。</p>
+<h2 id="读链路三路并行两块注入一组工具"><a class="markdownIt-Anchor" href="#读链路三路并行两块注入一组工具"></a> 读链路：三路并行，两块注入，一组工具</h2>
+<p>读链路发生在每轮构造 prompt 之前，输入是当前这一轮的用户文本。TAM 把召回拆成三路并行，任何一路失败不影响其它两路。</p>
+<p>第一路是 L1 检索。默认策略是混合检索：FTS5 做 BM25 关键词匹配，向量库做余弦相似度，两路结果用 <strong>RRF 融合，常数取 60</strong>。融合后按分数阈值过滤（默认 0.3），再按条数上限截断（默认 5 条），还可以配置单条字符上限和总字符上限，<strong>超出的部分截断并附一句提示，告诉模型可以用工具看完整内容</strong>。没有配置 embedding 服务时自动退化成纯 BM25。</p>
+<p>第二路读 L3 画像全文。</p>
+<p>第三路读 L2 场景索引。注意这里读的是索引，不是场景正文。索引按热度排序，每条只有路径、热度和一句摘要，<strong>正文留给模型在需要时用工具去读</strong>。（L2的读取类似SKILL的渐进式披露）</p>
+<p>三路都有整体超时（默认 5 秒），超时返回空结果，Agent 照常运行，只是这一轮没有记忆。</p>
+<p>召回结果被拆成两块注入，拆分的依据是稳定性：</p>
+<ol>
+<li>L3 画像、L2 索引和一段工具使用指南每轮基本不变，放在 system prompt 末尾，让上游的 <strong>prompt cache 能命中</strong>；</li>
+<li>L1 检索结果每轮都不同，拼在用户消息前面，不去碰 system prompt。</li>
+</ol>
+<aside class="lab-callout lab-callout--tip" role="note" aria-label="Tip">
+  <header class="lab-callout__header">
+    <span class="lab-callout__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M8.2 14.7A7 7 0 1 1 15.8 14.7c-.8.6-1.3 1.4-1.3 2.3h-5c0-.9-.5-1.7-1.3-2.3Z"></path></svg></span>
+    <span class="lab-callout__title">Tip</span>
+  </header>
+  <div class="lab-callout__body"><p>prompt cache 按前缀匹配，改动点之后的内容全部重算。历史消息是 context 的大头，L1 放在最新用户消息前面，保护的就是它前面这一大段历史；L2、L3 放在 system 里，更新频率再低，一变就是它后面的整段历史重算。</p>
+<p>自研 agent runtime 可以自己定这条线。把 L2、L3 也挪到末尾，代价是这块内容每轮重算一次，换来的是历史永远不被它们打断；会话越长、L2/L3 变得越勤，这笔交换越划算。另一条路是学 Proxy，会话开始拍一次 L2/L3 快照，会话内不刷新，两头都不付，新画像等下个会话再看。</p></div>
+</aside>
+<p>工具使用指南告诉模型：注入的记忆片段不够回答问题时，可以主动调三个工具，搜索 L1、搜索 L0 原始对话、按路径读场景文件；工具每轮合计最多调用 3 次，三次都没找到就说明这条信息不在记忆里，直接回答，不要再搜。</p>
+<div class="mermaid">
+flowchart TD
+    Q["本轮用户文本"] --> P{"三路并行\n单路失败不影响其它"}
+    P --> S1["L1 混合检索\nBM25 + 向量 → RRF 融合\n阈值 0.3、最多 5 条、字符预算"]
+    P --> S2["L3 画像全文"]
+    P --> S3["L2 场景索引\n路径 + 热度 + 摘要，不含正文"]
+    S1 --> Dyn["动态块\n拼在用户消息前"]
+    S2 --> Stable["稳定块\n拼在 system 末尾\n对 prompt cache 友好"]
+    S3 --> Stable
+    Guide["工具指南\n搜 L1 / 搜 L0 / 读场景\n每轮合计最多 3 次"] --> Stable
+    Dyn --> M["模型"]
+    Stable --> M
+    M -. "不够用时主动调工具" .-> Tools["记忆工具"]
+    Tools --> Core["Memory Core"]
+    P -. "超时 5 秒" .-> Empty["空注入，Agent 照常运行"]
+
+    classDef input fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
+    classDef decision fill:#FFF8E1,stroke:#F9A825,color:#7F6000
+    classDef step fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef store fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+    classDef skip fill:#FFEBEE,stroke:#C62828,color:#B71C1C
+    class Q input
+    class P decision
+    class S1,S2,S3,Guide,Dyn,Stable step
+    class M,Tools,Core store
+    class Empty skip
+</div>
+<h2 id="三种接入模式"><a class="markdownIt-Anchor" href="#三种接入模式"></a> 三种接入模式</h2>
+<aside class="lab-callout lab-callout--note" role="note" aria-label="Note">
+  <header class="lab-callout__header">
+    <span class="lab-callout__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7h.01"></path></svg></span>
+    <span class="lab-callout__title">Note</span>
+  </header>
+  <div class="lab-callout__body"><p>TAM 的读写链路本身不依赖任何框架，接入方式取决于 Agent 的形态：能不能挂钩子，能不能改代码。</p></div>
+</aside>
+<h3 id="插件式openclaw"><a class="markdownIt-Anchor" href="#插件式openclaw"></a> 插件式：OpenClaw</h3>
+<p>OpenClaw 有插件机制，TAM 提供一个轻量客户端插件，只做框架适配，不跑管线、不起向量库、不做抽取。它注册两个钩子和三个工具。构造 prompt 之前的钩子负责召回，同时把干净的用户文本和当前消息条数按 session 缓存起来；一轮结束的钩子负责捕获，用缓存的条数切增量、用缓存的文本还原用户消息，然后调 SDK 写 L0。三个工具对应读链路里的搜 L1、搜 L0 和读场景文件。插件通过配置项决定是否注入画像、是否注入场景索引、每轮最多注入几条 L1。</p>
+<h3 id="黑盒代理式claude-code-codex-codebuddy-等"><a class="markdownIt-Anchor" href="#黑盒代理式claude-code-codex-codebuddy-等"></a> 黑盒代理式：Claude Code、Codex、CodeBuddy 等</h3>
+<p>这类 Agent 改不了代码，也没有钩子，但它们都有一个共同点：调模型的 base URL 可以配。Memory Proxy 在这里就可以原样转发 Anthropic Messages 或 OpenAI Chat Completions 协议，在一进一出之间完成记忆的读写。</p>
+<p>请求进来先鉴权，用请求头里的 user key 去 Memory Core 反查 user_id，实例 ID 从 URL 路径里取。新会话的第一个请求会被拦下来做初始化：Proxy 借用 Agent 自带的提问工具（Claude Code 是 AskUserQuestion）弹出三步选择，团队、Agent、任务，选完之后这个绑定关系被持久化，同一会话后续不再问。初始化完成后，每轮请求的 system prompt 末尾会被注入三块内容：L3 画像全文、L2 场景索引、一段记忆工具说明。响应回来之后，Proxy 从最后一条用户消息里抽出真正的提问（剥掉 Claude Code 塞进去的 system-reminder 和各种上下文），和助手的最终回复一起写回 L0。</p>
+<p>Proxy 的读链路和插件有一个明显差异：L1 不再每轮自动注入，而是交给模型按需检索。原因是 Claude Code 这类客户端自己持有对话历史，Proxy 每轮塞进消息的内容下一轮都对不上，会让上游的 prompt cache 在上一轮就断掉，而编码 Agent 一轮就是一整段工具循环，重算代价大。取而代之的是一段静态的工具说明，告诉模型可以用 Bash 里的 curl 去打 Proxy 上的一个只读桥接路径，Proxy 收到后强制覆盖 body 里的身份字段，再加上鉴权头转发到 Memory Core。桥接只放行搜索和读取类接口，写操作一律不开放。这样凭据不会出现在模型可见的 prompt 里，模型也伪造不了身份。</p>
+<p>Proxy 还要处理编码 Agent 特有的请求形态。Claude Code 的一次用户输入会触发多次模型调用（工具循环），还会有 compact、标题生成之类的辅助请求，以及子 Agent 的 fork 请求。Proxy 靠 cache_control 标记的位置和路径后缀区分主请求和辅助请求，辅助请求直接透传，不注入也不回写。L0 回写在流式响应下不能阻塞关流，所以是 fire-and-forget，配了三次指数退避重试，进程收到 SIGTERM 时会等在途写入完成再退出。</p>
+<h3 id="白盒-sdk-式自研-agent-runtime"><a class="markdownIt-Anchor" href="#白盒-sdk-式自研-agent-runtime"></a> 白盒 SDK 式：自研 Agent Runtime</h3>
+<p>如果 Agent Runtime 是自己写的，最直接的方式是启动一个 Memory Core 的实例，然后用 SDK 接入。Standalone 模式监听本机端口，用 SQLite 存记忆和元数据，本地文件存场景和画像，没有 embedding 服务时用 BM25 召回，除了 LLM API 之外不需要任何外部依赖。SDK 有 TypeScript 和 Python 两个版本，Python 版同时提供同步和异步客户端，Agent 场景应该用异步版。</p>
+<p>SDK 的接入指南把要做的事归为四件：</p>
+<ol>
+<li>用户输入发给模型之前做召回并注入 prompt</li>
+<li>一轮结束后把新增消息写回 L0</li>
+<li>给模型注册记忆工具让它自己再查</li>
+<li>所有记忆调用失败时降级而不是让主对话挂掉</li>
+</ol>
+<p>前两件对应读写链路，后两件是工程保障。指南还给了性能建议：召回总预算控制在 200 毫秒内，三路并行后取可用的结果，超时的丢掉；session 用稳定的 ID，不要每轮换。</p>
+<div class="mermaid">
+flowchart LR
+    subgraph plugin["插件式"]
+        P1["OpenClaw 钩子\n构造 prompt 前召回\n一轮结束捕获"]
+        P2["SDK"]
+        P1 --> P2
+    end
+    subgraph proxy["黑盒代理式"]
+        X1["Agent 改 base URL"]
+        X2["Proxy\n鉴权 / 会话初始化\n注入 / 回写 / 请求分类"]
+        X3["memory-bridge\n只读桥接，模型用 curl 按需查"]
+        X1 --> X2
+        X2 --> X3
+    end
+    subgraph sdk["白盒 SDK 式"]
+        S1["自研 Runtime\n召回 / 捕获 / 工具 / 降级"]
+        S2["SDK"]
+        S1 --> S2
+    end
+    P2 --> Core["Memory Core"]
+    X2 --> Core
+    X3 --> Core
+    S2 --> Core
+
+    classDef client fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
+    classDef step fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef store fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+    class P1,X1,S1 client
+    class P2,X2,X3,S2 step
+    class Core store
+</div>
+<h2 id="agent-runtime实践水位-一次写-宁漏勿重"><a class="markdownIt-Anchor" href="#agent-runtime实践水位-一次写-宁漏勿重"></a> Agent Runtime实践：水位、一次写、宁漏勿重</h2>
+<p>Agent Runtime 是白盒，走 SDK 模式。接入之前要先回答一个问题：一轮对话里模型调用很多次，工具循环反复进出，什么时候写、写什么？我们的答案是每个 run 结束时写一次，写这个 run 新增的内容。</p>
+<p>写链路挂在 run 的两个生命周期钩子上。run 开始时，本轮用户消息已经进了消息列表，钩子从尾部往前跳过连续的用户消息，把前一条消息的 ID 记为水位。跳过这一步不能省，否则水位会落在本轮用户消息上，切增量时用户说的话就永远进不了记忆。第一轮没有前一条消息，水位为空，这是合法的线程起点，表示整个列表都是增量。run 结束时，钩子找到水位在列表里的位置，取它后面的所有消息，过滤后只保留用户消息和不带工具调用的助手回复，中间的工具调用和工具结果都不写，用户消息里 Runtime 注入的各种标签也剥掉。过滤后的消息投递给一个后台任务，钩子立即返回，不等 HTTP 完成。</p>
+<p>这里的水位和服务端没有任何关系，Memory Core 收到的只是切好的两条消息，它不知道水位、不知道 run ID、也不知道这轮发生过哪些工具调用。水位纯粹是接入层用来避免重复写的书签。</p>
+<p>写失败不重试。前面说过写接口没有幂等键，盲目重试会在 L0 里留下重复内容，而 L1 的冲突检测是 LLM 判定，不能指望它每次都识别出重复。所以我们的取舍是宁漏勿重：一轮漏了，后续对话还会补充记忆；一轮重了，污染是永久的。同样的理由，找不到水位、水位对应的消息没有 ID、上下文压缩把水位消息删掉了，这些情况下都跳过写入，不会退化成全量重写。</p>
+<p>如果Agent Runtime 支持中断和恢复，一个逻辑轮次可能横跨两个 run，恢复时会重建钩子实例，内存里的水位就没了，结束钩子找不到水位只能跳过。修法是把水位也写进 Runtime 已有的 KV 存储，结构是一个指向当前轮次的指针加一条轮次标记，标记里存水位、本轮输入消息 ID 和用户 ID。恢复后的结束钩子先查内存，查不到就按指针读标记，并校验标记里的输入消息 ID 确实在当前列表里、紧跟在水位之后、是最新的用户消息，校验通过才切增量。写成功后只删标记不删指针，避免迟到的旧后台任务误删新一轮的水位；写失败则保留标记。KV 操作总等待不超过 1 秒，失败时放行，不阻塞主流程。</p>
+<div class="mermaid">
+flowchart TD
+    B["run 开始\n跳过尾部用户消息，取前一条 ID 作水位"] --> W["水位写内存\n同时写 KV：轮次标记 + 当前指针"]
+    W --> R["模型 / 工具循环\n可能中断后由新实例恢复"]
+    R --> E["run 结束"]
+    E --> M{"内存里有水位吗"}
+    M -- "有" --> C["按水位切增量"]
+    M -- "没有" --> K["按指针读 KV 标记\n校验输入消息 ID 与用户 ID"]
+    K --> V{"校验通过"}
+    V -- "否" --> Skip["跳过本轮，不写"]
+    V -- "是" --> C
+    C --> F["过滤：只留用户消息和最终回复\n剥掉注入标签"]
+    F --> A["后台任务异步写入\n超时不重试"]
+    A --> OK{"写成功"}
+    OK -- "是" --> Del["删轮次标记，保留指针"]
+    OK -- "否" --> Keep["保留标记，本轮漏写"]
+
+    classDef step fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef decision fill:#FFF8E1,stroke:#F9A825,color:#7F6000
+    classDef store fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+    classDef skip fill:#FFEBEE,stroke:#C62828,color:#B71C1C
+    class B,R,E,C,F,A step
+    class M,V,OK decision
+    class W,K,Del store
+    class Skip,Keep skip
+</div>
+<p>读链路比写链路简单。run 开始时用最新一条用户消息做检索词，只取文本块，剥掉注入标签和命令前缀，截断到 2000 字以内（接口上限是 2048），调一次 L1 搜索，最多取 8 条，总超时 1.5 秒。结果按类型排序，instruction 排在前面，渲染成一个带标签的块。注入的方式是在模型请求上做请求级覆盖，把这个块拼到最新用户消息的开头，不改会话状态，也不进 checkpoint。这样注入内容不会出现在消息历史里，写链路切增量时自然不会把它再写回去，不需要像官方插件那样做&quot;还原用户消息&quot;这一步。一次 run 里的多次模型调用复用同一份召回结果，不重复请求。（目前只接了 L1，L2 和 L3 还没有注入，官方指南推荐的做法是三路并行，画像和场景索引放 system。）</p>
+<h2 id="边界与取舍"><a class="markdownIt-Anchor" href="#边界与取舍"></a> 边界与取舍</h2>
+<p>有几处是接入时容易踩到的边界：</p>
+<ol>
+<li>写接口没有幂等键，客户端要自己保证不重复发；</li>
+<li>v3 数据面的 L0 和 L1 强制 session_id，用 v2 的调用方式迁移时会收到 422；</li>
+<li>L1 搜索的响应里不会带 L2 和 L3，三层是三个独立接口，要同时用就要分别调用；</li>
+<li>L2 的场景读取和 L3 的画像读取在文件不存在时返回成功但内容为空，调用方要按无结果处理，不能只看状态码。</li>
+</ol>
+<p>设计上最值得注意的取舍是 L1 的注入策略。服务端的召回逻辑是同一套，但插件每轮把 L1 拼进用户消息，Proxy 则完全交给模型用工具去查。前者保证记忆一定在场，前提是 runtime 能把注入块留在历史里，否则 cache 会在上一轮断掉；后者不依赖对历史的控制权，代价是模型没想起来查就等于没有记忆。</p>
+<p>另一个取舍在写侧。TAM 把&quot;发什么&quot;完全交给接入方，服务端只做提炼，好处是管线不用理解任何框架的消息格式，坏处是<strong>切增量、去污染、防重这些活每个接入方都要自己做一遍</strong>。官方插件和 SDK 指南给了参考实现，我们的水位方案是另一种做法，本质都是在接入层维护一个&quot;上次写到哪&quot;的游标。哪种更合适取决于 Runtime 的生命周期模型：有稳定的一轮结束钩子且不会换实例，用消息条数切片就够；有中断恢复、钩子实例会重建，游标就得持久化。</p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#记忆系统要回答的两个问题"><span class="toc-text"> 记忆系统要回答的两个问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#写链路接入方切增量服务端分层提炼"><span class="toc-text"> 写链路：接入方切增量，服务端分层提炼</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#接入方只负责把这一轮的对话交出去"><span class="toc-text"> 接入方只负责把这一轮的对话交出去</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#服务端l0-之后的异步管线"><span class="toc-text"> 服务端：L0 之后的异步管线</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#读链路三路并行两块注入一组工具"><span class="toc-text"> 读链路：三路并行，两块注入，一组工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三种接入模式"><span class="toc-text"> 三种接入模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#插件式openclaw"><span class="toc-text"> 插件式：OpenClaw</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#黑盒代理式claude-code-codex-codebuddy-等"><span class="toc-text"> 黑盒代理式：Claude Code、Codex、CodeBuddy 等</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#白盒-sdk-式自研-agent-runtime"><span class="toc-text"> 白盒 SDK 式：自研 Agent Runtime</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#agent-runtime实践水位-一次写-宁漏勿重"><span class="toc-text"> Agent Runtime实践：水位、一次写、宁漏勿重</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#边界与取舍"><span class="toc-text"> 边界与取舍</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-30T04:40:50.000Z">2026.08.30</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测</strong>
+          </a>
+        
+          <a href="/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-04T09:23:38.000Z">2026.08.04</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</strong>
+          </a>
+        
+          <a href="/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-02T04:00:00.000Z">2026.08.02</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/"><span>上一篇</span><strong>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</strong></a>
+    <a href="/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/"><span>下一篇</span><strong>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

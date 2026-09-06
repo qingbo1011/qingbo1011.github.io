@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>EL&amp;JSTL · Quinn</title>
+<meta name="description" content="EL&amp;JSTL MVC开发模式 MVC 模式代表 Model-View-Controller（模型-视图-控制器） 模式。这种模式用于应用程序的分层开发。 Model（模型） ： 模型代表一个存取数据的对象或 JAVA POJO。它也可以带…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/04/05/EL&amp;JSTL/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="EL&amp;JSTL · Quinn" />
+<meta property="og:description" content="EL&amp;JSTL MVC开发模式 MVC 模式代表 Model-View-Controller（模型-视图-控制器） 模式。这种模式用于应用程序的分层开发。 Model（模型） ： 模型代表一个存取数据的对象或 JAVA POJO。它也可以带…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/04/05/EL&amp;JSTL/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091200.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091200.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        JavaWeb · 2021.04.05
+      
+    </p>
+    <h1>EL&amp;JSTL</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“MVC 模式代表 Model-View-Controller（模型-视图-控制器） 模式。这种模式用于应用程序的分层开发。 Model（模型） ： 模型代表一个存取数据的对象或 JAVA POJO。它也可以带有逻辑，在数据变化时更新控制器。 View（视图） ：视图代表模型包含的数据的可视化。 Controller（控制器） ： 控制器作用于模型和视图上。它控制数据流向模型对象，并在数据变化时更新视图。它使视图与模型分离开。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/JavaWeb/">JavaWeb</a>
+  
+  <span class="post-meta__item">4 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/JavaWeb/">#JavaWeb</a>
+      
+        <a href="/tags/EL/">#EL</a>
+      
+        <a href="/tags/JSTL/">#JSTL</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h1 id="mvc开发模式"><a class="markdownIt-Anchor" href="#mvc开发模式"></a> MVC开发模式</h1>
+
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091213.png" alt="MVC开发模式" /></p>
+<p><a href="https://www.runoob.com/design-pattern/mvc-pattern.html" target="_blank" rel="noopener">MVC模式菜鸟教程</a></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=769" target="_blank" rel="noopener">视频讲解</a></p>
+<p>jsp演变历史：</p>
+<ol>
+<li>早期只有servlet，只能使用response输出标签数据，非常麻烦</li>
+<li>后来又jsp，简化了Servlet的开发。如果过度使用jsp，在jsp中既写大量的java代码，又写html表，造成难于维护，难于分工协作</li>
+<li>再后来，java的web开发，借鉴mvc开发模式，使得程序的设计更加合理性</li>
+</ol>
+<p><strong>MVC开发模式：</strong></p>
+<ul>
+<li><strong>M：Model，模型。JavaBean</strong>
+<ul>
+<li><strong>完成具体的业务操作，如：查询数据库，封装对象</strong></li>
+</ul>
+</li>
+<li><strong>V：View，视图。JSP</strong>
+<ul>
+<li><strong>展示数据</strong></li>
+</ul>
+</li>
+<li><strong>C：Controller，控制器。Servlet</strong>
+<ul>
+<li><strong>获取用户的输入</strong></li>
+<li><strong>调用模型</strong></li>
+<li><strong>将数据交给视图进行展示</strong></li>
+</ul>
+</li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091223.bmp" alt="MVC开发模式" /></p>
+<p>MVC开发模式优点：</p>
+<ul>
+<li>耦合性低，方便维护，可以利于分工协作</li>
+<li>重用性高</li>
+</ul>
+<h1 id="三层架构"><a class="markdownIt-Anchor" href="#三层架构"></a> 三层架构</h1>
+<blockquote>
+<p>三层架构(3-tier architecture) 通常意义上的三层架构就是将整个业务应用划分为：表示层（UIL）、业务逻辑层（BLL）、数据访问层（DAL）。 区分层次的目的即为了“高内聚，低耦合”的思想。 表示层：通俗讲就是展现给用户的界面，即用户在使用一个系统的时候他的所见所得。</p>
+</blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/306233468" target="_blank" rel="noopener">软件三层架构设计</a></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091235.png" alt="软件三层架构设计" /></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=781" target="_blank" rel="noopener">视频讲解</a></p>
+<p>三层架构：软件设计架构</p>
+<ul>
+<li>界面层(表示层)：用户看的得界面。用户可以通过界面上的组件和服务器进行交互</li>
+<li>业务逻辑层：处理业务逻辑的</li>
+<li>数据访问层：操作数据存储文件</li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512091248.bmp" alt="三层架构" /></p>
+<h1 id="el表达式"><a class="markdownIt-Anchor" href="#el表达式"></a> EL表达式</h1>
+<blockquote>
+<p><strong>表达式语言（Expression Language），或称EL表达式，简称EL</strong>，是Java中的一种特殊的通用编程语言，借鉴于JavaScript和XPath。主要作用是在Java Web应用程序嵌入到网页（如JSP）中，用以访问页面的上下文以及不同作用域中的对象 ，取得对象属性的值，或执行简单的运算或判断操作。EL在得到某个数据时，会自动进行数据类型的转换。</p>
+</blockquote>
+<p><a href="https://www.jianshu.com/p/a6517cbe6b31" target="_blank" rel="noopener">EL表达式 （详解）</a></p>
+<p><a href="https://www.runoob.com/jsp/jsp-expression-language.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<p><strong>概念：Expression Language 表达式语言</strong></p>
+<p><strong>作用：替换和简化jsp页面中java代码的编写</strong></p>
+<p><strong>语法：<code>${表达式}</code></strong></p>
+<p>注意：</p>
+<ul>
+<li>jsp默认支持el表达式的</li>
+<li>如果要忽略el表达式，有以下两种方式：
+<ul>
+<li><strong>设置jsp中page指令中：<code>isELIgnored=&quot;true&quot;</code> 忽略当前jsp页面中所有的el表达式</strong></li>
+<li><strong><code>\${表达式}</code> ：忽略当前这个el表达式</strong></li>
+</ul>
+</li>
+</ul>
+<h2 id="el的使用"><a class="markdownIt-Anchor" href="#el的使用"></a> EL的使用</h2>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=771" target="_blank" rel="noopener">视频讲解</a></p>
+<ul>
+<li>运算</li>
+<li>获取值</li>
+</ul>
+<h3 id="el运算"><a class="markdownIt-Anchor" href="#el运算"></a> EL运算</h3>
+<p>运算符：</p>
+<ul>
+<li>算数运算符： <code>+</code> ，<code>-</code>， <code>*</code>， <code>/</code>， <code>%</code></li>
+<li>比较运算符： <code>&gt;</code>， <code>&lt;</code>， <code>&gt;=</code> ，<code>&lt;=</code>， <code>==</code>， <code>!=</code></li>
+<li>逻辑运算符： <code>&amp;&amp;</code>，<code>||</code>， <code>!</code></li>
+<li><strong>空运算符： <code>empty</code></strong>
+<ul>
+<li><strong>功能：用于判断字符串、集合、数组对象是否为null或者长度是否为0</strong></li>
+<li><strong><code>${empty list}</code>：判断字符串、集合、数组对象是否为null或者长度为0</strong></li>
+<li><strong><code>${not empty str}</code>：表示判断字符串、集合、数组对象是否不为null 并且 长度&gt;0</strong></li>
+</ul>
+</li>
+</ul>
+<h3 id="el获取值"><a class="markdownIt-Anchor" href="#el获取值"></a> <mark>EL获取值</mark></h3>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=772" target="_blank" rel="noopener">视频讲解</a></p>
+<p>注意：el表达式只能从域对象中获取值</p>
+<p><a href="https://blog.csdn.net/zsp151296/article/details/78003099" target="_blank" rel="noopener">jsp九个内置对象、四个域对象及Servlet的三大域对象</a></p>
+<p><strong>JSP中的四大域对象：</strong></p>
+<ul>
+<li><strong>ServletContext：context域：只能在同一个web应用中使用 (全局的)域作用范围</strong></li>
+<li><strong>HttpServletRequet：request域：只能在同一个请求中使用 (转发)</strong></li>
+<li><strong>HttpSession：session域：只能在同一个会话(session对象)中使用 (私有的)</strong></li>
+<li><strong>PageContext：page域：只能在当前jsp页面使用 (当前页面)</strong></li>
+</ul>
+<p><strong>Servlet的三大域对象：</strong></p>
+<ul>
+<li><strong>ServletContext：context域</strong></li>
+<li><strong>HttpServletRequet：request域</strong></li>
+<li><strong>HttpSession：session域</strong></li>
+</ul>
+<p><strong>域对象的作用：<mark>保存数据，获取数据，共享数据</mark></strong></p>
+<p>语法（具体例子看<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=772" target="_blank" rel="noopener">视频讲解</a>）：</p>
+<ul>
+<li>
+<p><strong><code>${域名称.键名}</code>：从指定域中获取指定键的值</strong></p>
+<ul>
+<li>域名称：
+<ul>
+<li>pageScope		--&gt; pageContext</li>
+<li>requestScope 	--&gt; request</li>
+<li>sessionScope 	--&gt; session</li>
+<li>applicationScope --&gt; application（ServletContext）</li>
+</ul>
+</li>
+<li>举例：在request域中存储了name=张三</li>
+<li>获取：<code>${requestScope.name}</code></li>
+</ul>
+</li>
+<li>
+<p><strong><code>${键名}</code>：表示依次从最小的域中查找是否有该键对应的值，直到找到为止</strong></p>
+<ul>
+<li>
+<p>域对象从大到小：appliaction&gt;session&gt;request&gt;page</p>
+<p><a href="https://blog.csdn.net/weixin_40836179/article/details/79414854" target="_blank" rel="noopener">JSP四个作用域的大小与作用范围</a></p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>获取对象、List集合、Map集合的值</strong></p>
+<ul>
+<li><strong>获取对象：<code>${域名称.键名.属性名}</code>（本质上会去调用对象的getter方法）</strong></li>
+<li><strong>获取List集合：<code>${域名称.键名[索引]}</code></strong></li>
+<li><strong>获取Map集合：</strong>
+<ul>
+<li><strong><code>${域名称.键名.key名称}</code></strong></li>
+<li><strong><code>${域名称.键名[&quot;key名称&quot;]}</code></strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="el隐式对象"><a class="markdownIt-Anchor" href="#el隐式对象"></a> EL隐式对象</h2>
+<p><a href="https://www.cnblogs.com/liubin1988/p/7866213.html" target="_blank" rel="noopener">EL表达式中的11个隐式对象</a></p>
+<p>EL表达式中有11个隐式对象，其中pageContext就是其中一个隐式对象</p>
+<p>可以通过pageContext来获取jsp其他八个内置对象。比如：</p>
+<ul>
+<li>
+<p>获取request对象：<code>${pageContext.request}</code></p>
+</li>
+<li>
+<p>获取虚拟目录：<code>${pageContext.request.contextPath}</code></p>
+</li>
+</ul>
+<hr />
+<h1 id="jslt"><a class="markdownIt-Anchor" href="#jslt"></a> JSLT</h1>
+<blockquote>
+<p>JSP标准标签库（JSTL）是一个JSP标签集合，它封装了JSP应用的通用核心功能。</p>
+<p>JSTL支持通用的、结构化的任务，比如迭代，条件判断，XML文档操作，国际化标签，SQL标签。 除了这些，它还提供了一个框架来使用集成JSTL的自定义标签。</p>
+<p>根据JSTL标签所提供的功能，可以将其分为5个类别。</p>
+<ul>
+<li><strong>核心标签</strong></li>
+<li><strong>格式化标签</strong></li>
+<li><strong>SQL 标签</strong></li>
+<li><strong>XML 标签</strong></li>
+<li><strong>JSTL 函数</strong></li>
+</ul>
+</blockquote>
+<p><a href="https://www.runoob.com/jsp/jsp-jstl.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=776" target="_blank" rel="noopener">视频讲解</a></p>
+<p>概念：<strong>JavaServer Pages Tag Library，JSP标准标签库</strong>。是由Apache组织提供的开源的免费的jsp标签</p>
+<p><strong>作用：用于简化和替换jsp页面上的java代码</strong>（java代码替换成标签，方便前端人员修改页面）</p>
+<p><strong>使用步骤：</strong></p>
+<ol>
+<li><strong>导入jstl相关jar包</strong></li>
+<li><strong>引入标签库：taglib指令： <code>&lt;%@ taglib %&gt;</code></strong></li>
+<li><strong>使用标签</strong></li>
+</ol>
+<h2 id="jstl常用标签"><a class="markdownIt-Anchor" href="#jstl常用标签"></a> JSTL常用标签</h2>
+<ul>
+<li>if</li>
+<li>choose</li>
+<li>foreach</li>
+</ul>
+<p><strong><a href="https://www.runoob.com/jsp/jsp-jstl.html" target="_blank" rel="noopener">菜鸟教程</a>中有标签的使用方法</strong></p>
+<h3 id="if标签"><a class="markdownIt-Anchor" href="#if标签"></a> if标签</h3>
+<p><strong>if：相当于java代码的if语句</strong></p>
+<p>属性：test 必须属性，接受boolean表达式</p>
+<ul>
+<li>如果表达式为true，则显示if标签体内容，如果为false，则不显示标签体内容</li>
+<li>一般情况下，test属性值会结合el表达式一起使用</li>
+</ul>
+<p>注意：<strong><code>c:if</code>标签没有else情况，想要else情况，则可以再定义一个<code>c:if</code>标签</strong></p>
+<h3 id="choose标签"><a class="markdownIt-Anchor" href="#choose标签"></a> choose标签</h3>
+<p><strong>choose:相当于java代码的switch语句</strong></p>
+<ul>
+<li>使用choose标签声明：当于switch声明</li>
+<li>使用when标签做判断：相当于case</li>
+<li>使用otherwise标签做其他情况的声明：相当于default</li>
+</ul>
+<h3 id="foreach标签"><a class="markdownIt-Anchor" href="#foreach标签"></a> <mark>foreach标签</mark></h3>
+<p><strong>foreach：相当于java代码的for语句</strong></p>
+<p><a href="https://www.runoob.com/jsp/jstl-core-foreach-tag.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=779" target="_blank" rel="noopener">视频讲解</a></p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#el的使用"><span class="toc-text"> EL的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#el运算"><span class="toc-text"> EL运算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#el获取值"><span class="toc-text"> EL获取值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#el隐式对象"><span class="toc-text"> EL隐式对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jstl常用标签"><span class="toc-text"> JSTL常用标签</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#if标签"><span class="toc-text"> if标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#choose标签"><span class="toc-text"> choose标签</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#foreach标签"><span class="toc-text"> foreach标签</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/04/11/Jedis/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-11T00:47:03.000Z">2021.04.11</time>
+              <span>#JavaWeb</span>
+            </span>
+            <strong>Jedis</strong>
+          </a>
+        
+          <a href="/2021/04/07/Filter&Listener/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-07T10:47:03.000Z">2021.04.07</time>
+              <span>#JavaWeb</span>
+            </span>
+            <strong>Filter&amp;Listener</strong>
+          </a>
+        
+          <a href="/2021/04/06/AJAX&JSON/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-06T10:47:03.000Z">2021.04.06</time>
+              <span>#JavaWeb</span>
+            </span>
+            <strong>AJAX&amp;JSON</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/04/06/AJAX&JSON/"><span>上一篇</span><strong>AJAX&amp;JSON</strong></a>
+    <a href="/2021/04/04/Cookie&Session&JSP/"><span>下一篇</span><strong>Cookie&amp;Session&amp;JSP</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

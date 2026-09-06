@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Pi Coding Agent 调研学习 · Quinn</title>
+<meta name="description" content="Pi Coding Agent 调研学习 有人说：pi 是最好的 Agent 学习工具，就像 Arch Linux 是最好的 Linux 教具，适合想学 Agent 编排和 LLM 使用的人，但不适合拿来干活。 这个说法挺有意思，我把 pi…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/09/01/pi%E6%98%AFAgent%E4%B8%96%E7%95%8C%E7%9A%84ArchLinux%E5%90%97-%E5%8D%95%E7%AF%87%E5%AE%8C%E6%95%B4%E7%89%88/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Pi Coding Agent 调研学习 · Quinn" />
+<meta property="og:description" content="Pi Coding Agent 调研学习 有人说：pi 是最好的 Agent 学习工具，就像 Arch Linux 是最好的 Linux 教具，适合想学 Agent 编排和 LLM 使用的人，但不适合拿来干活。 这个说法挺有意思，我把 pi…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/09/01/pi%E6%98%AFAgent%E4%B8%96%E7%95%8C%E7%9A%84ArchLinux%E5%90%97-%E5%8D%95%E7%AF%87%E5%AE%8C%E6%95%B4%E7%89%88/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Agent · 2026.09.01
+      
+    </p>
+    <h1>Pi Coding Agent 调研学习</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Agent/">Agent</a>
+  
+  <span class="post-meta__item">15 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/pi/">#pi</a>
+      
+        <a href="/tags/Coding-Agent/">#Coding Agent</a>
+      
+        <a href="/tags/Agent-Harness/">#Agent Harness</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p>有人说：pi 是最好的 Agent 学习工具，就像 Arch Linux 是最好的 Linux 教具，适合想学 Agent 编排和 LLM 使用的人，但不适合拿来干活。</p>
+<p>这个说法挺有意思，我把 pi 的源码翻了一遍（v0.84.4），这篇把翻完之后学到的东西一次讲完：pi 是什么，它的循环、上下文和扩展体系各自怎么设计，最后回头看这个类比哪一半成立。</p>
+<h2 id="agent-harness"><a class="markdownIt-Anchor" href="#agent-harness"></a> agent harness</h2>
+<p>pi 不叫自己 coding agent，叫 agent harness。harness 是 LLM API 外面那层让模型能实际干活的程序：循环调用模型、执行工具、管理上下文和会话。</p>
+<div class="mermaid">
+flowchart LR
+    U[用户] -->|任务| H["agent harness<br/>循环调用模型 · 执行工具<br/>管理上下文与会话"]
+    H -->|"prompt + 工具定义"| M["LLM API"]
+    M -->|"文本 / 工具调用"| H
+    H -->|读文件、跑命令、改代码| W[你的工作区]
+
+    classDef user fill:#dbeafe,stroke:#2563eb,color:#111827
+    classDef harness fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#111827
+    classDef llm fill:#dcfce7,stroke:#16a34a,color:#111827
+    classDef ws fill:#fef3c7,stroke:#d97706,color:#111827
+    class U user
+    class H harness
+    class M llm
+    class W ws
+</div>
+<p>Claude Code、Codex CLI、Cursor 的 agent 模式本质上都是 harness，只是它们同时也是产品，harness 藏在产品下面。pi 把这层单独拿出来给你，README 开头第一句就是 “Adapt pi to your workflows, not the other way around”。</p>
+<blockquote>
+<p>作者 Mario Zechner，网名 badlogic，写过 libGDX 游戏框架的那位奥地利工程师。2025 年 8 月开始写 pi，动机在他 11 月底的随笔里说得很直接：Claude Code 变成了一艘 80% 功能他用不上的宇宙飞船；harness 在背后往上下文里塞他看不见的东西；系统提示词和工具随版本变化，稳定的个人工作流说崩就崩。他此前专门写过 cchistory 追踪 Claude Code 每个版本的提示词变更，追踪的结果是决定自己写一个。</p>
+</blockquote>
+<p>建造原则只有一句：“if I don’t need it, it won’t be built.”</p>
+<h2 id="你不需要-10000-token-的系统提示词"><a class="markdownIt-Anchor" href="#你不需要-10000-token-的系统提示词"></a> 你不需要 10,000 token 的系统提示词</h2>
+<p>pi 所有设计决定都建立在同一个判断上：<strong>前沿模型已经被 RL 训练得足够理解 coding agent 是什么</strong>，教学的部分模型公司在训练时做完了，harness 再写一万字只是在重复，甚至在干扰。这个判断在源码里落成三个事实。</p>
+<p><strong>系统提示词约 1.4 KB</strong>，<code>src/core/system-prompt.ts</code> 全文 169 行，模板本身 18 行，渲染后五六百 token，加上工具定义不到 1000 token；而主流 coding agent 普遍在 8k 到 15k token。</p>
+<p>这 1.4 KB 还是拼出来的：每个工具导出自己的一句说明和几条使用守则，构建器只拼当前激活工具的贡献。停用 write，它的守则自动消失；&quot;用 bash 做 ls、rg、find&quot;这条只在 bash 在场而 grep、find、ls 都不在场时出现。提示词尾部挂着 pi 自己的文档路径，开头限定只有用户问到 pi 自身时才去读，平时只占十几个 token。项目指令走 <a href="http://AGENTS.md" target="_blank" rel="noopener">AGENTS.md</a>（兼容 <a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a>），包进 <code>&lt;project_context&gt;</code> 附在最后。</p>
+<p><strong>定义 8 个工具，默认只激活 4 个</strong>，read、bash、edit、write。grep、find、ls、powershell 也在仓库里，只是默认不开，提示词直接让模型用 bash 做这些事。</p>
+<p><strong>循环约 120 行</strong>，模型自己知道怎么干活，harness 剩下的事就是循环调用模型、执行工具。</p>
+<h2 id="那-120-行里有什么"><a class="markdownIt-Anchor" href="#那-120-行里有什么"></a> 那 120 行里有什么</h2>
+<p><code>packages/agent/src/agent-loop.ts</code> 的 <code>runLoop</code> 从 156 行到 273 行，结构是两层 while：</p>
+<div class="mermaid">
+flowchart TD
+    A([prompt 进入]) --> B["prepareNextTurn 钩子<br/>可以换上下文、换模型<br/>自动压缩在这里发生"]
+    B --> C[注入 steering 插话]
+    C --> D[流式调用 LLM]
+    D --> E{stopReason}
+    E -->|"error / aborted"| X([直接退出：循环内没有重试])
+    E -->|toolUse| F["执行工具调用<br/>结果追加进上下文"]
+    E -->|stop| G
+    F --> G["turn_end 事件<br/>shouldStopAfterTurn 钩子可优雅停止"]
+    G --> H{还有工具调用，<br/>或 steering 队列有消息？}
+    H -->|有| B
+    H -->|没有| I{follow-up 队列<br/>有新消息？}
+    I -->|有| B
+    I -->|没有| Z([agent_end])
+
+    classDef hook fill:#ede9fe,stroke:#7c3aed,color:#111827
+    classDef step fill:#dbeafe,stroke:#2563eb,color:#111827
+    classDef decision fill:#fef3c7,stroke:#d97706,color:#111827
+    classDef bad fill:#fee2e2,stroke:#dc2626,color:#111827
+    classDef good fill:#dcfce7,stroke:#16a34a,color:#111827
+    class B,G hook
+    class C,D,F step
+    class E,H,I decision
+    class X bad
+    class A,Z good
+</div>
+<p>一个 turn 里工具执行走固定管线：查找工具、校验参数、<code>beforeToolCall</code> 钩子、执行、<code>afterToolCall</code> 钩子，结果追加进上下文，下一轮模型就能看到。循环自己不做的事全挂在配置对象 <code>AgentLoopConfig</code> 的钩子上，唯一必需的行为字段是 <code>convertToLlm</code>，其余九个全部可选：</p>
+<table>
+<thead>
+<tr>
+<th>钩子</th>
+<th>拿来做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transformContext</code></td>
+<td>发给模型之前改写整个消息数组</td>
+</tr>
+<tr>
+<td><code>prepareNextTurn</code></td>
+<td>每轮开始前换上下文、换模型，自动压缩就在这里换掉 context</td>
+</tr>
+<tr>
+<td><code>getSteeringMessages</code> / <code>getFollowUpMessages</code></td>
+<td>循环在固定点拉取用户排队的消息</td>
+</tr>
+<tr>
+<td><code>beforeToolCall</code> / <code>afterToolCall</code></td>
+<td>工具执行前后拦截，用户侧的权限系统长在这里</td>
+</tr>
+<tr>
+<td><code>shouldStopAfterTurn</code></td>
+<td>每轮之后决定要不要优雅停止</td>
+</tr>
+<tr>
+<td><code>getApiKey</code></td>
+<td>每次调用现取 key，会过期的 OAuth 令牌因此能轮换</td>
+</tr>
+<tr>
+<td><code>toolExecution</code></td>
+<td>这一批工具并行还是串行</td>
+</tr>
+</tbody>
+</table>
+<p>压缩、重试、持久化、权限、子代理全都不在循环里，在应用层的 <code>agent-session.ts</code>，那个文件 3500 多行。重试的做法是 <code>agent.prompt(...)</code> 返回后判断要不要续跑，该重试就 <code>continue()</code>，该压缩就先压缩再续，循环退出得干脆，恢复策略留给应用层。留在循环里的规矩只有三条，都在保护同一样东西：发给模型的消息历史。</p>
+<ol>
+<li>**失败也是数据。**模型流式调用永不 throw，网络错误、限流、用户中断全部编码成一条 stopReason 为 error 或 aborted 的 assistant 消息，已产出的内容和 token 消耗都在里面，照常持久化。工具参数校验失败，错误文本作为 tool result 还给模型，下一轮它自己改。输出被截断时那条消息里的工具调用全部作废，各合成一条&quot;参数可能不完整，请重发&quot;的结果，因为流式 JSON 靠补全解析器兜底，截断时可能解析出能过校验、其实缺了尾巴的参数，执行比拒绝危险。</li>
+<li>**插话只落在 turn 边界。**用户中途插话（pi 叫 steering）永远注入在这一批工具结果全部就位之后、下一次调模型之前，因为几乎所有供应商的 API 都会拒绝有 tool call 没有对应 result 的历史。想立刻打断走另一条路，AbortSignal 硬中断。</li>
+<li>**并行执行，按序落盘。**tool_execution 事件按完成顺序发出，UI 实时显示谁先跑完；tool result 消息按 assistant 消息里的源顺序写入，重放一次结果不变。文件写入按规范化路径排队，改不同文件的工具照常并行。</li>
+</ol>
+<h2 id="六个-no"><a class="markdownIt-Anchor" href="#六个-no"></a> 六个 No</h2>
+<p>pi 文档最有性格的一节列的全是没做的功能。README 的 Philosophy 一节六条 No，每条给了替代方案：</p>
+<table>
+<thead>
+<tr>
+<th>没做</th>
+<th>理由</th>
+<th>替代</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MCP</td>
+<td>流行的浏览器类 MCP server 一接上要吃 13.7k 到 18k token</td>
+<td>CLI 工具加 README，用到才读</td>
+</tr>
+<tr>
+<td>子代理</td>
+<td>隐藏的子代理是黑盒</td>
+<td>tmux 里再开一个 pi，或用扩展自建</td>
+</tr>
+<tr>
+<td>权限弹窗</td>
+<td>能读写文件又能跑命令，弹窗只是安全剧场</td>
+<td>容器或沙箱隔离，或用扩展写自己的确认流程</td>
+</tr>
+<tr>
+<td>计划模式</td>
+<td>只读模式不如显式文件可观测</td>
+<td><a href="http://PLAN.md" target="_blank" rel="noopener">PLAN.md</a>，还能一起编辑</td>
+</tr>
+<tr>
+<td>待办列表</td>
+<td>给模型增加要追踪的状态，干扰大于帮助</td>
+<td><a href="http://TODO.md" target="_blank" rel="noopener">TODO.md</a></td>
+</tr>
+<tr>
+<td>后台 bash</td>
+<td>可观测性差</td>
+<td>tmux</td>
+</tr>
+</tbody>
+</table>
+<p>理由里的 token 数字来自作者的随笔：他用四个脚本（启动 Chrome、导航、页内执行 JS、截图）加一份 README 覆盖了日常用浏览器类 MCP 的场景，一共 225 token。</p>
+<p><code>examples/extensions/</code> 下近 80 个示例扩展，上表每一项都有对应实现，权限门几十行，计划模式几十行，子代理也是。这些示例在集体论证同一个命题：只要在循环的关键位置留出拦截点，这些功能都能在用户侧几十行代码复现，harness 就没必要替所有人预装一套决定。</p>
+<p>安全上 pi 默认不弹任何确认框。作者的理由是大家为了干活最后都会开 YOLO 模式，不如设为默认；边界该由容器提供，README 给了三种隔离方案：Gondolin 把 pi 和供应商凭证留在宿主机、工具调用路由进 Linux 微虚拟机，Docker 把整个进程容器化，OpenShell 跑策略沙箱。</p>
+<h2 id="历史是一棵树"><a class="markdownIt-Anchor" href="#历史是一棵树"></a> 历史是一棵树</h2>
+<p>会话存在 <code>~/.pi/agent/sessions/</code> 下，一个项目一个文件夹，一次会话一个 JSONL 文件。每行一个 entry，带 id 和 parentId，文件本身就是一棵树，当前对话只是从某个叶子走到根的一条路径。换模型、换思考等级、压缩、分支摘要也各是一行 entry，这轮用的什么模型不用单独存，沿路径回放就知道。</p>
+<p>树上的移动有三个动作：<code>/tree</code> 在同一个文件里任意移动叶子，选中历史上某条 user 消息，叶子退回它的父节点、原文放回输入框让你重问；<code>/fork</code> 从某条 user 消息开一个新文件；<code>/clone</code> 把当前分支复制成新文件。旧分支从不删除。<code>/tree</code> 离开一条分支时 pi 找到共同祖先，把被放弃的那段路摘要成一条 branch_summary 挂在新位置上，死胡同里学到的教训留下来，重放它的 token 成本不留。undo、分支、重放、审计，在别的 harness 里是四个功能，在 append-only 树上是同一个数据结构的四种读法。</p>
+<blockquote>
+<p>pi 仓库的 issue 流程就建在这上面：CI 把复现会话传成 gist，维护者本地一条 <code>/ir</code> 导入，接着现场调试。作者还维护着 pi-share-hf，把开源工作里的 pi 会话发布到 Hugging Face，带着真实工具调用、失败和修复过程的会话数据，比玩具基准更能改进 coding agent。</p>
+</blockquote>
+<h2 id="压缩是一个追加的指针"><a class="markdownIt-Anchor" href="#压缩是一个追加的指针"></a> 压缩是一个追加的指针</h2>
+<p>触发条件是 contextTokens &gt; contextWindow - reserveTokens，默认保留 16384。触发之后 pi 生成一段摘要，往 JSONL 里追加一条 compaction entry，两个关键字段，summary 和 firstKeptEntryId，什么都不删。模型下次看到什么，是读取时沿叶子往根走算出来的：碰到 compaction entry，就用摘要替换 firstKeptEntryId 之前的所有消息。</p>
+<div class="mermaid">
+flowchart TD
+    subgraph disk["磁盘上的 JSONL：只追加，不删除"]
+        direction LR
+        O["消息 1 … 40"] --> K["消息 41 … 60"] --> C["compaction entry<br/>摘要 + firstKeptEntryId 指向消息 41"]
+    end
+    subgraph ctx["模型实际看到的上下文"]
+        direction LR
+        S["摘要"] --> K2["消息 41 … 60"]
+    end
+    C -.->|读取时计算| S
+
+    classDef old fill:#f3f4f6,stroke:#9ca3af,color:#6b7280
+    classDef kept fill:#dbeafe,stroke:#2563eb,color:#111827
+    classDef comp fill:#fef3c7,stroke:#d97706,color:#111827
+    class O old
+    class K,K2 kept
+    class C,S comp
+</div>
+<p>三个细节各有工程原因。切点永远不落在 tool result 上，从最新消息往回攒够 keepRecentTokens（默认 2 万）为止，tool call 和它的 result 永远绑在一起进退。单轮超预算就劈开这一轮做两段摘要再合并。摘要之前先把对话拍平成 <code>[User]:</code> / <code>[Assistant]:</code> / <code>[Tool result]:</code> 的纯文本，直接把消息数组喂给模型，它会把这当成一场要继续的对话。摘要有固定骨架：Goal、Constraints、Progress、Key Decisions、Next Steps，最后跟 <code>&lt;read-files&gt;</code> 和 <code>&lt;modified-files&gt;</code> 两张清单，压缩之后 agent 不会忘记自己动过哪些文件。第二次压缩从上一个 firstKeptEntryId 开始重新摘要，信息逐级变粗，不会某一段突然消失。</p>
+<p>这几个设计顺带守住了 prompt cache。各家 API 对逐字节稳定的上下文前缀打折，Anthropic 的缓存读取按原价一成计费。pi 的系统提示词只随激活工具集变化，历史消息从不改写，压缩只追加 entry，前缀在压缩后的第一次调用里整体换成摘要，之后又稳定下来。压缩请求本身单独开路由、关掉缓存写入，一次性请求写缓存纯付费不收益。</p>
+<p>会话中途换模型甚至换供应商，同一份历史发给另一家 API，转换逻辑集中在 <code>packages/ai/src/api/transform-messages.ts</code> 约 160 行：目标模型不支持视觉就把图片换成占位文本；thinking 块要 provider、api、model 三者都对上才保留，否则降级成普通文本；tool call id 按各家格式归一化；stopReason 为 error 或 aborted 的 assistant 消息整条跳过，孤儿 tool call 补一条 “No result provided”。不管这份历史经历过什么，发出去的每一版都结构合法，循环里那条不变量在这一层还是它。</p>
+<h2 id="技能按需付-token-的说明书"><a class="markdownIt-Anchor" href="#技能按需付-token-的说明书"></a> 技能：按需付 token 的说明书</h2>
+<p>No MCP 的替代方案是 CLI 工具加 README，技能（Skills，遵循 Agent Skills 标准）是这个思路的制度化版本：一个目录、一份 <a href="http://SKILL.md" target="_blank" rel="noopener">SKILL.md</a>，frontmatter 只要 name 和 description 两个字段，想放脚本就在旁边放脚本。</p>
+<p>token 账是这么算的：系统提示词里只放每个技能的 name 和 description，一行一个；完整的 <a href="http://SKILL.md" target="_blank" rel="noopener">SKILL.md</a> 要等模型自己判断这活需要它时调 read 才进上下文。接一个 Playwright MCP，会话还没开始 13.7k token 已经花出去了，不管这次用不用得上浏览器。</p>
+<blockquote>
+<p>pi 仓库自己放着一个技能 <a href="http://add-llm-provider.md" target="_blank" rel="noopener">add-llm-provider.md</a>，给 pi-ai 添加新供应商的完整操作清单。机构知识写成 agent 能按需读的文件，wiki 页面做不到这一点。</p>
+</blockquote>
+<p>提示词模板是最不起眼的一条路：<code>.pi/prompts/*.md</code> 一个文件一条 <code>/命令</code>，正文支持 <code>$1</code>、<code>$@</code> 参数展开。pi 仓库自己放着五条，<code>/cl</code> 审计变更日志、<code>/pr</code> 审 PR、<code>/wr</code> 收尾提交，<a href="http://AGENTS.md" target="_blank" rel="noopener">AGENTS.md</a> 里写的发版流程第一步就是跑 <code>/cl</code>。</p>
+<p>还有一条反向承诺：项目里的 <code>.pi/</code> 资源（扩展、技能、模板）在你明确信任这个项目之前一律不加载，信任状态记在 <code>~/.pi/agent/trust.json</code>。克隆一个陌生仓库、一打开就自动执行里面带的扩展代码，这种事在 pi 里不会发生。</p>
+<h2 id="一切皆扩展"><a class="markdownIt-Anchor" href="#一切皆扩展"></a> 一切皆扩展</h2>
+<p>扩展是一个 TypeScript 模块，默认导出一个函数，放进 <code>~/.pi/agent/extensions/</code> 或项目的 <code>.pi/extensions/</code>，启动时被 jiti 直接执行，不需要编译。函数拿到的 <code>pi: ExtensionAPI</code> 能注册工具、斜杠命令、快捷键、CLI 参数、消息渲染器，能弹确认框、画自定义 TUI 组件，能换模型、换思考等级、动态换工具表，也能订阅三十多种事件。</p>
+<p>官方示例里的权限门，全文 34 行：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">type</span> &#123; ExtensionAPI &#125; <span class="keyword">from</span> <span class="string">"@earendil-works/pi-coding-agent"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> (<span class="params">pi: ExtensionAPI</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> dangerousPatterns = [<span class="regexp">/\brm\s+(-rf?|--recursive)/i</span>, <span class="regexp">/\bsudo\b/i</span>, <span class="regexp">/\b(chmod|chown)\b.*777/i</span>];</span><br><span class="line"></span><br><span class="line">	pi.on(<span class="string">"tool_call"</span>, <span class="keyword">async</span> (event, ctx) =&gt; &#123;</span><br><span class="line">		<span class="keyword">if</span> (event.toolName !== <span class="string">"bash"</span>) <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">const</span> command = event.input.command <span class="keyword">as</span> <span class="built_in">string</span>;</span><br><span class="line">		<span class="keyword">const</span> isDangerous = dangerousPatterns.some(<span class="function">(<span class="params">p</span>) =&gt;</span> p.test(command));</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (isDangerous) &#123;</span><br><span class="line">			<span class="keyword">if</span> (!ctx.hasUI) &#123;</span><br><span class="line">				<span class="comment">// In non-interactive mode, block by default</span></span><br><span class="line">				<span class="keyword">return</span> &#123; block: <span class="literal">true</span>, reason: <span class="string">"Dangerous command blocked (no UI for confirmation)"</span> &#125;;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">const</span> choice = <span class="keyword">await</span> ctx.ui.select(<span class="string">`⚠️ Dangerous command:\n\n  <span class="subst">$&#123;command&#125;</span>\n\nAllow?`</span>, [<span class="string">"Yes"</span>, <span class="string">"No"</span>]);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (choice !== <span class="string">"Yes"</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span> &#123; block: <span class="literal">true</span>, reason: <span class="string">"Blocked by user"</span> &#125;;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这就是 pi 语境下的权限系统：危险命令的定义是你的正则，确认交互是你的弹窗，无界面时的保守策略也是你写的。装上就有，删掉就无，规则不藏在产品里。</p>
+<p>三十多种事件里改变游戏规则的是主干上这六个：</p>
+<table>
+<thead>
+<tr>
+<th>事件</th>
+<th>拦截能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input</code></td>
+<td>用户输入先过这里：放行、改写，或整个接管</td>
+</tr>
+<tr>
+<td><code>before_agent_start</code></td>
+<td>每轮开始前换系统提示词、注入消息</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td>发给模型前重写整个消息数组</td>
+</tr>
+<tr>
+<td><code>before_provider_request</code></td>
+<td>线级：直接改发给供应商的请求体和请求头</td>
+</tr>
+<tr>
+<td><code>tool_call</code></td>
+<td>工具执行前最后一道关：放行、拦截、原地改参数</td>
+</tr>
+<tr>
+<td><code>session_before_compact</code></td>
+<td>用自己的摘要替换内置压缩</td>
+</tr>
+</tbody>
+</table>
+<div class="mermaid">
+flowchart TD
+    IN[用户输入] --> E1{{input}}
+    E1 --> CTX[组装本轮上下文]
+    CTX --> E2{{before_agent_start}}
+    E2 --> E3{{context}}
+    E3 --> E4{{before_provider_request}}
+    E4 --> LLM[调用 LLM]
+    LLM --> E5{{tool_call}}
+    E5 --> T[执行工具]
+    T --> E6{{tool_result}}
+    E6 --> NEXT[结果进历史，进入下一轮]
+
+    classDef step fill:#dbeafe,stroke:#2563eb,color:#111827
+    classDef evt fill:#ede9fe,stroke:#7c3aed,color:#111827
+    class IN,CTX,LLM,T,NEXT step
+    class E1,E2,E3,E4,E5,E6 evt
+</div>
+<p>紫色六边形都是扩展能插手的位置。对照前面那张六个 No 的表，每一项都能报出对应组合：权限弹窗是 <code>tool_call</code> 加确认框；计划模式是 <code>tool_call</code> 只放行只读工具，加一个切换命令；子代理是注册一个工具、在里面再起一个无头 pi。示例目录里还有更野的：<code>user_bash</code> 把 <code>!</code> 命令路由到 SSH 远端，gondolin 把工具执行整个搬进微虚拟机，以及在终端里跑 DOOM。</p>
+<h3 id="agent-给自己写扩展"><a class="markdownIt-Anchor" href="#agent-给自己写扩展"></a> agent 给自己写扩展</h3>
+<p>根目录 README 管 pi 叫 self extensible coding agent，文档每页开头都写着 pi can create X, ask it to build one for your use case。这句话能兑现，靠三件东西咬合：</p>
+<ol>
+<li>**规格在本地。**约 1.2 万行文档和全部示例随 npm 包发货，系统提示词里写着它们的绝对路径和主题路由表。agent 写扩展前能读到完整、和当前版本一致的 API 文档，不用联网猜。</li>
+<li>**零构建。**jiti 直跑 TypeScript，写完即生效。</li>
+<li><strong>热重载。</strong><code>/reload</code> 重跑整条资源管线，扩展 API 里还有 <code>ctx.reload()</code>，agent 写完扩展自己触发重载，同一个会话里新工具就上线了。</li>
+</ol>
+<p>这条链路还被评测守着：<code>packages/evals/src/extensions.eval.ts</code> 用真实模型端到端跑&quot;让 agent 创建一个扩展、重载、然后用它&quot;。</p>
+<blockquote>
+<p>pi 仓库的 <code>.pi/extensions/</code> 里放着四个项目扩展：<code>redraws.ts</code> 注册 <code>/tui</code> 看渲染器的重绘统计，<code>tps.ts</code> 挂在消息事件上量 tokens/s，<code>prompt-url-widget.ts</code> 识别输入里的 PR 链接画悬浮部件，<code>import-repro.ts</code> 导入复现会话。他们用 pi 的扩展调试 pi 自己。</p>
+</blockquote>
+<p>分发也是现成的：<code>package.json</code> 里一个 <code>pi</code> 字段把扩展、技能、模板、主题打成一个包，<code>pi install npm:@foo/bar</code> 或 git 源装进全局或项目目录。</p>
+<h3 id="四种模式一个核心"><a class="markdownIt-Anchor" href="#四种模式一个核心"></a> 四种模式一个核心</h3>
+<p>TUI 只是四种运行模式之一。<code>--mode rpc</code> 把 pi 变成子进程，stdin/stdout 上走 JSONL；<code>--mode json</code> 输出结构化事件流；管道进来的输入自动走 print 模式；再加上直接 import 的 SDK。四条路共享同一个运行时，扩展、技能、会话树、压缩在无头模式里全部照常生效。给 CI 写一个自动修 issue 的机器人，和在终端里交互式干活，用的是同一套核心和同一批扩展。</p>
+<h3 id="当开发者也是-agent"><a class="markdownIt-Anchor" href="#当开发者也是-agent"></a> 当开发者也是 agent</h3>
+<p>pi 仓库由多个 pi 会话并发开发，<a href="http://AGENTS.md" target="_blank" rel="noopener">AGENTS.md</a> 为此立了一套纪律（大意）：</p>
+<blockquote>
+<p>多个 pi 会话可能同时在这个目录工作，各自改不同的文件。只提交你这个会话改过的文件，暂存必须点名具体路径；<code>git add -A</code>、<code>git add .</code>、<code>git reset --hard</code>、<code>git checkout .</code>、<code>git stash</code> 一律禁止，它们会摧毁其他会话的成果。碰到不属于自己改动的 rebase 冲突：中止，去问人。</p>
+</blockquote>
+<h2 id="同一套哲学贯穿到底层"><a class="markdownIt-Anchor" href="#同一套哲学贯穿到底层"></a> 同一套哲学贯穿到底层</h2>
+<p>pi-ai 在最低一层用同样的思路对付 40 家供应商。</p>
+<p><strong>差异是数据</strong>，40 家供应商只共享 10 种线协议，xAI、Groq、DeepSeek、OpenRouter 复用同一个 openai-completions 实现，各家的怪癖记在 Model.compat 能力表里：max_tokens 字段叫什么名、工具结果后面要不要补一条 assistant 消息、thinking 输出走哪种格式。新接一家，常见情况是加几行数据。模型目录也是数据：构建时从 models.dev、OpenRouter 等源拉取合并，叠一层带注释的手工修正，生成物带哈希清单，再推导出 TypeScript 字面量类型，模型 ID 在编辑器里能自动补全。</p>
+<p><strong>错误是值</strong>，<code>stream()</code> 从不 throw，认证失败、网络断开、限流、用户中断全部变成流里的最后一个事件，里面是一条带着已产出内容和 token 消耗的 assistant 消息。循环里失败也是数据的底气，就是这一层给的。</p>
+<p>从循环的九个钩子，到扩展的三十多种事件，再到 compat 能力表，pi 每一层都把机制写死、把策略留给数据和回调。</p>
+<h2 id="教具也是工具"><a class="markdownIt-Anchor" href="#教具也是工具"></a> 教具，也是工具</h2>
+<p>回到开头的说法。最好的教具这半句我完全同意，源码给了三个理由：pi 的全部主张就是让你看见并控制进出模型的每一个字节，系统提示词 18 行摆在那里，会话是本地 JSONL，没有背后注入，学 Agent 最怕黑盒，pi 没有盒；四个核心包分层严格，pi-ai 管说话、pi-agent-core 管循环、pi-coding-agent 管产品逻辑、pi-tui 管终端渲染，依赖单向，想搞懂 agent 循环直接读那 120 行就行；pi 自解释，装好之后可以直接问它自己怎么工作，让它给你写扩展。</p>
+<p>不适合干活这半句需要修正。pi 仓库本身就是用 pi 开发的，<a href="http://AGENTS.md" target="_blank" rel="noopener">AGENTS.md</a> 里的多会话 git 纪律就是证据。更准确的版本是：pi 对愿意自己配置工作流的人是生产力工具，对想开箱即用的人是学习工具。这恰好还是 Arch 的处境，Arch 用户从不觉得 Arch 拖慢了自己，被拖慢的是还没决定要不要自己管理系统的人。</p>
+<p>装好之后值得做的第一件事，是让它给自己写一个扩展，你在旁边看完整个过程。</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li><a href="https://github.com/earendil-works/pi" target="_blank" rel="noopener">pi 源码</a>（调研版本 v0.84.4）与 <a href="https://pi.dev/docs/latest" target="_blank" rel="noopener">pi.dev 文档</a></li>
+<li>Mario Zechner, <a href="https://mariozechner.at/posts/2025-11-30-pi-coding-agent/" target="_blank" rel="noopener">What I learned building an opinionated and minimal coding agent</a></li>
+<li>Mario Zechner, <a href="https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/" target="_blank" rel="noopener">What if you don’t need MCP at all?</a></li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/packages/agent/README.md" target="_blank" rel="noopener">packages/agent/README.md</a>：agent 循环与一个 turn 的标准事件序列</li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md" target="_blank" rel="noopener">docs/extensions.md</a> 与 <a href="https://github.com/earendil-works/pi/tree/main/packages/coding-agent/examples/extensions" target="_blank" rel="noopener">examples/extensions/</a>：扩展 API 全文与示例</li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/compaction.md" target="_blank" rel="noopener">docs/compaction.md</a>：压缩机制全文</li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/session-format.md" target="_blank" rel="noopener">docs/session-format.md</a>、<a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/sessions.md" target="_blank" rel="noopener">docs/sessions.md</a>：会话树与分支</li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md" target="_blank" rel="noopener">docs/skills.md</a> 与 <a href="https://agentskills.io" target="_blank" rel="noopener">Agent Skills 标准</a></li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/containerization.md" target="_blank" rel="noopener">docs/containerization.md</a>：三种隔离方案</li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md" target="_blank" rel="noopener">docs/packages.md</a>：pi 包的打包与分发</li>
+<li><a href="https://github.com/earendil-works/pi/blob/main/AGENTS.md" target="_blank" rel="noopener">仓库根目录 AGENTS.md</a>：多会话开发纪律</li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#agent-harness"><span class="toc-text"> agent harness</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#你不需要-10000-token-的系统提示词"><span class="toc-text"> 你不需要 10,000 token 的系统提示词</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#那-120-行里有什么"><span class="toc-text"> 那 120 行里有什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#六个-no"><span class="toc-text"> 六个 No</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#历史是一棵树"><span class="toc-text"> 历史是一棵树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#压缩是一个追加的指针"><span class="toc-text"> 压缩是一个追加的指针</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#技能按需付-token-的说明书"><span class="toc-text"> 技能：按需付 token 的说明书</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一切皆扩展"><span class="toc-text"> 一切皆扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-给自己写扩展"><span class="toc-text"> agent 给自己写扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#四种模式一个核心"><span class="toc-text"> 四种模式一个核心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#当开发者也是-agent"><span class="toc-text"> 当开发者也是 agent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#同一套哲学贯穿到底层"><span class="toc-text"> 同一套哲学贯穿到底层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#教具也是工具"><span class="toc-text"> 教具，也是工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text"> 参考</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-30T04:40:50.000Z">2026.08.30</time>
+              <span>#Agent</span>
+            </span>
+            <strong>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测</strong>
+          </a>
+        
+          <a href="/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-04T09:23:38.000Z">2026.08.04</time>
+              <span>#Agent</span>
+            </span>
+            <strong>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</strong>
+          </a>
+        
+          <a href="/2026/08/03/TencentDB-Agent-Memory%E7%9A%84%E8%AE%B0%E5%BF%86%E8%AE%BE%E8%AE%A1/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-03T04:00:00.000Z">2026.08.03</time>
+              <span>#Agent</span>
+            </span>
+            <strong>TencentDB-Agent-Memory的记忆设计</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    
+    <a href="/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/"><span>下一篇</span><strong>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>第七章：配置系统——灵活性的来源 · Quinn</title>
+<meta name="description" content="第七章：配置系统——灵活性的来源 “一个工具的边界，由它的配置系统决定。” 7.1 配置系统全景 Claude Code 的配置系统远比&#34;读一个 JSON 文件&#34;复杂。它是一个多层级、多来源、动态感知的配置框架，需要满足以下需求： 个人偏好…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/05/07/chapter-07-config-system/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="第七章：配置系统——灵活性的来源 · Quinn" />
+<meta property="og:description" content="第七章：配置系统——灵活性的来源 “一个工具的边界，由它的配置系统决定。” 7.1 配置系统全景 Claude Code 的配置系统远比&#34;读一个 JSON 文件&#34;复杂。它是一个多层级、多来源、动态感知的配置框架，需要满足以下需求： 个人偏好…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/05/07/chapter-07-config-system/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Claude Code 源码学习 · 07 / 09
+      
+    </p>
+    <h1>第七章：配置系统——灵活性的来源</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“一个工具的边界，由它的配置系统决定。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/AI%E5%BA%94%E7%94%A8/">AI应用</a>
+  
+  <span class="post-meta__item">19 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Claude-Code/">#Claude Code</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="71-配置系统全景"><a class="markdownIt-Anchor" href="#71-配置系统全景"></a> 7.1 配置系统全景</h2>
+<p>Claude Code 的配置系统远比&quot;读一个 JSON 文件&quot;复杂。它是一个多层级、多来源、动态感知的配置框架，需要满足以下需求：</p>
+<ul>
+<li>个人偏好、项目配置、企业策略三类用户需求并存</li>
+<li>文件变更实时热重载，无需重启</li>
+<li>企业 MDM（移动设备管理）策略 30 分钟轮询</li>
+<li>Schema 校验 + 向后兼容迁移</li>
+<li>插件可注入配置层</li>
+<li><a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a> 记忆文件系统（与代码配置并列）</li>
+</ul>
+<div class="mermaid">
+graph TB
+    subgraph 配置层["Settings 配置层（JSON）"]
+        S1[policySettings<br>企业管控策略]
+        S2[flagSettings<br>CLI Flag 注入]
+        S3[localSettings<br>.claude/settings.local.json]
+        S4[projectSettings<br>.claude/settings.json]
+        S5[userSettings<br>~/.claude/settings.json]
+        S6[pluginSettings<br>插件注入基础层]
+    end
+
+    subgraph 记忆层["CLAUDE.md 记忆层（Markdown）"]
+        M1[管理员记忆<br>/etc/claude-code/CLAUDE.md]
+        M2[用户记忆<br>~/.claude/CLAUDE.md]
+        M3[项目记忆<br>CLAUDE.md / .claude/rules/*.md]
+        M4[本地记忆<br>CLAUDE.local.md]
+    end
+
+    subgraph 全局配置["GlobalConfig（~/.claude/.claude.json）"]
+        G1[numStartups<br>启动次数]
+        G2[ProjectConfig<br>项目级缓存配置]
+        G3[allowedTools<br>允许的工具列表]
+    end
+
+    S1 -->|优先级最高| Merge
+    S2 --> Merge
+    S3 --> Merge
+    S4 --> Merge
+    S5 --> Merge
+    S6 -->|基础层| Merge
+    Merge --> AppState
+
+    M1 --> ContextPrompt
+    M2 --> ContextPrompt
+    M3 --> ContextPrompt
+    M4 -->|优先级最高| ContextPrompt
+</div>
+<hr />
+<h2 id="72-settings-来源层级settingsource"><a class="markdownIt-Anchor" href="#72-settings-来源层级settingsource"></a> 7.2 Settings 来源层级（SettingSource）</h2>
+<p><code>src/utils/settings/constants.ts</code> 定义了配置来源的优先级顺序：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 优先级从低到高</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> SETTING_SOURCES = [</span><br><span class="line">  <span class="string">'pluginSettings'</span>,   <span class="comment">// 插件注入（最低优先级，作为基础层）</span></span><br><span class="line">  <span class="string">'userSettings'</span>,     <span class="comment">// ~/.claude/settings.json</span></span><br><span class="line">  <span class="string">'projectSettings'</span>,  <span class="comment">// .claude/settings.json</span></span><br><span class="line">  <span class="string">'localSettings'</span>,    <span class="comment">// .claude/settings.local.json（不提交 git）</span></span><br><span class="line">  <span class="string">'flagSettings'</span>,     <span class="comment">// CLI flag / IDE 注入</span></span><br><span class="line">  <span class="string">'policySettings'</span>,   <span class="comment">// 企业管控策略（最高优先级）</span></span><br><span class="line">] <span class="keyword">as</span> <span class="keyword">const</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> SettingSource = (<span class="keyword">typeof</span> SETTING_SOURCES)[<span class="built_in">number</span>]</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> EditableSettingSource =</span><br><span class="line">  <span class="string">'userSettings'</span> | <span class="string">'projectSettings'</span> | <span class="string">'localSettings'</span></span><br></pre></td></tr></table></figure>
+<p><strong>关键规则</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>文件路径</th>
+<th>可编辑</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pluginSettings</code></td>
+<td>内存</td>
+<td>否</td>
+<td>插件通过 <code>setPluginSettingsBase()</code> 注入</td>
+</tr>
+<tr>
+<td><code>userSettings</code></td>
+<td><code>~/.claude/settings.json</code></td>
+<td>是</td>
+<td>用户全局，跨项目生效</td>
+</tr>
+<tr>
+<td><code>projectSettings</code></td>
+<td><code>.claude/settings.json</code></td>
+<td>是</td>
+<td>可提交 git，团队共享</td>
+</tr>
+<tr>
+<td><code>localSettings</code></td>
+<td><code>.claude/settings.local.json</code></td>
+<td>是</td>
+<td>本地覆盖，gitignore</td>
+</tr>
+<tr>
+<td><code>flagSettings</code></td>
+<td>内存</td>
+<td>否</td>
+<td>CLI <code>--permission-mode</code> 等 flag 注入</td>
+</tr>
+<tr>
+<td><code>policySettings</code></td>
+<td><code>/etc/claude-code/managed-settings.json</code>（Linux）<br><code>/Library/Application Support/ClaudeCode/</code>（macOS）<br><code>C:\Program Files\ClaudeCode\</code>（Windows）</td>
+<td>否</td>
+<td>企业管控，只读</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 始终加载的来源（即使被禁用也会读取）</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getEnabledSettingSources</span>(<span class="params"></span>): <span class="title">SettingSource</span>[] </span>&#123;</span><br><span class="line">  <span class="comment">// policySettings 和 flagSettings 始终启用</span></span><br><span class="line">  <span class="comment">// 其余来源可通过企业策略禁用</span></span><br><span class="line">  <span class="keyword">return</span> SETTING_SOURCES.filter(<span class="function"><span class="params">s</span> =&gt;</span> isSettingSourceEnabled(s))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="73-settingsschemazod-类型约束"><a class="markdownIt-Anchor" href="#73-settingsschemazod-类型约束"></a> 7.3 SettingsSchema：Zod 类型约束</h2>
+<p>所有配置字段都由 <code>src/utils/settings/types.ts</code> 中的 <code>SettingsSchema</code> 通过 Zod 定义：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 主要字段一览（精简版）</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> SettingsSchema = <span class="function"><span class="params">()</span> =&gt;</span> z.object(&#123;</span><br><span class="line">  <span class="comment">// 模型选择</span></span><br><span class="line">  model: z.string().optional(),</span><br><span class="line">  availableModels: z.array(ModelOptionSchema).optional(),</span><br><span class="line">  modelOverrides: z.record(z.string()).optional(),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 权限</span></span><br><span class="line">  permissions: z.object(&#123;</span><br><span class="line">    allow: z.array(z.string()),</span><br><span class="line">    deny: z.array(z.string()),</span><br><span class="line">    ask: z.array(z.string()),</span><br><span class="line">    defaultMode: PermissionModeSchema.optional(),</span><br><span class="line">    additionalDirectories: z.array(z.string()).optional(),</span><br><span class="line">  &#125;).optional(),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 环境变量透传</span></span><br><span class="line">  env: z.record(z.string()).optional(),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Hooks 系统</span></span><br><span class="line">  hooks: z.record(z.array(HookEntrySchema)).optional(),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// MCP 服务器</span></span><br><span class="line">  mcpServers: z.record(McpServerConfigSchema).optional(),</span><br><span class="line">  enabledMcpjsonServers: z.array(z.string()).optional(),</span><br><span class="line">  disabledMcpjsonServers: z.array(z.string()).optional(),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 沙箱</span></span><br><span class="line">  sandbox: SandboxConfigSchema.optional(),</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 其他</span></span><br><span class="line">  cleanupPeriodDays: z.number().min(<span class="number">1</span>).optional(),</span><br><span class="line">  theme: ThemeSettingSchema.optional(),</span><br><span class="line">  effortLevel: z.number().optional(),</span><br><span class="line">  autoMode: AutoModeRulesSchema.optional(),</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><strong>可定制面（CUSTOMIZATION_SURFACES）</strong>：用户可配置的功能入口列表：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> CUSTOMIZATION_SURFACES = [<span class="string">'skills'</span>, <span class="string">'agents'</span>, <span class="string">'hooks'</span>, <span class="string">'mcp'</span>] <span class="keyword">as</span> <span class="keyword">const</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="74-三级缓存架构"><a class="markdownIt-Anchor" href="#74-三级缓存架构"></a> 7.4 三级缓存架构</h2>
+<p><code>src/utils/settings/settingsCache.ts</code> 实现了三层缓存，避免重复的磁盘 I/O 和 Zod 解析：</p>
+<div class="mermaid">
+graph LR
+    App[应用读取设置] --> SC{sessionSettingsCache}
+    SC -->|命中| Return[返回合并结果]
+    SC -->|缺失| PSC{perSourceCache}
+    PSC -->|命中| Merge[合并各来源]
+    PSC -->|缺失| PFC{parseFileCache}
+    PFC -->|命中| UseCache[使用解析结果]
+    PFC -->|缺失| Disk[读取磁盘 + Zod 解析]
+    Disk --> PFC
+    UseCache --> PSC
+    Merge --> SC
+</div>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 三级缓存</span></span><br><span class="line"><span class="keyword">let</span> sessionSettingsCache: SettingsWithErrors | <span class="literal">null</span> = <span class="literal">null</span>  <span class="comment">// 合并后的完整设置</span></span><br><span class="line"><span class="keyword">const</span> perSourceCache = <span class="keyword">new</span> Map&lt;SettingSource, SettingsJson | <span class="literal">null</span>&gt;()  <span class="comment">// 每个来源的解析结果</span></span><br><span class="line"><span class="keyword">const</span> parseFileCache = <span class="keyword">new</span> Map&lt;<span class="built_in">string</span>, ParsedSettings&gt;()  <span class="comment">// 文件路径 → 解析结果</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 缓存失效：单一入口，一次性清除所有级别</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">resetSettingsCache</span>(<span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  sessionSettingsCache = <span class="literal">null</span></span><br><span class="line">  perSourceCache.clear()</span><br><span class="line">  parseFileCache.clear()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 插件设置独立存储（最低优先级基础层）</span></span><br><span class="line"><span class="keyword">let</span> pluginSettingsBase: Record&lt;<span class="built_in">string</span>, unknown&gt; | <span class="literal">undefined</span></span><br></pre></td></tr></table></figure>
+<p><strong>设计亮点</strong>：<code>parseFileCache</code> 的存在解决了启动时多次调用 <code>parseSettingsFile</code> 读取同一文件的重复问题（<code>getSettingsForSource</code> 和 <code>loadSettingsFromDisk</code> 都会调用）。</p>
+<hr />
+<h2 id="75-企业策略配置drop-in-目录"><a class="markdownIt-Anchor" href="#75-企业策略配置drop-in-目录"></a> 7.5 企业策略配置：Drop-in 目录</h2>
+<p>企业级别的 <code>policySettings</code> 支持通过**投放目录（drop-in directory）**合并多个配置片段：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;etc&#x2F;claude-code&#x2F;</span><br><span class="line">├── managed-settings.json          # 基础配置（首先加载）</span><br><span class="line">└── managed-settings.d&#x2F;            # Drop-in 目录</span><br><span class="line">    ├── 10-network-policy.json     # 按字母顺序加载</span><br><span class="line">    ├── 20-tool-restrictions.json  # 后加载的覆盖先加载的</span><br><span class="line">    └── 30-model-config.json</span><br></pre></td></tr></table></figure>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// settings.ts：加载企业托管设置</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">loadManagedFileSettings</span>(<span class="params"></span>): <span class="title">SettingsJson</span> | <span class="title">null</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 1. 加载基础配置</span></span><br><span class="line">  <span class="keyword">const</span> base = parseSettingsFile(getManagedFilePath())</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 2. 读取 drop-in 目录（按字母排序）</span></span><br><span class="line">  <span class="keyword">const</span> dropInDir = getManagedSettingsDropInDir()</span><br><span class="line">  <span class="keyword">const</span> dropInFiles = readdirSync(dropInDir)</span><br><span class="line">    .filter(<span class="function"><span class="params">f</span> =&gt;</span> f.endsWith(<span class="string">'.json'</span>))</span><br><span class="line">    .sort()  <span class="comment">// 字母序，数字前缀控制优先级</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 3. 逐个深度合并（后者覆盖前者）</span></span><br><span class="line">  <span class="keyword">let</span> result = base ?? &#123;&#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> file of dropInFiles) &#123;</span><br><span class="line">    <span class="keyword">const</span> fragment = parseSettingsFile(join(dropInDir, file))</span><br><span class="line">    result = deepMerge(result, fragment)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>平台路径</strong>（<code>managedPath.ts</code>）：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> getManagedFilePath = memoize(<span class="function"><span class="keyword">function</span> (<span class="params"></span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (getPlatform()) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">'macos'</span>:   <span class="keyword">return</span> <span class="string">'/Library/Application Support/ClaudeCode'</span></span><br><span class="line">    <span class="keyword">case</span> <span class="string">'windows'</span>: <span class="keyword">return</span> <span class="string">'C:\\Program Files\\ClaudeCode'</span></span><br><span class="line">    <span class="keyword">default</span>:        <span class="keyword">return</span> <span class="string">'/etc/claude-code'</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="76-文件变更检测changedetectorts"><a class="markdownIt-Anchor" href="#76-文件变更检测changedetectorts"></a> 7.6 文件变更检测（changeDetector.ts）</h2>
+<p>设置文件变化时需要热重载，<code>changeDetector.ts</code> 实现了完整的文件监听体系：</p>
+<div class="mermaid">
+sequenceDiagram
+    participant FS as 文件系统
+    participant Chokidar as chokidar 监听
+    participant Stability as 稳定性检测器
+    participant Internal as internalWrites<br>内部写入标记
+    participant FanOut as fanOut 分发器
+    participant Listener as 设置变更监听器
+
+    FS->>Chokidar: 文件 change 事件
+    Chokidar->>Internal: consumeInternalWrite(path)?
+    Internal-->>Chokidar: false（外部变更）
+    Chokidar->>Stability: 启动稳定性计时器
+    Note over Stability: 等待 1000ms 无变化
+    Stability->>FanOut: 文件已稳定，触发分发
+    FanOut->>FanOut: resetSettingsCache()
+    FanOut->>Listener: 通知所有订阅者
+</div>
+<p><strong>关键常量</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 文件写入后等待 1s 无变化才触发热重载</span></span><br><span class="line"><span class="keyword">const</span> FILE_STABILITY_THRESHOLD_MS = <span class="number">1000</span></span><br><span class="line"><span class="keyword">const</span> FILE_STABILITY_POLL_INTERVAL_MS = <span class="number">500</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 内部写入抑制窗口（5s 内由 Claude Code 自身写入的变更不触发重载）</span></span><br><span class="line"><span class="keyword">const</span> INTERNAL_WRITE_WINDOW_MS = <span class="number">5000</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 企业 MDM 策略轮询间隔（30 分钟）</span></span><br><span class="line"><span class="keyword">const</span> MDM_POLL_INTERVAL_MS = <span class="number">30</span> * <span class="number">60</span> * <span class="number">1000</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 文件删除后的宽限期（避免原子替换时误报）</span></span><br><span class="line"><span class="keyword">const</span> DELETION_GRACE_MS = <span class="number">2000</span></span><br></pre></td></tr></table></figure>
+<p><strong><code>fanOut</code> 模式</strong>（单生产者 + 多消费者）：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重置缓存只由 fanOut 触发一次，所有监听器共享同一次缓存清除</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">fanOut</span>(<span class="params">source: SettingSource</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  resetSettingsCache()       <span class="comment">// 清除三级缓存（只做一次！）</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> listener of listeners) &#123;</span><br><span class="line">    listener(source)          <span class="comment">// 通知所有订阅者（每人各自重读）</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>防重入设计</strong>：<code>internalWrites.ts</code> 独立管理内部写入时间戳，避免 Claude Code 自身写入 settings 时触发无意义的热重载：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 写入前标记（settings.ts 调用）</span></span><br><span class="line">markInternalWrite(resolvedPath)</span><br><span class="line"></span><br><span class="line"><span class="comment">// chokidar 回调中检查（消费即删除，一次性）</span></span><br><span class="line"><span class="keyword">if</span> (consumeInternalWrite(path, INTERNAL_WRITE_WINDOW_MS)) &#123;</span><br><span class="line">  <span class="keyword">return</span>  <span class="comment">// 是自己写的，忽略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="77-schema-校验与错误提示"><a class="markdownIt-Anchor" href="#77-schema-校验与错误提示"></a> 7.7 Schema 校验与错误提示</h2>
+<p><code>validation.ts</code> 将 Zod 错误转化为对人类友好的结构化错误：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> ValidationError = &#123;</span><br><span class="line">  file?: <span class="built_in">string</span>          <span class="comment">// 相对文件路径</span></span><br><span class="line">  path: FieldPath        <span class="comment">// 点分字段路径（如 "permissions.allow"）</span></span><br><span class="line">  message: <span class="built_in">string</span>        <span class="comment">// 可读的错误描述</span></span><br><span class="line">  expected?: <span class="built_in">string</span>      <span class="comment">// 期望的值或类型</span></span><br><span class="line">  invalidValue?: unknown <span class="comment">// 实际的非法值</span></span><br><span class="line">  suggestion?: <span class="built_in">string</span>    <span class="comment">// 修复建议（来自 validationTips.ts）</span></span><br><span class="line">  docLink?: <span class="built_in">string</span>       <span class="comment">// 相关文档链接</span></span><br><span class="line">  mcpErrorMetadata?: &#123;   <span class="comment">// MCP 专属元数据</span></span><br><span class="line">    scope: ConfigScope</span><br><span class="line">    serverName?: <span class="built_in">string</span></span><br><span class="line">    severity?: <span class="string">'fatal'</span> | <span class="string">'warning'</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>容错设计</strong>：<code>filterInvalidPermissionRules</code> 实现了<strong>单规则隔离</strong>——一条错误的权限规则不会导致整个文件解析失败：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">filterInvalidPermissionRules</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  data: unknown,</span></span></span><br><span class="line"><span class="function"><span class="params">  filePath: <span class="built_in">string</span>,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">ValidationError</span>[] </span>&#123;</span><br><span class="line">  <span class="comment">// 逐条验证 allow/deny/ask 数组中的每条规则</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> key of [<span class="string">'allow'</span>, <span class="string">'deny'</span>, <span class="string">'ask'</span>]) &#123;</span><br><span class="line">    perms[key] = rules.filter(<span class="function"><span class="params">rule</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> result = validatePermissionRule(rule)</span><br><span class="line">      <span class="keyword">if</span> (!result.valid) &#123;</span><br><span class="line">        warnings.push(&#123; ... &#125;)  <span class="comment">// 记录警告</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>             <span class="comment">// 移除该规则，继续处理其他规则</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> warnings  <span class="comment">// 返回所有警告，但不抛出异常</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>实时文件校验</strong>：<code>validateSettingsFileContent</code> 在用户通过编辑工具修改 settings 时立即验证，失败时返回完整 JSON Schema 帮助用户修正：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">validateSettingsFileContent</span>(<span class="params">content: <span class="built_in">string</span></span>):</span></span><br><span class="line"><span class="function">  | </span>&#123; isValid: <span class="literal">true</span> &#125;</span><br><span class="line">  | &#123; isValid: <span class="literal">false</span>; error: <span class="built_in">string</span>; fullSchema: <span class="built_in">string</span> &#125; &#123;</span><br><span class="line">  <span class="keyword">const</span> result = SettingsSchema().strict().safeParse(jsonData)</span><br><span class="line">  <span class="keyword">if</span> (!result.success) &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      isValid: <span class="literal">false</span>,</span><br><span class="line">      error: formatZodError(result.error, <span class="string">'settings'</span>),</span><br><span class="line">      fullSchema: generateSettingsJSONSchema(),  <span class="comment">// 完整 JSON Schema</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="78-设置变更应用applysettingschange"><a class="markdownIt-Anchor" href="#78-设置变更应用applysettingschange"></a> 7.8 设置变更应用（applySettingsChange）</h2>
+<p>当文件变更通知到达后，<code>applySettingsChange.ts</code> 负责将新配置原子性地应用到 <code>AppState</code>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">applySettingsChange</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  source: SettingSource,</span></span></span><br><span class="line"><span class="function"><span class="params">  setAppState: (f: (prev: AppState) =&gt; AppState) =&gt; <span class="built_in">void</span>,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 1. 重读合并设置（缓存已由 fanOut 清除）</span></span><br><span class="line">  <span class="keyword">const</span> newSettings = getInitialSettings()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 2. 重载权限规则</span></span><br><span class="line">  <span class="keyword">const</span> updatedRules = loadAllPermissionRulesFromDisk()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 3. 刷新 Hooks 配置快照</span></span><br><span class="line">  updateHooksConfigSnapshot()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 4. 原子更新 AppState</span></span><br><span class="line">  setAppState(<span class="function"><span class="params">prev</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> newContext = syncPermissionRulesFromDisk(prev.toolPermissionContext, updatedRules)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Ant 内部环境：清除过于宽泛的 Bash allow 规则</span></span><br><span class="line">    <span class="keyword">if</span> (process.env.USER_TYPE === <span class="string">'ant'</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> overlyBroad = findOverlyBroadBashPermissions(updatedRules, [])</span><br><span class="line">      <span class="keyword">if</span> (overlyBroad.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        newContext = removeDangerousPermissions(newContext, overlyBroad)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 同步 effortLevel（仅当 settings 中的值真正变化时）</span></span><br><span class="line">    <span class="keyword">const</span> effortChanged = prev.settings.effortLevel !== newSettings.effortLevel</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      ...prev,</span><br><span class="line">      settings: newSettings,</span><br><span class="line">      toolPermissionContext: newContext,</span><br><span class="line">      ...(effortChanged &amp;&amp; newSettings.effortLevel !== <span class="literal">undefined</span></span><br><span class="line">        ? &#123; effortValue: newSettings.effortLevel &#125;</span><br><span class="line">        : &#123;&#125;),</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="79-claudemd-记忆系统"><a class="markdownIt-Anchor" href="#79-claudemd-记忆系统"></a> 7.9 <a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a> 记忆系统</h2>
+<p>除了 JSON 配置，Claude Code 还有一套基于 <strong>Markdown 文件</strong>的&quot;记忆&quot;系统（<code>src/utils/claudemd.ts</code>），用于向 AI 注入持久化的上下文指令。</p>
+<h3 id="91-四层记忆文件"><a class="markdownIt-Anchor" href="#91-四层记忆文件"></a> 9.1 四层记忆文件</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">加载顺序（越靠后优先级越高）：</span><br><span class="line"></span><br><span class="line">① 管理员记忆   &#x2F;etc&#x2F;claude-code&#x2F;CLAUDE.md              全局用户指令</span><br><span class="line">② 用户记忆     ~&#x2F;.claude&#x2F;CLAUDE.md                     跨项目个人指令</span><br><span class="line">③ 项目记忆     CLAUDE.md                               可提交 git 的项目约定</span><br><span class="line">               .claude&#x2F;CLAUDE.md</span><br><span class="line">               .claude&#x2F;rules&#x2F;*.md</span><br><span class="line">④ 本地记忆     CLAUDE.local.md                         不提交 git 的本地覆盖</span><br></pre></td></tr></table></figure>
+<p><strong>文件发现机制</strong>：从当前工作目录向上遍历至 git 根目录，每个层级都检查 <code>CLAUDE.md</code>、<code>.claude/CLAUDE.md</code> 和 <code>.claude/rules/</code> 下的所有 <code>.md</code> 文件。</p>
+<h3 id="92-include-指令"><a class="markdownIt-Anchor" href="#92-include-指令"></a> 9.2 <code>@include</code> 指令</h3>
+<p>记忆文件支持通过 <code>@</code> 语法引用其他文件，实现模块化拆分：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="xml"><span class="comment">&lt;!-- CLAUDE.md --&gt;</span></span></span><br><span class="line">@./api-conventions.md</span><br><span class="line">@./testing-guidelines.md</span><br><span class="line"></span><br><span class="line"><span class="section">## 通用规则</span></span><br><span class="line"><span class="bullet">- </span>使用 Go 驼峰命名法</span><br></pre></td></tr></table></figure>
+<p><strong>语法规则</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>语法</th>
+<th>解析方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@path</code></td>
+<td>相对路径（同 <code>@./path</code>）</td>
+</tr>
+<tr>
+<td><code>@./relative</code></td>
+<td>相对当前文件目录</td>
+</tr>
+<tr>
+<td><code>@~/home/path</code></td>
+<td>用户主目录</td>
+</tr>
+<tr>
+<td><code>@/absolute/path</code></td>
+<td>绝对路径</td>
+</tr>
+</tbody>
+</table>
+<p><strong>安全约束</strong>：</p>
+<ul>
+<li>仅在叶子文本节点中生效（不在代码块中处理）</li>
+<li>循环引用检测（追踪已处理文件集合）</li>
+<li>不存在的文件静默忽略</li>
+<li>只允许文本类型文件（白名单：<code>.md</code>、<code>.ts</code>、<code>.go</code>、<code>.py</code> 等 50+ 扩展名）</li>
+</ul>
+<h3 id="93-frontmatter-路径过滤"><a class="markdownIt-Anchor" href="#93-frontmatter-路径过滤"></a> 9.3 Frontmatter 路径过滤</h3>
+<p>记忆文件可以通过 Frontmatter 指定只对特定路径的文件生效：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">paths:</span><br><span class="line"><span class="bullet">  - </span>src/api/**</span><br><span class="line"><span class="bullet">  - </span>src/services/**</span><br><span class="line">---</span><br><span class="line"></span><br><span class="line"><span class="section">## API 编写规范</span></span><br><span class="line"><span class="bullet">- </span>所有接口必须有错误处理</span><br></pre></td></tr></table></figure>
+<p>仅当用户正在操作匹配路径的文件时，该记忆文件才会被注入上下文。</p>
+<h3 id="94-html-注释剥离"><a class="markdownIt-Anchor" href="#94-html-注释剥离"></a> 9.4 HTML 注释剥离</h3>
+<p><code>stripHtmlComments()</code> 使用 <code>marked</code> 词法器识别块级 HTML 注释，将其从注入内容中剥离：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 只剥除块级注释（不破坏代码块中的注释）</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">stripHtmlComments</span>(<span class="params">content: <span class="built_in">string</span></span>): </span>&#123; content: <span class="built_in">string</span>; stripped: <span class="built_in">boolean</span> &#125; &#123;</span><br><span class="line">  <span class="keyword">if</span> (!content.includes(<span class="string">'&lt;!--'</span>)) <span class="keyword">return</span> &#123; content, stripped: <span class="literal">false</span> &#125;</span><br><span class="line">  <span class="comment">// 通过 marked Lexer 标识 html 类型 token 再过滤</span></span><br><span class="line">  <span class="keyword">return</span> stripHtmlCommentsFromTokens(<span class="keyword">new</span> Lexer(&#123; gfm: <span class="literal">false</span> &#125;).lex(content))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="95-自动记忆auto-memory"><a class="markdownIt-Anchor" href="#95-自动记忆auto-memory"></a> 9.5 自动记忆（Auto Memory）</h3>
+<p>Claude Code 维护一个自动写入的记忆文件（<code>MEMORY.md</code>）：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// memdir/paths.ts</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getAutoMemEntrypoint</span>(<span class="params"></span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> join(getClaudeConfigHomeDir(), <span class="string">'projects'</span>, normalizedProjectPath, <span class="string">'memory'</span>, <span class="string">'MEMORY.md'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>自动记忆的内容在加载时会进行截断处理，防止 token 超限：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 超出 MAX_MEMORY_CHARACTER_COUNT（40000 字符）时截断</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> MAX_MEMORY_CHARACTER_COUNT = <span class="number">40000</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="710-globalconfig会话级别配置"><a class="markdownIt-Anchor" href="#710-globalconfig会话级别配置"></a> 7.10 GlobalConfig：会话级别配置</h2>
+<p>除了 <code>settings.json</code>，Claude Code 还有一个 <code>~/.claude/.claude.json</code>（<code>GlobalConfig</code>）用于存储<strong>无需 Schema 验证的松散全局状态</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// config.ts</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> GlobalConfig = &#123;</span><br><span class="line">  numStartups: <span class="built_in">number</span>           <span class="comment">// 累计启动次数（用于迁移判断）</span></span><br><span class="line">  lastSplashScreenVersion: <span class="built_in">string</span></span><br><span class="line">  installMethod?: <span class="built_in">string</span></span><br><span class="line">  <span class="comment">// 项目级别配置（以 git 根目录规范化路径为 key）</span></span><br><span class="line">  projects: Record&lt;<span class="built_in">string</span>, ProjectConfig&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> ProjectConfig = &#123;</span><br><span class="line">  allowedTools: <span class="built_in">string</span>[]        <span class="comment">// 允许的工具列表</span></span><br><span class="line">  mcpContextUris: <span class="built_in">string</span>[]      <span class="comment">// MCP 上下文 URI</span></span><br><span class="line">  mcpServers?: Record&lt;<span class="built_in">string</span>, McpServerConfig&gt;</span><br><span class="line">  lastAPIDuration?: <span class="built_in">number</span></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>通过 <code>lockfile</code> 实现写入互斥，防止并发写入损坏</li>
+<li>读取使用 <code>memoize</code> 缓存，避免频繁磁盘 I/O</li>
+<li>用于保存跨会话的&quot;软&quot;偏好（不属于严格的权限/模型配置）</li>
+</ul>
+<hr />
+<h2 id="711-配置迁移系统"><a class="markdownIt-Anchor" href="#711-配置迁移系统"></a> 7.11 配置迁移系统</h2>
+<p><code>src/migrations/</code> 目录下维护了一套有序的迁移脚本，用于在版本升级时自动迁移用户配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">src&#x2F;migrations&#x2F;</span><br><span class="line">├── migrateSonnet45ToSonnet46.ts       # Sonnet 4.5 → 4.6 别名迁移</span><br><span class="line">├── migrateOpusToOpus1m.ts             # Opus → Opus 1m 迁移</span><br><span class="line">├── migrateGitignore.ts                # .gitignore 配置迁移</span><br><span class="line">├── migrateAutoUpdater.ts              # 自动更新器设置迁移</span><br><span class="line">├── migrateTheme.ts                    # 主题设置迁移</span><br><span class="line">└── ...（共 11 个迁移脚本）</span><br></pre></td></tr></table></figure>
+<p><strong>迁移特点</strong>：</p>
+<p>以 <code>migrateSonnet45ToSonnet46</code> 为例：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">migrateSonnet45ToSonnet46</span>(<span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 1. 前置检查：仅对 firstParty API 用户迁移</span></span><br><span class="line">  <span class="keyword">if</span> (getAPIProvider() !== <span class="string">'firstParty'</span>) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 2. 用户资格检查：仅 Pro/Max/Team Premium 用户</span></span><br><span class="line">  <span class="keyword">if</span> (!isProSubscriber() &amp;&amp; ...) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 3. 精确匹配：只迁移明确指定 Sonnet 4.5 版本字符串的配置</span></span><br><span class="line">  <span class="keyword">const</span> model = getSettingsForSource(<span class="string">'userSettings'</span>)?.model</span><br><span class="line">  <span class="keyword">if</span> (![<span class="string">'claude-sonnet-4-5-20250929'</span>, ...].includes(model)) <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 4. 幂等写入：更新为别名（'sonnet' 或 'sonnet[1m]'）</span></span><br><span class="line">  updateSettingsForSource(<span class="string">'userSettings'</span>, &#123;</span><br><span class="line">    model: has1m ? <span class="string">'sonnet[1m]'</span> : <span class="string">'sonnet'</span>,</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 5. 新用户跳过通知（numStartups &gt; 1 才提示）</span></span><br><span class="line">  <span class="keyword">if</span> (config.numStartups &gt; <span class="number">1</span>) &#123;</span><br><span class="line">    saveGlobalConfig(<span class="function"><span class="params">current</span> =&gt;</span> (&#123;</span><br><span class="line">      ...current,</span><br><span class="line">      sonnet45To46MigrationTimestamp: <span class="built_in">Date</span>.now(),</span><br><span class="line">    &#125;))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>迁移设计原则</strong>：</p>
+<ul>
+<li><strong>幂等性</strong>：多次执行结果相同</li>
+<li><strong>精确匹配</strong>：只处理明确需要迁移的旧值，不影响用户自定义配置</li>
+<li><strong>来源隔离</strong>：只读写 <code>userSettings</code>，不触碰 <code>projectSettings</code>（项目配置由项目维护者管理）</li>
+<li><strong>向前跳过</strong>：不满足迁移条件时直接 return，不报错</li>
+</ul>
+<hr />
+<h2 id="712-配置读写完整流程"><a class="markdownIt-Anchor" href="#712-配置读写完整流程"></a> 7.12 配置读写完整流程</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant User as 用户操作
+    participant App as 应用启动/运行
+    participant Cache as 三级缓存
+    participant Disk as 磁盘
+    participant Zod as Zod 校验
+    participant Chokidar as 文件监听
+    participant Migration as 迁移脚本
+
+    App->>Migration: 启动时运行迁移脚本
+    Migration->>Disk: 按需更新 userSettings
+    App->>Cache: getInitialSettings()
+    Cache->>Cache: 命中 sessionSettingsCache?
+    Cache->>Disk: 读取各层 JSON 文件
+    Disk->>Zod: filterInvalidPermissionRules
+    Zod->>Zod: SettingsSchema().parse()
+    Zod->>Cache: 写入 parseFileCache + perSourceCache
+    Cache->>App: 合并后的 SettingsJson
+
+    User->>Disk: 编辑 .claude/settings.json
+    Disk->>Chokidar: change 事件
+    Chokidar->>Chokidar: 等待 1000ms 稳定
+    Chokidar->>Cache: resetSettingsCache()
+    Chokidar->>App: 通知 applySettingsChange()
+    App->>Cache: 重新读取（缓存已清）
+</div>
+<hr />
+<h2 id="713-设计原则总结"><a class="markdownIt-Anchor" href="#713-设计原则总结"></a> 7.13 设计原则总结</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>原则</th>
+<th>具体体现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>优先级清晰</strong></td>
+<td>6 个来源按固定顺序合并，后者覆盖前者</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>三级缓存</strong></td>
+<td>session/perSource/parseFile 三层，单一 <code>resetSettingsCache()</code> 失效</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>容错解析</strong></td>
+<td>坏规则被过滤，不影响其他合法规则</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>热重载</strong></td>
+<td>chokidar 监听 + 稳定性阈值，实时感知文件变化</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>MDM 轮询</strong></td>
+<td>企业策略 30 分钟轮询，无需用户手动刷新</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Drop-in 扩展</strong></td>
+<td>managed-settings.d/ 支持按字母顺序多片段合并</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>内部写入抑制</strong></td>
+<td><code>internalWrites.ts</code> 避免自写自触发的循环</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>幂等迁移</strong></td>
+<td>版本升级迁移脚本精确匹配 + 幂等写入</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>记忆优先级</strong></td>
+<td><a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a> 文件越靠近当前目录，优先级越高</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>@include 模块化</strong></td>
+<td>记忆文件可引用其他文件，支持团队知识拆分</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="714-核心文件速查表"><a class="markdownIt-Anchor" href="#714-核心文件速查表"></a> 7.14 核心文件速查表</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/utils/settings/constants.ts</code></td>
+<td><code>SETTING_SOURCES</code> 优先级顺序，<code>SettingSource</code> 类型</td>
+</tr>
+<tr>
+<td><code>src/utils/settings/types.ts</code></td>
+<td><code>SettingsSchema</code>（Zod）：所有配置字段定义</td>
+</tr>
+<tr>
+<td><code>src/utils/settings/settings.ts</code></td>
+<td>文件读写：<code>getInitialSettings</code>、<code>loadManagedFileSettings</code>、<code>updateSettingsForSource</code></td>
+</tr>
+<tr>
+<td><code>src/utils/settings/settingsCache.ts</code></td>
+<td>三级缓存：session / perSource / parseFile</td>
+</tr>
+<tr>
+<td><code>src/utils/settings/changeDetector.ts</code></td>
+<td>chokidar 监听 + 稳定性检测 + MDM 轮询 + fanOut</td>
+</tr>
+<tr>
+<td><code>src/utils/settings/internalWrites.ts</code></td>
+<td>内部写入时间戳标记，防止自写自触发</td>
+</tr>
+<tr>
+<td><code>src/utils/settings/validation.ts</code></td>
+<td>Zod 错误格式化，<code>filterInvalidPermissionRules</code>，<code>validateSettingsFileContent</code></td>
+</tr>
+<tr>
+<td><code>src/utils/settings/managedPath.ts</code></td>
+<td>企业策略文件路径（按平台返回）</td>
+</tr>
+<tr>
+<td><code>src/utils/settings/applySettingsChange.ts</code></td>
+<td>配置变更后原子更新 AppState + 权限同步</td>
+</tr>
+<tr>
+<td><code>src/utils/claudemd.ts</code></td>
+<td><a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a> 记忆文件发现、加载、@include 解析</td>
+</tr>
+<tr>
+<td><code>src/utils/config.ts</code></td>
+<td><code>GlobalConfig</code>（~/.claude/.claude.json）读写</td>
+</tr>
+<tr>
+<td><code>src/migrations/</code></td>
+<td>11 个版本迁移脚本</td>
+</tr>
+</tbody>
+</table>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#71-配置系统全景"><span class="toc-text"> 7.1 配置系统全景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#72-settings-来源层级settingsource"><span class="toc-text"> 7.2 Settings 来源层级（SettingSource）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#73-settingsschemazod-类型约束"><span class="toc-text"> 7.3 SettingsSchema：Zod 类型约束</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#74-三级缓存架构"><span class="toc-text"> 7.4 三级缓存架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#75-企业策略配置drop-in-目录"><span class="toc-text"> 7.5 企业策略配置：Drop-in 目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#76-文件变更检测changedetectorts"><span class="toc-text"> 7.6 文件变更检测（changeDetector.ts）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#77-schema-校验与错误提示"><span class="toc-text"> 7.7 Schema 校验与错误提示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#78-设置变更应用applysettingschange"><span class="toc-text"> 7.8 设置变更应用（applySettingsChange）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#79-claudemd-记忆系统"><span class="toc-text"> 7.9 CLAUDE.md 记忆系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#91-四层记忆文件"><span class="toc-text"> 9.1 四层记忆文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#92-include-指令"><span class="toc-text"> 9.2 @include 指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#93-frontmatter-路径过滤"><span class="toc-text"> 9.3 Frontmatter 路径过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#94-html-注释剥离"><span class="toc-text"> 9.4 HTML 注释剥离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#95-自动记忆auto-memory"><span class="toc-text"> 9.5 自动记忆（Auto Memory）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#710-globalconfig会话级别配置"><span class="toc-text"> 7.10 GlobalConfig：会话级别配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#711-配置迁移系统"><span class="toc-text"> 7.11 配置迁移系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#712-配置读写完整流程"><span class="toc-text"> 7.12 配置读写完整流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#713-设计原则总结"><span class="toc-text"> 7.13 设计原则总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#714-核心文件速查表"><span class="toc-text"> 7.14 核心文件速查表</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/05/09/chapter-09-engineering-patterns/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-09T04:30:00.000Z">2026.05.09</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第九章：工程实践——值得学习的设计模式</strong>
+          </a>
+        
+          <a href="/2026/05/08/chapter-08-extension-mechanisms/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-08T04:30:00.000Z">2026.05.08</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第八章：扩展机制——Plugins、Skills与Multi-Agent</strong>
+          </a>
+        
+          <a href="/2026/05/06/chapter-06-terminal-ui/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-06T04:30:00.000Z">2026.05.06</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第六章：终端 UI——在命令行里做&#34;前端&#34;</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/05/08/chapter-08-extension-mechanisms/"><span>上一篇</span><strong>第八章：扩展机制——Plugins、Skills与Multi-Agent</strong></a>
+    <a href="/2026/05/06/chapter-06-terminal-ui/"><span>下一篇</span><strong>第六章：终端 UI——在命令行里做&#34;前端&#34;</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

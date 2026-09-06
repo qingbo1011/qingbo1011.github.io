@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>GORM v2操作MySQL · Quinn</title>
+<meta name="description" content="GORM v2操作MySQL 官网（中文） 官网（英文） 关于GORM v2 的一些改变 多看官网！ 在之前的项目中，都是使用gorm v1来操作MySQL（ https://v1.gorm.io/）。 现在来学习使用一下gorm v2操作…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2022/06/25/Gorm%20v2/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="GORM v2操作MySQL · Quinn" />
+<meta property="og:description" content="GORM v2操作MySQL 官网（中文） 官网（英文） 关于GORM v2 的一些改变 多看官网！ 在之前的项目中，都是使用gorm v1来操作MySQL（ https://v1.gorm.io/）。 现在来学习使用一下gorm v2操作…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2022/06/25/Gorm%20v2/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220806214514.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220806214514.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Database · 2022.06.25
+      
+    </p>
+    <h1>GORM v2操作MySQL</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“GORM 2.0 发布说明 GORM 2.0 完全从零开始，引入了一些不兼容的 API 变更和许多改进。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Database/">Database</a>
+  
+  <span class="post-meta__item">13 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Database/">#Database</a>
+      
+        <a href="/tags/Gorm/">#Gorm</a>
+      
+        <a href="/tags/Go/">#Go</a>
+      
+        <a href="/tags/MySQL/">#MySQL</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<ul>
+<li><strong><a href="https://gorm.io/zh_CN/" target="_blank" rel="noopener">官网（中文）</a></strong></li>
+<li><strong><a href="https://gorm.io/" target="_blank" rel="noopener">官网（英文）</a></strong></li>
+<li><strong><a href="https://blog.51cto.com/u_15314183/5258696" target="_blank" rel="noopener">关于GORM v2 的一些改变</a></strong></li>
+</ul>
+<p>多看官网！</p>
+<p>在之前的项目中，都是使用gorm v1来操作MySQL（<a href="https://v1.gorm.io/%EF%BC%89%E3%80%82" target="_blank" rel="noopener">https://v1.gorm.io/）。</a></p>
+<p>现在来学习使用一下gorm v2操作MySQL。</p>
+
+<h1 id="简单记录gorm-v2"><a class="markdownIt-Anchor" href="#简单记录gorm-v2"></a> 简单记录gorm v2</h1>
+<p>在正式开始之前，先简单记录一下gorm v2的功能。</p>
+<h2 id="字段级权限控制"><a class="markdownIt-Anchor" href="#字段级权限控制"></a> 字段级权限控制</h2>
+<blockquote>
+<p>可导出的字段在使用 GORM 进行 CRUD 时拥有全部的权限，此外，GORM 允许您用标签控制字段级别的权限。这样您就可以让一个字段的权限是只读、只写、只创建、只更新或者被忽略</p>
+</blockquote>
+<p><strong>注意：</strong> 使用 GORM Migrator 创建表时，不会创建被忽略的字段</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"&lt;-:create"`</span>          <span class="comment">// allow read and create</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"&lt;-:update"`</span>          <span class="comment">// allow read and update</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"&lt;-"`</span>                 <span class="comment">// allow read and write (create and update)</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"&lt;-:false"`</span>           <span class="comment">// allow read, disable write permission</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"-&gt;"`</span>                 <span class="comment">// readonly (disable write permission unless it configured)</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"-&gt;;&lt;-:create"`</span>       <span class="comment">// allow read and create</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"-&gt;:false;&lt;-:create"`</span> <span class="comment">// createonly (disabled read from db)</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"-"`</span>                  <span class="comment">// ignore this field when write and read with struct</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"-:all"`</span>              <span class="comment">// ignore this field when write, read and migrate with struct</span></span><br><span class="line">   Name <span class="keyword">string</span> <span class="string">`gorm:"-:migration"`</span>        <span class="comment">// ignore this field when migrate with struct</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果在自动迁移时忽略某个字段：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Name <span class="keyword">string</span> <span class="string">`gorm:"-:migration"`</span></span><br></pre></td></tr></table></figure>
+<p>这里以后可能会比较常用。</p>
+<h2 id="字段标签"><a class="markdownIt-Anchor" href="#字段标签"></a> 字段标签</h2>
+<p><a href="https://gorm.io/zh_CN/docs/models.html#%E5%AD%97%E6%AE%B5%E6%A0%87%E7%AD%BE" target="_blank" rel="noopener">gorm struct tag</a></p>
+<p>声明 model 时，tag 是可选的， tag 名大小写不敏感，但建议使用 <code>camelCase</code> 风格。</p>
+<p>GORM 支持以下 tag：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标签名</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">column</td>
+<td style="text-align:left">指定 db 列名</td>
+</tr>
+<tr>
+<td style="text-align:left">type</td>
+<td style="text-align:left">列数据类型，推荐使用兼容性好的通用类型，例如：所有数据库都支持 bool、int、uint、float、string、time、bytes 并且可以和其他标签一起使用，例如：<code>not null</code>、<code>size</code>, <code>autoIncrement</code>… 像 <code>varbinary(8)</code> 这样指定数据库数据类型也是支持的。在使用指定数据库数据类型时，它需要是完整的数据库数据类型，如：<code>MEDIUMINT UNSIGNED not NULL AUTO_INCREMENT</code></td>
+</tr>
+<tr>
+<td style="text-align:left">serializer</td>
+<td style="text-align:left">specifies serializer for how to serialize and deserialize data into db, e.g: <code>serializer:json/gob/unixtime</code></td>
+</tr>
+<tr>
+<td style="text-align:left">size</td>
+<td style="text-align:left">specifies column data size/length, e.g: <code>size:256</code></td>
+</tr>
+<tr>
+<td style="text-align:left">primaryKey</td>
+<td style="text-align:left">specifies column as primary key</td>
+</tr>
+<tr>
+<td style="text-align:left">unique</td>
+<td style="text-align:left">specifies column as unique</td>
+</tr>
+<tr>
+<td style="text-align:left">default</td>
+<td style="text-align:left">specifies column default value</td>
+</tr>
+<tr>
+<td style="text-align:left">precision</td>
+<td style="text-align:left">specifies column precision</td>
+</tr>
+<tr>
+<td style="text-align:left">scale</td>
+<td style="text-align:left">specifies column scale</td>
+</tr>
+<tr>
+<td style="text-align:left">not null</td>
+<td style="text-align:left">specifies column as NOT NULL</td>
+</tr>
+<tr>
+<td style="text-align:left">autoIncrement</td>
+<td style="text-align:left">specifies column auto incrementable</td>
+</tr>
+<tr>
+<td style="text-align:left">autoIncrementIncrement</td>
+<td style="text-align:left">auto increment step, controls the interval between successive column values</td>
+</tr>
+<tr>
+<td style="text-align:left">embedded</td>
+<td style="text-align:left">embed the field</td>
+</tr>
+<tr>
+<td style="text-align:left">embeddedPrefix</td>
+<td style="text-align:left">column name prefix for embedded fields</td>
+</tr>
+<tr>
+<td style="text-align:left">autoCreateTime</td>
+<td style="text-align:left">track current time when creating, for <code>int</code> fields, it will track unix seconds, use value <code>nano</code>/<code>milli</code> to track unix nano/milli seconds, e.g: <code>autoCreateTime:nano</code></td>
+</tr>
+<tr>
+<td style="text-align:left">autoUpdateTime</td>
+<td style="text-align:left">track current time when creating/updating, for <code>int</code> fields, it will track unix seconds, use value <code>nano</code>/<code>milli</code> to track unix nano/milli seconds, e.g: <code>autoUpdateTime:milli</code></td>
+</tr>
+<tr>
+<td style="text-align:left">index</td>
+<td style="text-align:left">create index with options, use same name for multiple fields creates composite indexes, refer <a href="https://gorm.io/zh_CN/docs/indexes.html" target="_blank" rel="noopener">Indexes</a> for details</td>
+</tr>
+<tr>
+<td style="text-align:left">uniqueIndex</td>
+<td style="text-align:left">same as <code>index</code>, but create uniqued index</td>
+</tr>
+<tr>
+<td style="text-align:left">check</td>
+<td style="text-align:left">creates check constraint, eg: <code>check:age &gt; 13</code>, refer <a href="https://gorm.io/zh_CN/docs/constraints.html" target="_blank" rel="noopener">Constraints</a></td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;-</td>
+<td style="text-align:left">set field’s write permission, <code>&lt;-:create</code> create-only field, <code>&lt;-:update</code> update-only field, <code>&lt;-:false</code> no write permission, <code>&lt;-</code> create and update permission</td>
+</tr>
+<tr>
+<td style="text-align:left">-&gt;</td>
+<td style="text-align:left">set field’s read permission, <code>-&gt;:false</code> no read permission</td>
+</tr>
+<tr>
+<td style="text-align:left">-</td>
+<td style="text-align:left">ignore this field, <code>-</code> no read/write permission, <code>-:migration</code> no migrate permission, <code>-:all</code> no read/write/migrate permission</td>
+</tr>
+<tr>
+<td style="text-align:left">comment</td>
+<td style="text-align:left">add comment for field when migration</td>
+</tr>
+</tbody>
+</table>
+<h1 id="连接数据库"><a class="markdownIt-Anchor" href="#连接数据库"></a> 连接数据库</h1>
+<p>GORM 官方支持的数据库类型有： MySQL, PostgreSQL, SQlite, SQL Server。</p>
+<p>这里我们以MySQL为例。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line"></span><br><span class="line">	logging <span class="string">"github.com/sirupsen/logrus"</span></span><br><span class="line">	<span class="string">"gorm.io/driver/mysql"</span></span><br><span class="line">	<span class="string">"gorm.io/gorm"</span></span><br><span class="line">	<span class="string">"gorm.io/gorm/logger"</span></span><br><span class="line">	<span class="string">"gorm.io/gorm/schema"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情</span></span><br><span class="line">	dsn := <span class="string">"user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"</span></span><br><span class="line">	db, err := gorm.Open(mysql.Open(dsn), &amp;gorm.Config&#123;</span><br><span class="line">		NamingStrategy: schema.NamingStrategy&#123;</span><br><span class="line">			TablePrefix:   <span class="string">""</span>,   <span class="comment">// 表前缀</span></span><br><span class="line">			SingularTable: <span class="literal">true</span>, <span class="comment">// 如果设置禁用表名复数形式属性为 true，`User` 的表名将是 `user`(因为gorm默认表名是复数)</span></span><br><span class="line">		&#125;,</span><br><span class="line">		<span class="comment">//Logger: logger.Default(),</span></span><br><span class="line">		Logger: logger.New(</span><br><span class="line">			log.New(os.Stdout, <span class="string">"\r\n"</span>, log.LstdFlags), <span class="comment">// io writer（日志输出的目标，前缀和日志包含的内容——译者注）</span></span><br><span class="line">			logger.Config&#123;</span><br><span class="line">				SlowThreshold:             time.Second, <span class="comment">// 慢 SQL 阈值</span></span><br><span class="line">				LogLevel:                  logger.Info, <span class="comment">// 日志级别</span></span><br><span class="line">				IgnoreRecordNotFoundError: <span class="literal">true</span>,        <span class="comment">// 忽略ErrRecordNotFound（记录未找到）错误</span></span><br><span class="line">				Colorful:                  <span class="literal">false</span>,       <span class="comment">// 禁用彩色打印</span></span><br><span class="line">			&#125;),</span><br><span class="line">	&#125;)</span><br><span class="line">	MysqlDB, err := db.DB()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		logging.Info(err)</span><br><span class="line">	&#125;</span><br><span class="line">	MysqlDB.SetMaxIdleConns(<span class="number">10</span>)                  <span class="comment">// 设置空闲连接池中连接的最大数量</span></span><br><span class="line">	MysqlDB.SetMaxOpenConns(<span class="number">100</span>)                 <span class="comment">// 设置打开数据库连接的最大数量</span></span><br><span class="line">	MysqlDB.SetConnMaxLifetime(<span class="number">30</span> * time.Second) <span class="comment">// 设置了连接可复用的最大时间</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>带上 <code>parseTime</code> 参数，这样才能正确的处理 <code>time.Time</code>  (<a href="https://github.com/go-sql-driver/mysql#parameters" target="_blank" rel="noopener">更多参数</a>)</li>
+<li>将 <code>charset=utf8</code> 更改为 <code>charset=utf8mb4</code>，这样才能支持完整的 UTF-8 编码（<a href="https://mathiasbynens.be/notes/mysql-utf8mb4" target="_blank" rel="noopener">How to support full Unicode in MySQL databases</a>）</li>
+</ul>
+<blockquote>
+<p>MySQL 驱动程序提供了 <a href="https://github.com/go-gorm/mysql" target="_blank" rel="noopener">一些高级配置</a> 可以在初始化过程中使用，例如：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">db, err := gorm.Open(mysql.New(mysql.Config&#123;</span><br><span class="line">  DSN: <span class="string">"gorm:gorm@tcp(127.0.0.1:3306)/gorm?charset=utf8&amp;parseTime=True&amp;loc=Local"</span>, <span class="comment">// DSN data source name</span></span><br><span class="line">  DefaultStringSize: <span class="number">256</span>, <span class="comment">// string 类型字段的默认长度</span></span><br><span class="line">  DisableDatetimePrecision: <span class="literal">true</span>, <span class="comment">// 禁用 datetime 精度，MySQL 5.6 之前的数据库不支持</span></span><br><span class="line">  DontSupportRenameIndex: <span class="literal">true</span>, <span class="comment">// 重命名索引时采用删除并新建的方式，MySQL 5.7 之前的数据库和 MariaDB 不支持重命名索引</span></span><br><span class="line">  DontSupportRenameColumn: <span class="literal">true</span>, <span class="comment">// 用 `change` 重命名列，MySQL 8 之前的数据库和 MariaDB 不支持重命名列</span></span><br><span class="line">  SkipInitializeWithVersion: <span class="literal">false</span>, <span class="comment">// 根据当前 MySQL 版本自动配置</span></span><br><span class="line">&#125;), &amp;gorm.Config&#123;&#125;)</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h1 id="crud接口"><a class="markdownIt-Anchor" href="#crud接口"></a> CRUD接口</h1>
+<p><strong><a href="https://gorm.io/zh_CN/docs/create.html" target="_blank" rel="noopener">CRUD接口</a></strong></p>
+<blockquote>
+<p>具体使用多看看官网就好了。这里就给点代码简单实践一下。</p>
+</blockquote>
+<p>关于gorm v2 logger LogLevel的设置，结合gin可以这么写：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mysqlLogger logger.Interface</span><br><span class="line">    <span class="keyword">if</span> gin.Mode() == <span class="string">"debug"</span>  &#123;</span><br><span class="line">        mysqlLogger = logger.Default.LogMode(logger.Info)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        mysqlLogger = logger.Default</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a href="https://blog.csdn.net/helen920318/article/details/105044847" target="_blank" rel="noopener">Gin Mode的选择</a></p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> t_test</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line">   <span class="string">"testing"</span></span><br><span class="line">   <span class="string">"time"</span></span><br><span class="line"></span><br><span class="line">   logging <span class="string">"github.com/sirupsen/logrus"</span></span><br><span class="line">   <span class="string">"gorm.io/driver/mysql"</span></span><br><span class="line">   <span class="string">"gorm.io/gorm"</span></span><br><span class="line">   <span class="string">"gorm.io/gorm/logger"</span></span><br><span class="line">   <span class="string">"gorm.io/gorm/schema"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> MysqlDB *gorm.DB <span class="comment">// 全局MysqlDB</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> User <span class="keyword">struct</span> &#123;</span><br><span class="line">   gorm.Model</span><br><span class="line">   Name  <span class="keyword">string</span></span><br><span class="line">   Major <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">   <span class="comment">// mysqlLogger := logger.Default   默认LogLevel为Warn，一般我们开发调试时LogLevel设置为Info</span></span><br><span class="line">   mysqlLogger := logger.Default.LogMode(logger.Info)</span><br><span class="line">   dsn := <span class="string">"root:123456@tcp(127.0.0.1:3308)/test?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"</span></span><br><span class="line">   db, err := gorm.Open(mysql.New(mysql.Config&#123;</span><br><span class="line">      DSN:                       dsn,   <span class="comment">// DSN data source name</span></span><br><span class="line">      DefaultStringSize:         <span class="number">256</span>,   <span class="comment">// string 类型字段的默认长度</span></span><br><span class="line">      DisableDatetimePrecision:  <span class="literal">true</span>,  <span class="comment">// 禁用datetime精度，MySQL5.6之前的数据库不支</span></span><br><span class="line">      DontSupportRenameIndex:    <span class="literal">true</span>,  <span class="comment">// 重命名索引时采用删除并新建的方式，MySQL5.7之前的数据库和MariaDB不支持重命名索引</span></span><br><span class="line">      DontSupportRenameColumn:   <span class="literal">true</span>,  <span class="comment">// 用 `change` 重命名列，MySQL8之前的数据库和MariaDB不支持重命名列</span></span><br><span class="line">      SkipInitializeWithVersion: <span class="literal">false</span>, <span class="comment">// 根据当前MySQL版本自动配置</span></span><br><span class="line">   &#125;), &amp;gorm.Config&#123;</span><br><span class="line">      Logger: mysqlLogger,</span><br><span class="line">      NamingStrategy: schema.NamingStrategy&#123;</span><br><span class="line">         SingularTable: <span class="literal">true</span>, <span class="comment">// 表名不加s</span></span><br><span class="line">         <span class="comment">//TablePrefix:   "test_", // 指定表名前缀为test_</span></span><br><span class="line">      &#125;,</span><br><span class="line">   &#125;)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">   sqlDB, err := db.DB()</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">   sqlDB.SetMaxIdleConns(<span class="number">20</span>)                  <span class="comment">// 设置空闲连接池中的最大连接数</span></span><br><span class="line">   sqlDB.SetMaxOpenConns(<span class="number">100</span>)                 <span class="comment">// 设置数据库连接最大打开数</span></span><br><span class="line">   sqlDB.SetConnMaxLifetime(time.Second * <span class="number">30</span>) <span class="comment">// 设置可重用连接的最长时间</span></span><br><span class="line"></span><br><span class="line">   err = db.AutoMigrate(&amp;User&#123;&#125;) <span class="comment">// 自动迁移</span></span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   MysqlDB = db</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCreate</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">   user := User&#123;</span><br><span class="line">      Name:  <span class="string">"张三"</span>,</span><br><span class="line">      Major: <span class="string">"计算机科学技术"</span>,</span><br><span class="line">   &#125;</span><br><span class="line">   err := MysqlDB.Create(&amp;user).Error</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestSelect</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">   <span class="keyword">var</span> user User</span><br><span class="line">   name := <span class="string">"张三"</span></span><br><span class="line">   err := MysqlDB.Where(<span class="string">"name = ?"</span>, name).First(&amp;user).Error</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Println(user)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestUpdate</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">   name := <span class="string">"张三"</span></span><br><span class="line">   err := MysqlDB.Model(&amp;User&#123;&#125;).Where(<span class="string">"name = ?"</span>, name).Updates(User&#123;Major: <span class="string">"软件工程"</span>&#125;).Error</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestDelete</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">   name := <span class="string">"张三"</span></span><br><span class="line">   err := MysqlDB.Where(<span class="string">"name = ?"</span>, name).Delete(&amp;User&#123;&#125;).Error</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="总结gorm-v2相较于v1的变化"><a class="markdownIt-Anchor" href="#总结gorm-v2相较于v1的变化"></a> 总结gorm v2相较于v1的变化</h1>
+<p>更多的区别，参考：<strong><a href="https://gorm.io/zh_CN/docs/v2_release_note.html" target="_blank" rel="noopener">GORM 2.0 发布说明</a></strong></p>
+<h2 id="import驱动不同"><a class="markdownIt-Anchor" href="#import驱动不同"></a> import驱动不同</h2>
+<ul>
+<li>
+<p>gorm v1 import：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"github.com/jinzhu/gorm"</span></span><br><span class="line">	_ <span class="string">"github.com/jinzhu/gorm/dialects/mysql"</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>gorm v2 import：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"gorm.io/driver/mysql"</span></span><br><span class="line">   <span class="string">"gorm.io/gorm"</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="数据库连接方式不同"><a class="markdownIt-Anchor" href="#数据库连接方式不同"></a> 数据库连接方式不同</h2>
+<p><a href="https://www.jianshu.com/p/d9304373acc0" target="_blank" rel="noopener">gorm v1和gorm v2对比</a></p>
+<p>以MySQL为例，gorm v1和gorm v2对数据库的连接有比较大的差异。</p>
+<ul>
+<li>
+<p>gorm v1：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> MysqlDB *gorm.DB <span class="comment">// 全局MysqlDB</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"</span></span><br><span class="line">	<span class="keyword">var</span> builder strings.Builder</span><br><span class="line">	s := []<span class="keyword">string</span>&#123;config.MysqlUser, <span class="string">":"</span>, config.MysqlPassword, <span class="string">"@tcp("</span>, config.MysqlHost, <span class="string">":"</span>, config.MysqlPort, <span class="string">")/"</span>, config.MysqlName, <span class="string">"?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"</span>&#125;</span><br><span class="line">	<span class="keyword">for</span> _, str := <span class="keyword">range</span> s &#123;</span><br><span class="line">		builder.WriteString(str)</span><br><span class="line">	&#125;</span><br><span class="line">	dsn := builder.String()</span><br><span class="line">	db, err := gorm.Open(<span class="string">"mysql"</span>, dsn)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Infoln(err)</span><br><span class="line">	&#125;</span><br><span class="line">	db.LogMode(config.MysqlIsLog)                           <span class="comment">// 开启 Logger, 以展示详细的日志</span></span><br><span class="line">	db.SingularTable(config.MysqlIsSingularTable)           <span class="comment">// 如果设置禁用表名复数形式属性为 true，`User` 的表名将是 `user`(因为gorm默认表名是复数)</span></span><br><span class="line">	db.DB().SetMaxIdleConns(config.MysqlMaxIdleConns)       <span class="comment">// 设置空闲连接池中的最大连接数</span></span><br><span class="line">	db.DB().SetMaxOpenConns(config.MysqlMaxOpenConns)       <span class="comment">// 设置数据库连接最大打开数。</span></span><br><span class="line">	db.DB().SetConnMaxLifetime(config.MysqlConnMaxLifetime) <span class="comment">// 设置可重用连接的最长时间</span></span><br><span class="line">	<span class="comment">// 自动迁移</span></span><br><span class="line">	db.AutoMigrate(&amp;model.User&#123;&#125;)</span><br><span class="line">	MysqlDB = db</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>gorm v2：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> MysqlDB *gorm.DB <span class="comment">// 全局MysqlDB</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">   <span class="comment">// mysqlLogger := logger.Default   默认LogLevel为Warn，一般我们开发调试时LogLevel设置为Info</span></span><br><span class="line">   mysqlLogger := logger.Default.LogMode(logger.Info)</span><br><span class="line">   dsn := <span class="string">"root:123456@tcp(127.0.0.1:3308)/test?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"</span></span><br><span class="line">   db, err := gorm.Open(mysql.New(mysql.Config&#123;</span><br><span class="line">      DSN:                       dsn,   <span class="comment">// DSN data source name</span></span><br><span class="line">      DefaultStringSize:         <span class="number">256</span>,   <span class="comment">// string 类型字段的默认长度</span></span><br><span class="line">      DisableDatetimePrecision:  <span class="literal">true</span>,  <span class="comment">// 禁用datetime精度，MySQL5.6之前的数据库不支</span></span><br><span class="line">      DontSupportRenameIndex:    <span class="literal">true</span>,  <span class="comment">// 重命名索引时采用删除并新建的方式，MySQL5.7之前的数据库和MariaDB不支持重命名索引</span></span><br><span class="line">      DontSupportRenameColumn:   <span class="literal">true</span>,  <span class="comment">// 用 `change` 重命名列，MySQL8之前的数据库和MariaDB不支持重命名列</span></span><br><span class="line">      SkipInitializeWithVersion: <span class="literal">false</span>, <span class="comment">// 根据当前MySQL版本自动配置</span></span><br><span class="line">   &#125;), &amp;gorm.Config&#123;</span><br><span class="line">      Logger: mysqlLogger,</span><br><span class="line">      NamingStrategy: schema.NamingStrategy&#123;</span><br><span class="line">         SingularTable: <span class="literal">true</span>, <span class="comment">// 表名不加s</span></span><br><span class="line">         <span class="comment">//TablePrefix:   "test_", // 指定表名前缀为test_</span></span><br><span class="line">      &#125;,</span><br><span class="line">   &#125;)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">   sqlDB, err := db.DB()</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line">   sqlDB.SetMaxIdleConns(<span class="number">20</span>)                  <span class="comment">// 设置空闲连接池中的最大连接数</span></span><br><span class="line">   sqlDB.SetMaxOpenConns(<span class="number">100</span>)                 <span class="comment">// 设置数据库连接最大打开数</span></span><br><span class="line">   sqlDB.SetConnMaxLifetime(time.Second * <span class="number">30</span>) <span class="comment">// 设置可重用连接的最长时间</span></span><br><span class="line"></span><br><span class="line">   err = db.AutoMigrate(&amp;User&#123;&#125;) <span class="comment">// 自动迁移</span></span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      logging.Info(err)</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   MysqlDB = db</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>关于gorm v2 logger LogLevel的设置，结合gin可以这么写：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mysqlLogger logger.Interface</span><br><span class="line">    <span class="keyword">if</span> gin.Mode() == <span class="string">"debug"</span>  &#123;</span><br><span class="line">        mysqlLogger = logger.Default.LogMode(logger.Info)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        mysqlLogger = logger.Default</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a href="https://blog.csdn.net/helen920318/article/details/105044847" target="_blank" rel="noopener">Gin Mode的选择</a></p>
+</blockquote>
+<h2 id="读写分离"><a class="markdownIt-Anchor" href="#读写分离"></a> 读写分离</h2>
+<p><strong><a href="https://blog.51cto.com/u_15314183/5258696" target="_blank" rel="noopener">关于GORM v2 的一些改变</a></strong></p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#字段级权限控制"><span class="toc-text"> 字段级权限控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#字段标签"><span class="toc-text"> 字段标签</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#import驱动不同"><span class="toc-text"> import驱动不同</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据库连接方式不同"><span class="toc-text"> 数据库连接方式不同</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#读写分离"><span class="toc-text"> 读写分离</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2022/08/15/SQL%E4%B9%8Bcount()%E7%B3%BB%E5%88%97/">
+            <span class="related-notes__meta">
+              <time datetime="2022-08-15T00:47:03.000Z">2022.08.15</time>
+              <span>#Database · #MySQL</span>
+            </span>
+            <strong>阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)?</strong>
+          </a>
+        
+          <a href="/2022/06/26/Gin+Gorm%20v2+Github%20Action%E7%9A%84%E5%AE%9E%E8%B7%B5/">
+            <span class="related-notes__meta">
+              <time datetime="2022-06-26T00:47:03.000Z">2022.06.26</time>
+              <span>#Gorm · #Go</span>
+            </span>
+            <strong>Gin+Gorm v2+Github Action的实践</strong>
+          </a>
+        
+          <a href="/2022/06/21/Go%E6%93%8D%E4%BD%9CElasticSearch/">
+            <span class="related-notes__meta">
+              <time datetime="2022-06-21T00:47:03.000Z">2022.06.21</time>
+              <span>#Database · #Go</span>
+            </span>
+            <strong>Go操作Elasticsearch</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2022/06/26/Gin+Gorm%20v2+Github%20Action%E7%9A%84%E5%AE%9E%E8%B7%B5/"><span>上一篇</span><strong>Gin+Gorm v2+Github Action的实践</strong></a>
+    <a href="/2022/06/24/Go%E6%B3%9B%E5%9E%8B/"><span>下一篇</span><strong>Go泛型</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

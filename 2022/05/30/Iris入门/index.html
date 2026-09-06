@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Iris入门 · Quinn</title>
+<meta name="description" content="Iris入门 关于Iris的教程，直接去看官网。官方提供的文档真的是非常非常好，强烈推荐！！！ 这里只是随便记录一下，还是要多看官网。 Quick start (iris-go.com) Iris github： https://githu…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2022/05/30/Iris%E5%85%A5%E9%97%A8/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Iris入门 · Quinn" />
+<meta property="og:description" content="Iris入门 关于Iris的教程，直接去看官网。官方提供的文档真的是非常非常好，强烈推荐！！！ 这里只是随便记录一下，还是要多看官网。 Quick start (iris-go.com) Iris github： https://githu…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2022/05/30/Iris%E5%85%A5%E9%97%A8/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220728152550.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220728152550.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Go · 2022.05.30
+      
+    </p>
+    <h1>Iris入门</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“Installation”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Go/">Go</a>
+  
+  <span class="post-meta__item">11 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Go/">#Go</a>
+      
+        <a href="/tags/Iris/">#Iris</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p>关于Iris的教程，直接去看官网。官方提供的文档真的是非常非常好，强烈推荐！！！</p>
+<p>这里只是随便记录一下，还是要多看官网。</p>
+<p><strong><a href="https://www.iris-go.com/docs/#/?id=quick-start" target="_blank" rel="noopener">Quick start (iris-go.com)</a></strong></p>
+<p>Iris github：<a href="https://github.com/kataras/iris" target="_blank" rel="noopener">https://github.com/kataras/iris</a></p>
+<p>从贡献者中可以看到有很多国人，难怪Iris的官方文档虽然是英文，但我看着还是感觉很亲切。</p>
+<h1 id="记录踩过的坑"><a class="markdownIt-Anchor" href="#记录踩过的坑"></a> 记录踩过的坑</h1>
+<p>在之前使用Gin或者是其他框架时，很少手动输入<code>go get</code>，都是直接在goland上import然后在Sync的。但是这种方法在使用Iris时会遇到一些问题，下载的包是不完整的，所以在使用时很可能报错。</p>
+<p>所以Iris项目在<code>go mod init</code>之后，还要手动<code>go get github.com/kataras/iris/v12@master</code></p>
+
+<h1 id="quick-start"><a class="markdownIt-Anchor" href="#quick-start"></a> Quick start</h1>
+<p><code>main.go</code>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line">   <span class="string">"github.com/kataras/iris/v12"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Book <span class="keyword">struct</span> &#123;</span><br><span class="line">   Title <span class="keyword">string</span> <span class="string">`json:"title"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   app := iris.Default()</span><br><span class="line">   booksAPI := app.Party(<span class="string">"/books"</span>)</span><br><span class="line">   &#123;</span><br><span class="line">      booksAPI.Use(iris.Compression) <span class="comment">// 此中间件能够使用最好的压缩进行写和读</span></span><br><span class="line">      booksAPI.Get(<span class="string">"/"</span>, list)</span><br><span class="line">      booksAPI.Post(<span class="string">"/"</span>, create)</span><br><span class="line">   &#125;</span><br><span class="line">   app.Listen(<span class="string">":8080"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">list</span><span class="params">(ctx iris.Context)</span></span> &#123;</span><br><span class="line">   books := []Book&#123;</span><br><span class="line">      &#123;<span class="string">"Gone With the wind"</span>&#125;,</span><br><span class="line">      &#123;<span class="string">"Go Design Patterns"</span>&#125;,</span><br><span class="line">      &#123;<span class="string">"Black Hat Go"</span>&#125;,</span><br><span class="line">   &#125;</span><br><span class="line">   ctx.JSON(books)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">create</span><span class="params">(ctx iris.Context)</span></span> &#123;</span><br><span class="line">   <span class="keyword">var</span> b Book</span><br><span class="line">   err := ctx.ReadJSON(&amp;b) <span class="comment">// 使用ctx.ReadBody()绑定任何类型的传入数据(不仅仅是JSON)</span></span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">      <span class="comment">// 当错误只需要纯文本响应时，使用ctx.StopWithError(code,err)</span></span><br><span class="line">      ctx.StopWithProblem(iris.StatusBadRequest, iris.NewProblem().</span><br><span class="line">         Title(<span class="string">"Book creation failure"</span>).DetailErr(err))</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Println(<span class="string">"Received Book: "</span> + b.Title)</span><br><span class="line">   ctx.StatusCode(iris.StatusCreated)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>iris.New()</code>和<code>iris.Default()</code>的区别在<code>iris.Default()</code>的注释中已经说的很清楚了，官方文档也有。</p>
+<p>Creates an iris application with default middleware:</p>
+<ul>
+<li>Default with “debug” Logger Level.</li>
+<li>Localization enabled on “./locales” directory and HTML templates on “./views” or “./templates” directory.</li>
+<li>It runs with the AccessLog on “./access.log”, Recovery (crash-free) and Request ID middleware already attached.</li>
+</ul>
+</blockquote>
+<h2 id="mvc-equivalent"><a class="markdownIt-Anchor" href="#mvc-equivalent"></a> MVC equivalent</h2>
+<p>MVC方式的写法，<code>main.go</code>如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">   <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line">   <span class="string">"github.com/kataras/iris/v12"</span></span><br><span class="line">   <span class="string">"github.com/kataras/iris/v12/mvc"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Book <span class="keyword">struct</span> &#123;</span><br><span class="line">   Title <span class="keyword">string</span> <span class="string">`json:"title"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> BookController <span class="keyword">struct</span> &#123;</span><br><span class="line">   <span class="comment">/* dependencies */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *BookController)</span> <span class="title">Get</span><span class="params">()</span> []<span class="title">Book</span></span> &#123;</span><br><span class="line">   <span class="keyword">return</span> []Book&#123;</span><br><span class="line">      &#123;<span class="string">"Gone With the wind"</span>&#125;,</span><br><span class="line">      &#123;<span class="string">"Go Design Patterns"</span>&#125;,</span><br><span class="line">      &#123;<span class="string">"Black Hat Go"</span>&#125;,</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *BookController)</span> <span class="title">Post</span><span class="params">(b Book)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">   fmt.Println(<span class="string">"Received Book: "</span> + b.Title)</span><br><span class="line">   <span class="keyword">return</span> iris.StatusCreated</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   app := iris.New()</span><br><span class="line">   booksAPI := app.Party(<span class="string">"/books"</span>)</span><br><span class="line">   m := mvc.New(booksAPI)</span><br><span class="line">   m.Handle(<span class="built_in">new</span>(BookController))</span><br><span class="line">   app.Listen(<span class="string">":8080"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行结果是一样的：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220728111802.png" alt="" /></p>
+<h1 id="api-examples"><a class="markdownIt-Anchor" href="#api-examples"></a> API Examples</h1>
+<p>You can find a number of ready-to-run examples at <a href="https://github.com/iris-contrib/examples" target="_blank" rel="noopener">Iris examples repository</a>.</p>
+<p><code>GET</code>、<code>POST</code>等等用法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    app := iris.Default()</span><br><span class="line"></span><br><span class="line">    app.Get(<span class="string">"/someGet"</span>, getting)</span><br><span class="line">    app.Post(<span class="string">"/somePost"</span>, posting)</span><br><span class="line">    app.Put(<span class="string">"/somePut"</span>, putting)</span><br><span class="line">    app.Delete(<span class="string">"/someDelete"</span>, deleting)</span><br><span class="line">    app.Patch(<span class="string">"/somePatch"</span>, patching)</span><br><span class="line">    app.Header(<span class="string">"/someHead"</span>, head)</span><br><span class="line">    app.Options(<span class="string">"/someOptions"</span>, options)</span><br><span class="line"></span><br><span class="line">    app.Listen(<span class="string">":8080"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="parameters-in-path"><a class="markdownIt-Anchor" href="#parameters-in-path"></a> Parameters in path</h2>
+<p>看几个例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    app := iris.Default()</span><br><span class="line"></span><br><span class="line">    <span class="comment">// This handler will match /user/john but will not match /user/ or /user</span></span><br><span class="line">    app.Get(<span class="string">"/user/&#123;name&#125;"</span>, <span class="function"><span class="keyword">func</span><span class="params">(ctx iris.Context)</span></span> &#123;	将会匹配到类似/user/john的url</span><br><span class="line">        name := ctx.Params().Get(<span class="string">"name"</span>)</span><br><span class="line">        ctx.Writef(<span class="string">"Hello %s"</span>, name)</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// However, this one will match /user/john/ and also /user/john/send</span></span><br><span class="line">    <span class="comment">// If no other routers match /user/john, it will redirect to /user/john/</span></span><br><span class="line">    app.Get(<span class="string">"/user/&#123;name&#125;/&#123;action:path&#125;"</span>, <span class="function"><span class="keyword">func</span><span class="params">(ctx iris.Context)</span></span> &#123;</span><br><span class="line">        name := ctx.Params().Get(<span class="string">"name"</span>)</span><br><span class="line">        action := ctx.Params().Get(<span class="string">"action"</span>)</span><br><span class="line">        message := name + <span class="string">" is "</span> + action</span><br><span class="line">        ctx.WriteString(message)</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// For each matched request Context will hold the route definition</span></span><br><span class="line">    app.Post(<span class="string">"/user/&#123;name:string&#125;/&#123;action:path&#125;"</span>, <span class="function"><span class="keyword">func</span><span class="params">(ctx iris.Context)</span></span> &#123;</span><br><span class="line">        ctx.GetCurrentRoute().Tmpl().Src == <span class="string">"/user/&#123;name:string&#125;/&#123;action:path&#125;"</span> <span class="comment">// true</span></span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    app.Listen(<span class="string">":8080"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Builtin available parameter types:</p>
+<table>
+<thead>
+<tr>
+<th>Param Type</th>
+<th>Go Type</th>
+<th>Validation</th>
+<th>Retrieve Helper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:string</code></td>
+<td>string</td>
+<td>anything (single path segment)</td>
+<td><code>Params().Get</code></td>
+</tr>
+<tr>
+<td><code>:uuid</code></td>
+<td>string</td>
+<td>uuidv4 or v1 (single path segment)</td>
+<td><code>Params().Get</code></td>
+</tr>
+<tr>
+<td><code>:int</code></td>
+<td>int</td>
+<td>-9223372036854775808 to 9223372036854775807 (x64) or -2147483648 to 2147483647 (x32), depends on the host arch</td>
+<td><code>Params().GetInt</code></td>
+</tr>
+<tr>
+<td><code>:int8</code></td>
+<td>int8</td>
+<td>-128 to 127</td>
+<td><code>Params().GetInt8</code></td>
+</tr>
+<tr>
+<td><code>:int16</code></td>
+<td>int16</td>
+<td>-32768 to 32767</td>
+<td><code>Params().GetInt16</code></td>
+</tr>
+<tr>
+<td><code>:int32</code></td>
+<td>int32</td>
+<td>-2147483648 to 2147483647</td>
+<td><code>Params().GetInt32</code></td>
+</tr>
+<tr>
+<td><code>:int64</code></td>
+<td>int64</td>
+<td>-9223372036854775808 to 9223372036854775807</td>
+<td><code>Params().GetInt64</code></td>
+</tr>
+<tr>
+<td><code>:uint</code></td>
+<td>uint</td>
+<td>0 to 18446744073709551615 (x64) or 0 to 4294967295 (x32), depends on the host arch</td>
+<td><code>Params().GetUint</code></td>
+</tr>
+<tr>
+<td><code>:uint8</code></td>
+<td>uint8</td>
+<td>0 to 255</td>
+<td><code>Params().GetUint8</code></td>
+</tr>
+<tr>
+<td><code>:uint16</code></td>
+<td>uint16</td>
+<td>0 to 65535</td>
+<td><code>Params().GetUint16</code></td>
+</tr>
+<tr>
+<td><code>:uint32</code></td>
+<td>uint32</td>
+<td>0 to 4294967295</td>
+<td><code>Params().GetUint32</code></td>
+</tr>
+<tr>
+<td><code>:uint64</code></td>
+<td>uint64</td>
+<td>0 to 18446744073709551615</td>
+<td><code>Params().GetUint64</code></td>
+</tr>
+<tr>
+<td><code>:bool</code></td>
+<td>bool</td>
+<td>“1” or “t” or “T” or “TRUE” or “true” or “True” or “0” or “f” or “F” or “FALSE” or “false” or “False”</td>
+<td><code>Params().GetBool</code></td>
+</tr>
+<tr>
+<td><code>:alphabetical</code></td>
+<td>string</td>
+<td>lowercase or uppercase letters</td>
+<td><code>Params().Get</code></td>
+</tr>
+<tr>
+<td><code>:file</code></td>
+<td>string</td>
+<td>lowercase or uppercase letters, numbers, underscore (<code>_</code>), dash (<code>-</code>), point (<code>.</code>) and no spaces or other special characters that are not valid for filenames</td>
+<td><code>Params().Get</code></td>
+</tr>
+<tr>
+<td><code>:path</code></td>
+<td>string</td>
+<td>anything, can be separated by <code>/</code>(path segments) but should be the last part of the route path</td>
+<td><code>Params().Get</code></td>
+</tr>
+</tbody>
+</table>
+<p>More examples can be found at: <a href="https://github.com/kataras/iris/tree/master/_examples/routing" target="_blank" rel="noopener">_examples/routing</a>.</p>
+</blockquote>
+<h1 id="upload-files"><a class="markdownIt-Anchor" href="#upload-files"></a> Upload files</h1>
+<p><a href="https://www.iris-go.com/docs/#/?id=upload-files" target="_blank" rel="noopener">Upload files</a></p>
+<h1 id="grouping-routes"><a class="markdownIt-Anchor" href="#grouping-routes"></a> Grouping routes</h1>
+<p><a href="https://www.iris-go.com/docs/#/?id=grouping-routes" target="_blank" rel="noopener">Grouping routes</a></p>
+<h1 id="bind"><a class="markdownIt-Anchor" href="#bind"></a> Bind</h1>
+<ul>
+<li><a href="https://www.iris-go.com/docs/#/?id=bind-query-string" target="_blank" rel="noopener">Bind Query String</a></li>
+<li><a href="https://www.iris-go.com/docs/#/?id=bind-any" target="_blank" rel="noopener">Bind any</a></li>
+<li><a href="https://www.iris-go.com/docs/#/?id=bind-url-path-parameters" target="_blank" rel="noopener">Bind URL Path Parameters</a></li>
+<li><a href="https://www.iris-go.com/docs/#/?id=bind-header" target="_blank" rel="noopener">Bind Header</a></li>
+<li><a href="https://www.iris-go.com/docs/#/?id=bind-html-checkboxes" target="_blank" rel="noopener">Bind HTML checkboxes</a></li>
+</ul>
+<h1 id="json-jsonp-xml-markdown-yaml-and-msgpack-rendering"><a class="markdownIt-Anchor" href="#json-jsonp-xml-markdown-yaml-and-msgpack-rendering"></a> JSON, JSONP, XML, Markdown, YAML and MsgPack rendering</h1>
+<p><a href="https://www.iris-go.com/docs/#/?id=json-jsonp-xml-markdown-yaml-and-msgpack-rendering" target="_blank" rel="noopener">JSON, JSONP, XML, Markdown, YAML and MsgPack rendering</a></p>
+<h2 id="protobuf"><a class="markdownIt-Anchor" href="#protobuf"></a> Protobuf</h2>
+<p><a href="https://www.iris-go.com/docs/#/?id=protobuf" target="_blank" rel="noopener">Protobuf</a></p>
+<h1 id="json-web-tokens"><a class="markdownIt-Anchor" href="#json-web-tokens"></a> JSON Web Tokens</h1>
+<p><a href="https://www.iris-go.com/docs/#/?id=json-web-tokens" target="_blank" rel="noopener">JSON Web Tokens</a></p>
+<p>之前在Gin中使用JWT，还需要自己写中间件(middleware/jwt.go)和Token的签发与解析逻辑(util/jwt.go)，但是在Iris中，不需要自己手写那么多，Iris帮我们封装好了一些功能。</p>
+<blockquote>
+<p>个人是更喜欢gin这种方式的，代码自己写的，逻辑会更清晰。</p>
+</blockquote>
+<p>install：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/kataras/iris/v12@master </span><br><span class="line">go get github.com/kataras/jwt</span><br></pre></td></tr></table></figure>
+<p>代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line"></span><br><span class="line">	<span class="string">"github.com/kataras/iris/v12"</span></span><br><span class="line">	<span class="string">"github.com/kataras/iris/v12/context"</span></span><br><span class="line">	<span class="string">"github.com/kataras/iris/v12/middleware/jwt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> (</span><br><span class="line">	sigKey = []<span class="keyword">byte</span>(<span class="string">"signature_hmac_secret_shared_key"</span>)</span><br><span class="line">	encKey = []<span class="keyword">byte</span>(<span class="string">"GCM_AES_256_secret_shared_key_32"</span>)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> fooClaims <span class="keyword">struct</span> &#123;</span><br><span class="line">	Foo <span class="keyword">string</span> <span class="string">`json:"foo"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	app := iris.Default()</span><br><span class="line">	signer := jwt.NewSigner(jwt.HS256, sigKey, time.Minute*<span class="number">10</span>)</span><br><span class="line">	<span class="comment">// 如果要对payload进行加密：</span></span><br><span class="line">	<span class="comment">//signer.WithEncryption(encKey, nil)</span></span><br><span class="line">	app.Get(<span class="string">"/login"</span>, generateToken(signer))</span><br><span class="line"></span><br><span class="line">	verifier := jwt.NewVerifier(jwt.HS256, sigKey)</span><br><span class="line">	verifier.WithDefaultBlocklist() <span class="comment">// Enable server-side token block feature (even before its expiration time)</span></span><br><span class="line">	<span class="comment">// 如果要对payload进行解密：</span></span><br><span class="line">	<span class="comment">//verifier.WithDecryption(encKey, nil)</span></span><br><span class="line">	verifierMiddleware := verifier.Verify(<span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125; &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">new</span>(fooClaims)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	protectedAPI := app.Party(<span class="string">"/protected"</span>)</span><br><span class="line">	protectedAPI.Use(verifierMiddleware) <span class="comment">// 注册中间件</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">//protectedAPI.UseRouter(verifierMiddleware)	// disallow unauthorized http error handlers</span></span><br><span class="line">		protectedAPI.Get(<span class="string">"/"</span>, protected)</span><br><span class="line">		protectedAPI.Get(<span class="string">"/logout"</span>, logout) <span class="comment">// 在服务端让token失效</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	app.Listen(<span class="string">":8080"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 登出，在服务端让token失效</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">logout</span><span class="params">(ctx *context.Context)</span></span> &#123;</span><br><span class="line">	err := ctx.Logout()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		ctx.WriteString(err.Error())</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		ctx.Writef(<span class="string">"token invalidated, a new token is required to access the protected API"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试token的接口，该接口将获取token中携带的信息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">protected</span><span class="params">(ctx *context.Context)</span></span> &#123;</span><br><span class="line">	claims, ok := jwt.Get(ctx).(*fooClaims) <span class="comment">// Get the verified and decoded claims.</span></span><br><span class="line">	<span class="keyword">if</span> !ok &#123;</span><br><span class="line">		log.Fatalln(<span class="string">"断言失败"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 获取token信息</span></span><br><span class="line">	standardClaims := jwt.GetVerifiedToken(ctx).StandardClaims</span><br><span class="line">	expiresAtString := standardClaims.ExpiresAt().Format(ctx.Application().ConfigurationReadOnly().GetTimeFormat())</span><br><span class="line">	timeLeft := standardClaims.Timeleft()</span><br><span class="line"></span><br><span class="line">	ctx.Writef(<span class="string">"foo=%s\nexpires at: %s\ntime left: %s\n"</span>, claims.Foo, expiresAtString, timeLeft)</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 签发token</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">generateToken</span><span class="params">(signer *jwt.Signer)</span> <span class="title">context</span>.<span class="title">Handler</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="function"><span class="keyword">func</span><span class="params">(ctx *context.Context)</span></span> &#123;</span><br><span class="line">		claims := fooClaims&#123;Foo: <span class="string">"bar"</span>&#125;</span><br><span class="line">		token, err := signer.Sign(claims)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			ctx.StopWithStatus(iris.StatusInternalServerError)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		ctx.Write(token)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li><code>http://localhost:8080/login</code>：签发token（模拟登录）</li>
+<li><code>http://localhost:8080/protected?token=$token</code>：使用携带token进行接口验证</li>
+<li><code>http://localhost:8080/protected/logout?token=$token</code>：使该token失效</li>
+<li><code>http://localhost:8080/protected?token=$token</code>：在第3个接口调用后，原本的token就失效了，此时再调用该接口，会报<code>401Unauthorized</code></li>
+</ol>
+<p>可以看到token携带的payload：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220728145302.png" alt="" /></p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#mvc-equivalent"><span class="toc-text"> MVC equivalent</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#parameters-in-path"><span class="toc-text"> Parameters in path</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#protobuf"><span class="toc-text"> Protobuf</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2022/05/31/go%E5%95%86%E5%9F%8E%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F/">
+            <span class="related-notes__meta">
+              <time datetime="2022-05-31T00:47:03.000Z">2022.05.31</time>
+              <span>#Go · #Iris</span>
+            </span>
+            <strong>Go商城秒杀系统</strong>
+          </a>
+        
+          <a href="/2023/10/01/Go%E5%BC%80%E6%BA%90%E5%BA%93%EF%BC%9ACast/">
+            <span class="related-notes__meta">
+              <time datetime="2023-10-01T00:47:03.000Z">2023.10.01</time>
+              <span>#Go</span>
+            </span>
+            <strong>Go第三方库之Cast</strong>
+          </a>
+        
+          <a href="/2022/09/03/%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%EF%BC%9A%E5%93%88%E5%B8%8C%E8%A1%A8/">
+            <span class="related-notes__meta">
+              <time datetime="2022-09-03T09:42:03.000Z">2022.09.03</time>
+              <span>#Go</span>
+            </span>
+            <strong>算法学习：哈希表</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2022/05/31/go%E5%95%86%E5%9F%8E%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F/"><span>上一篇</span><strong>Go商城秒杀系统</strong></a>
+    <a href="/2022/05/22/Go%E6%93%8D%E4%BD%9CRedis/"><span>下一篇</span><strong>Go操作Redis</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

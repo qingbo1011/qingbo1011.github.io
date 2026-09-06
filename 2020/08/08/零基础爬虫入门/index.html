@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>零基础爬虫入门 · Quinn</title>
+<meta name="description" content="零基础爬虫入门 环境准备： python3 pycharm python篇 HelloWorld 1 print( &#39;hello,world!&#39; ) 数据类型 1 2 3 4 5 6 7 8 9 10 print( 123 ) print(…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2020/08/08/%E9%9B%B6%E5%9F%BA%E7%A1%80%E7%88%AC%E8%99%AB%E5%85%A5%E9%97%A8/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="零基础爬虫入门 · Quinn" />
+<meta property="og:description" content="零基础爬虫入门 环境准备： python3 pycharm python篇 HelloWorld 1 print( &#39;hello,world!&#39; ) 数据类型 1 2 3 4 5 6 7 8 9 10 print( 123 ) print(…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2020/08/08/%E9%9B%B6%E5%9F%BA%E7%A1%80%E7%88%AC%E8%99%AB%E5%85%A5%E9%97%A8/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512093036.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220512093036.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Python · 2020.08.08
+      
+    </p>
+    <h1>零基础爬虫入门</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Python/">Python</a>
+  
+  <span class="post-meta__item">6 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Python/">#Python</a>
+      
+        <a href="/tags/%E7%88%AC%E8%99%AB/">#爬虫</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p>环境准备：</p>
+<ul>
+<li>python3</li>
+<li>pycharm</li>
+</ul>
+<h2 id="python篇"><a class="markdownIt-Anchor" href="#python篇"></a> python篇</h2>
+<h3 id="helloworld"><a class="markdownIt-Anchor" href="#helloworld"></a> HelloWorld</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(<span class="string">'hello,world!'</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="数据类型"><a class="markdownIt-Anchor" href="#数据类型"></a> 数据类型</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">print(<span class="number">123</span>)</span><br><span class="line">print(<span class="number">12.34</span>)</span><br><span class="line">print(<span class="string">'A'</span>)</span><br><span class="line">print(<span class="string">'中'</span>)</span><br><span class="line">print(<span class="string">'hello'</span>)</span><br><span class="line">print(<span class="string">"hello"</span>)</span><br><span class="line">print(<span class="string">'''Dear:</span></span><br><span class="line"><span class="string">    LiHua'''</span>)</span><br><span class="line">lst = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="string">"hello"</span>, <span class="string">"world"</span>, <span class="string">'A'</span>, <span class="string">'中'</span>]</span><br><span class="line">print(lst)</span><br></pre></td></tr></table></figure>
+<h3 id="条件判断和循环"><a class="markdownIt-Anchor" href="#条件判断和循环"></a> 条件判断和循环</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">    a = int(input(<span class="string">"请输入数字："</span>))</span><br><span class="line">    <span class="keyword">if</span> a == <span class="number">0</span>:</span><br><span class="line">        print(<span class="string">'over'</span>)</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">elif</span> a == <span class="number">1</span>:</span><br><span class="line">        print(<span class="string">'hello'</span>)</span><br><span class="line">    <span class="keyword">elif</span> a == <span class="number">2</span>:</span><br><span class="line">        print(<span class="string">'world'</span>)</span><br><span class="line">    <span class="keyword">elif</span> a == <span class="number">3</span>:</span><br><span class="line">        print(<span class="string">'python'</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(<span class="string">'java'</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">lst = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">20</span>):</span><br><span class="line">    lst.append(i)</span><br><span class="line">print(lst)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lst = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">666</span>, <span class="string">'hello'</span>, <span class="string">'rick'</span>]</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> lst:</span><br><span class="line">    print(item)</span><br></pre></td></tr></table></figure>
+<h2 id="简易爬虫篇"><a class="markdownIt-Anchor" href="#简易爬虫篇"></a> 简易爬虫篇</h2>
+<h3 id="request"><a class="markdownIt-Anchor" href="#request"></a> Request</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 1.指定url</span></span><br><span class="line">    url = <span class="string">'https://www.sogou.com/'</span></span><br><span class="line">    <span class="comment"># 2.发起请求</span></span><br><span class="line">    response = requests.get(url=url)   <span class="comment"># 调用get方法,get方法会返回一个响应对象,我们用response来接受这个对象</span></span><br><span class="line">    <span class="comment"># 3.获取响应数据</span></span><br><span class="line">    page_text = response.text   <span class="comment"># text属性，HTTP响应内容的字符串形式，即：url对应的页面内容</span></span><br><span class="line">    print(page_text)</span><br></pre></td></tr></table></figure>
+<h3 id="xpath"><a class="markdownIt-Anchor" href="#xpath"></a> Xpath</h3>
+<p>安装：pip install lxml</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 1.指定url</span></span><br><span class="line">    url = <span class="string">'https://www.sogou.com/'</span></span><br><span class="line">    <span class="comment"># 2.发起请求</span></span><br><span class="line">    response = requests.get(url=url)   <span class="comment"># 调用get方法,get方法会返回一个响应对象,我们用response来接受这个对象</span></span><br><span class="line">    <span class="comment"># 3.获取响应数据</span></span><br><span class="line">    page_text = response.text   <span class="comment"># text属性，HTTP响应内容的字符串形式，即：url对应的页面内容</span></span><br><span class="line">    <span class="comment"># 实例化etree对象</span></span><br><span class="line">    tree = etree.HTML(page_text)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 获取标签</span></span><br><span class="line">    s = tree.xpath(<span class="string">'//*[@id="weixinch"]'</span>)</span><br><span class="line">    s_text = tree.xpath(<span class="string">'//*[@id="weixinch"]/text()'</span>)</span><br><span class="line">    print(s)</span><br><span class="line">    print(s_text)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 获取属性</span></span><br><span class="line">    href = tree.xpath(<span class="string">'//*[@id="weixinch"]/@href'</span>)</span><br><span class="line">    print(href)</span><br></pre></td></tr></table></figure>
+<h3 id="4k图片爬取"><a class="markdownIt-Anchor" href="#4k图片爬取"></a> 4K图片爬取</h3>
+<p><a href="http://pic.netbian.com/4kmeinv/index.html" target="_blank" rel="noopener">目标网站</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 创建一个文件夹用来存放图片</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(<span class="string">'./4k_img'</span>):</span><br><span class="line">        os.mkdir(<span class="string">'./4k_img'</span>)</span><br><span class="line"></span><br><span class="line">    base_url = <span class="string">'http://pic.netbian.com/4kmeinv/'</span></span><br><span class="line">    img_base_url = <span class="string">'http://pic.netbian.com/'</span>     <span class="comment"># 图片</span></span><br><span class="line">    <span class="comment"># UA伪装</span></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">'User-Agent'</span>: <span class="string">'Mozilla / 5.0(Windows NT 10.0; Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 86.0.4240.75Safari / 537.36User - Agent: Mozilla / 5.0(WindowsNT10.0;Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 86.0.4240.75Safari / 537.36'</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">4</span>):   <span class="comment"># 爬取前三页图片</span></span><br><span class="line">        <span class="keyword">if</span> i == <span class="number">1</span>:</span><br><span class="line">            add_url = <span class="string">'index.html'</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            add_url = <span class="string">f'index_<span class="subst">&#123;i&#125;</span>.html'</span></span><br><span class="line">        url = base_url + add_url</span><br><span class="line">        page_text = requests.get(url=url, headers=headers).text</span><br><span class="line">        tree = etree.HTML(page_text)</span><br><span class="line">        <span class="comment"># 我们有了图片的base_url，接下来就要想办法获得图片名成以及图片的add_url</span></span><br><span class="line">        li_list = tree.xpath(<span class="string">'//*[@id="main"]//li'</span>)     <span class="comment"># 得到了li标签的列表</span></span><br><span class="line">        <span class="keyword">for</span> li <span class="keyword">in</span> li_list:</span><br><span class="line">            <span class="comment"># 解决中文为乱码的方法</span></span><br><span class="line">            img_name = li.xpath(<span class="string">'.//a/b/text()'</span>)[<span class="number">0</span>].encode(<span class="string">'ISO-8859-1'</span>).decode(<span class="string">'gbk'</span>)+<span class="string">'.jpg'</span></span><br><span class="line">            img_add_url = li.xpath(<span class="string">'.//img/@src'</span>)[<span class="number">0</span>]</span><br><span class="line">            img_url = img_base_url + img_add_url</span><br><span class="line">            <span class="comment"># 这样就获得了每张图片的url和名字</span></span><br><span class="line">            img_data = requests.get(url=img_url, headers=headers).content   <span class="comment"># 将图片以二进制形式存储到img_data中\</span></span><br><span class="line">            img_path = <span class="string">'./4k_img/'</span>+img_name   <span class="comment"># 每张图片最终存储路径</span></span><br><span class="line">            <span class="keyword">with</span> open(img_path, <span class="string">'wb'</span>) <span class="keyword">as</span> file:</span><br><span class="line">                file.write(img_data)</span><br><span class="line">                print(img_name+<span class="string">'下载成功!'</span>)</span><br><span class="line">    print(<span class="string">'over!'</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="简历模板爬取"><a class="markdownIt-Anchor" href="#简历模板爬取"></a> 简历模板爬取</h3>
+<p><a href="https://sc.chinaz.com/jianli/free.html" target="_blank" rel="noopener">目标网站</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 创建一个文件夹用来存放简历模板</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(<span class="string">'./简历模板'</span>):</span><br><span class="line">        os.mkdir(<span class="string">'./简历模板'</span>)</span><br><span class="line"></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">'User-Agent'</span>: <span class="string">'Mozilla / 5.0(Windows NT 10.0; Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 86.0.4240.75Safari / 537.36User - Agent: Mozilla / 5.0(WindowsNT10.0;Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 86.0.4240.75Safari / 537.36'</span></span><br><span class="line">    &#125;</span><br><span class="line">    base_url1 = <span class="string">'https://sc.chinaz.com/jianli/'</span></span><br><span class="line">    base_url2 = <span class="string">'https:'</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> page <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">4</span>):    <span class="comment"># 爬取前三页</span></span><br><span class="line">        <span class="keyword">if</span> page == <span class="number">1</span>:</span><br><span class="line">            add_url1 = <span class="string">'free.html'</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            add_url1 = <span class="string">f'free_<span class="subst">&#123;page&#125;</span>.html'</span></span><br><span class="line">        url1 = base_url1 + add_url1     <span class="comment"># 获取到了第一层url</span></span><br><span class="line">        <span class="comment"># 要从第一次url中解析到模板名字和add_url2</span></span><br><span class="line">        page_text1 = requests.get(url=url1, headers=headers).text</span><br><span class="line">        tree1 = etree.HTML(page_text1)</span><br><span class="line">        p_list = tree1.xpath(<span class="string">'//*[@id="container"]//p'</span>)</span><br><span class="line">        <span class="comment"># 从p标签中解析出模板名字和add_url2</span></span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> p_list:</span><br><span class="line">            name = p.xpath(<span class="string">'./a/text()'</span>)[<span class="number">0</span>].encode(<span class="string">'ISO-8859-1'</span>).decode(<span class="string">'utf-8'</span>) + <span class="string">'.rar'</span></span><br><span class="line">            add_url2 = p.xpath(<span class="string">'./a/@href'</span>)[<span class="number">0</span>]</span><br><span class="line">            url2 = base_url2 + add_url2     <span class="comment"># 获取到了url2</span></span><br><span class="line">            <span class="comment"># 从url2中解析出模板二进制数据所在的链接</span></span><br><span class="line">            page_text2 = requests.get(url=url2, headers=headers).text</span><br><span class="line">            tree2 = etree.HTML(page_text2)</span><br><span class="line">            data_url = tree2.xpath(<span class="string">'//*[@id="down"]//li[12]/a/@href'</span>)[<span class="number">0</span>]</span><br><span class="line">            data = requests.get(url=data_url, headers=headers).content</span><br><span class="line">        </span><br><span class="line">            <span class="comment"># 存储模板</span></span><br><span class="line">            data_path = <span class="string">'./简历模板/'</span> + name</span><br><span class="line">            <span class="keyword">with</span> open(data_path, <span class="string">'wb'</span>) <span class="keyword">as</span> file:</span><br><span class="line">                file.write(data)</span><br><span class="line">                print(name+<span class="string">'下载成功！'</span>)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">'over!'</span>)</span><br></pre></td></tr></table></figure>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#python篇"><span class="toc-text"> python篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#helloworld"><span class="toc-text"> HelloWorld</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据类型"><span class="toc-text"> 数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#条件判断和循环"><span class="toc-text"> 条件判断和循环</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#简易爬虫篇"><span class="toc-text"> 简易爬虫篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#request"><span class="toc-text"> Request</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#xpath"><span class="toc-text"> Xpath</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4k图片爬取"><span class="toc-text"> 4K图片爬取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#简历模板爬取"><span class="toc-text"> 简历模板爬取</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2020/12/19/Python%E8%AF%BE%E7%A8%8B%E8%AF%BE%E5%90%8E%E4%BD%9C%E4%B8%9A/">
+            <span class="related-notes__meta">
+              <time datetime="2020-12-19T13:17:16.000Z">2020.12.19</time>
+              <span>#Python</span>
+            </span>
+            <strong>Python课程课后作业</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2020/08/08/%E4%BD%BF%E7%94%A8GitHUb%E5%BF%85%E5%A4%87%E7%9A%84%E6%8F%92%E4%BB%B6/"><span>上一篇</span><strong>使用GitHub必备的插件</strong></a>
+    
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

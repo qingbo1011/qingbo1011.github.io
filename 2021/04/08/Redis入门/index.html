@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Redis入门 · Quinn</title>
+<meta name="description" content="Redis入门 Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。 Redis 与其他 key - value 缓存产品有以下三个特点： Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/04/08/Redis%E5%85%A5%E9%97%A8/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Redis入门 · Quinn" />
+<meta property="og:description" content="Redis入门 Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。 Redis 与其他 key - value 缓存产品有以下三个特点： Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/04/08/Redis%E5%85%A5%E9%97%A8/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103115.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103115.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Database · 2021.04.08
+      
+    </p>
+    <h1>Redis入门</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。 Redis 与其他 key - value 缓存产品有以下三个特点： Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。 Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储。 Redis支持数据的备份，即master-slave模式的数据备份。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Database/">Database</a>
+  
+  <span class="post-meta__item">8 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Database/">#Database</a>
+      
+        <a href="/tags/Redis/">#Redis</a>
+      
+        <a href="/tags/NoSql/">#NoSql</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+
+<p><a href="https://www.runoob.com/redis/redis-intro.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<p><a href="https://www.cnblogs.com/powertoolsteam/p/redis.html" target="_blank" rel="noopener">Redis是什么？看这一篇就够了</a></p>
+<p><a href="https://www.redis.net.cn/tutorial/3501.html" target="_blank" rel="noopener">Redis中文网站教程</a></p>
+<p>概念：redis是一款高性能的NOSQL系列的非关系型数据库</p>
+<h2 id="nosql"><a class="markdownIt-Anchor" href="#nosql"></a> NoSql</h2>
+<blockquote>
+<p><strong>NoSQL(NoSQL = Not Only SQL)</strong>，意即“不仅仅是SQL”，是一项全新的数据库理念，泛指非关系型的数据库。</p>
+<p>随着互联网web2.0网站的兴起，传统的关系数据库在应付web2.0网站，特别是超大规模和高并发的SNS类型的web2.0纯动态网站已经显得力不从心，暴露了很多难以克服的问题，而非关系型的数据库则由于其本身的特点得到了非常迅速的发展。NoSQL数据库的产生就是为了解决大规模数据集合多重数据种类带来的挑战，尤其是大数据应用难题。</p>
+</blockquote>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103210.bmp" alt="1.关系型和非关系型数据库比较" /></p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=873" target="_blank" rel="noopener"><strong>视频讲解</strong></a></p>
+<h3 id="nosql和关系型数据库比较"><a class="markdownIt-Anchor" href="#nosql和关系型数据库比较"></a> NoSQL和关系型数据库比较</h3>
+<p>NoSql优点：</p>
+<ul>
+<li>成本：nosql数据库简单易部署，基本都是开源软件，不需要像使用oracle那样花费大量成本购买使用，相比关系型数据库价格便宜</li>
+<li><strong>查询速度：nosql数据库将数据存储于缓存之中，关系型数据库将数据存储在硬盘中，自然查询速度远不及nosql数据库</strong></li>
+<li>存储数据的格式：nosql的存储格式是key,value形式、文档形式、图片形式等等，所以可以存储基础类型以及对象或者是集合等各种格式，而数据库则只支持基础类型</li>
+<li>扩展性：关系型数据库有类似join这样的多表查询机制的限制导致扩展很艰难。</li>
+</ul>
+<p>NoSql缺点：</p>
+<ul>
+<li>维护的工具和资料有限，因为nosql是属于新的技术，不能和关系型数据库10几年的技术同日而语</li>
+<li><strong>不提供对sql的支持</strong>，如果不支持sql这样的工业标准，将产生一定用户的学习和使用成本</li>
+<li>不提供关系型数据库对事务的处理</li>
+</ul>
+<p>非关系型数据库的优势：</p>
+<ul>
+<li><strong>性能NoSQL是基于键值对的，可以想象成表中的主键和值的对应关系，而且不需要经过SQL层的解析，所以性能非常高</strong></li>
+<li><strong>可扩展性同样也是因为基于键值对，数据之间没有耦合性，所以非常容易水平扩展</strong></li>
+</ul>
+<p>关系型数据库的优势：</p>
+<ul>
+<li>复杂查询可以用SQL语句方便地在一个表以及多个表之间做非常复杂的数据查询</li>
+<li>事务支持使得对于安全性能很高的数据访问要求得以实现。对于这两类数据库，对方的优势就是自己的弱势，反之亦然</li>
+</ul>
+<p>总结：</p>
+<ul>
+<li><strong>关系型数据库与NoSQL数据库并非对立而是互补的关系，即通常情况下使用关系型数据库，在适合使用NoSQL的时候使用NoSQL数据库</strong></li>
+<li>让NoSQL数据库对关系型数据库的不足进行弥补</li>
+<li><strong>一般会将数据存储在关系型数据库中，在nosql数据库中备份存储关系型数据库的数据</strong></li>
+</ul>
+<h3 id="主流的nosql产品"><a class="markdownIt-Anchor" href="#主流的nosql产品"></a> 主流的NoSQL产品</h3>
+<ul>
+<li>键值(Key-Value)存储数据库</li>
+<li>列存储数据库</li>
+<li>文档型数据库</li>
+<li>图形(Graph)数据库</li>
+</ul>
+<h4 id="键值key-value存储数据库"><a class="markdownIt-Anchor" href="#键值key-value存储数据库"></a> 键值(Key-Value)存储数据库</h4>
+<ul>
+<li>相关产品： Tokyo Cabinet/Tyrant、<strong>Redis</strong>、Voldemort、Berkeley DB</li>
+<li><strong>典型应用： 内容缓存，主要用于处理大量数据的高访问负载</strong></li>
+<li><strong>数据模型： 一系列键值对</strong></li>
+<li>优势： 快速查询</li>
+<li>劣势： 存储的数据缺少结构化</li>
+</ul>
+<h4 id="列存储数据库"><a class="markdownIt-Anchor" href="#列存储数据库"></a> 列存储数据库</h4>
+<ul>
+<li>相关产品：Cassandra, <strong>HBase</strong>, Riak</li>
+<li>典型应用：分布式的文件系统</li>
+<li>数据模型：以列簇式存储，将同一列数据存在一起</li>
+<li>优势：查找速度快，可扩展性强，更容易进行分布式扩展</li>
+<li>劣势：功能相对局限</li>
+</ul>
+<h4 id="文档型数据库"><a class="markdownIt-Anchor" href="#文档型数据库"></a> 文档型数据库</h4>
+<ul>
+<li>相关产品：CouchDB、<strong>MongoDB</strong></li>
+<li>典型应用：Web应用（与Key-Value类似，Value是结构化的）</li>
+<li>数据模型： 一系列键值对</li>
+<li>优势：数据结构要求不严格</li>
+<li>劣势： 查询性能不高，而且缺乏统一的查询语法</li>
+</ul>
+<h4 id="图形graph数据库"><a class="markdownIt-Anchor" href="#图形graph数据库"></a> 图形(Graph)数据库</h4>
+<ul>
+<li>相关数据库：Neo4J、InfoGrid、Infinite Graph</li>
+<li>典型应用：社交网络</li>
+<li>数据模型：图结构</li>
+<li>优势：利用图结构相关算法</li>
+<li>劣势：需要对整个图做计算才能得出结果，不容易做分布式的集群方案</li>
+</ul>
+<hr />
+<h2 id="redis"><a class="markdownIt-Anchor" href="#redis"></a> Redis</h2>
+<h3 id="redis基本知识"><a class="markdownIt-Anchor" href="#redis基本知识"></a> Redis基本知识</h3>
+<p><strong>Redis是用C语言开发的一个开源的高性能键值对（key-value）数据库</strong>，官方提供测试数据，50个并发执行100000个请求,读的速度是110000次/s,写的速度是81000次/s ，且Redis通过提供多种键值数据类型来适应不同场景下的存储需求。</p>
+<p><strong>目前为止Redis支持的键值数据类型如下：</strong></p>
+<ul>
+<li><strong>字符串类型：string</strong></li>
+<li><strong>哈希类型：hash</strong></li>
+<li><strong>列表类型：list</strong></li>
+<li><strong>集合类型：set</strong></li>
+<li><strong>有序集合类型：sortedset</strong></li>
+</ul>
+<p>redis的应用场景：</p>
+<ul>
+<li>缓存（数据查询、短连接、新闻内容、商品内容等等）</li>
+<li>聊天室的在线好友列表</li>
+<li>任务队列（秒杀、抢购、12306等等）</li>
+<li>应用排行榜</li>
+<li>网站访问统计</li>
+<li>数据过期处理（可以精确到毫秒）</li>
+<li>分布式集群架构中的session分离</li>
+</ul>
+<h3 id="redis下载和安装"><a class="markdownIt-Anchor" href="#redis下载和安装"></a> Redis下载和安装</h3>
+<p>Redis官网：<a href="https://redis.io" target="_blank" rel="noopener">https://redis.io</a></p>
+<p>中文网站：<a href="http://www.redis.net.cn/" target="_blank" rel="noopener">http://www.redis.net.cn/</a></p>
+<p>在后续开发中我们通常会将Redis安装在Linux上，但这里我们学习的话还是先安装在Windows上。</p>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=874&amp;spm_id_from=pageDri" target="_blank" rel="noopener">视频讲解</a></p>
+<p>首先下载相应安装包，然后解压：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103341.png" alt="" /></p>
+<p>解压后即可使用。解压后的redis目录结构如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103304.png" alt="解压后的redis目录结构" /></p>
+<p>其中：</p>
+<ul>
+<li>redis.windows.conf：配置文件</li>
+<li>redis-cli.exe：redis的客户端</li>
+<li>redis-server.exe：redis服务器端</li>
+</ul>
+<p>我们双击redis-server.exe，或者在cmd中进入redis目录，输入：<strong><code>redis-server.exe redis.windows.conf</code></strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103412.png" alt="redis-server.exe运行成功" /></p>
+<p>这时我们双击redis-cli.exe，或者切换到redis目录下运行 <strong><code>redis-cli.exe -h 127.0.0.1 -p 6379</code></strong></p>
+<p><strong>注意不要关闭原来的窗口，不然就无法访问服务端了</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103428.png" alt="redis成功启动" /></p>
+<h3 id="操作redis"><a class="markdownIt-Anchor" href="#操作redis"></a> <mark>操作Redis</mark></h3>
+<p><a href="https://www.redis.net.cn/tutorial/3501.html" target="_blank" rel="noopener"><strong>redis教程</strong></a></p>
+<p>这里主要说一下redis中数据的存储和获取</p>
+<p>先来看一下redis的数据结构： <strong><mark>redis存储的是key-value格式的数据，其中key都是字符串，value有5种不同的数据结构</mark></strong></p>
+<p><strong>value的数据结构：</strong></p>
+<ul>
+<li><strong>字符串类型：string</strong></li>
+<li><strong>哈希类型 hash：map格式</strong></li>
+<li><strong>列表类型 list：linkedlist格式。支持重复元素</strong></li>
+<li><strong>集合类型 set：不允许重复元素</strong></li>
+<li><strong>有序集合类型 sortedset：不允许重复元素，且元素有顺序</strong></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103440.bmp" alt="redis数据结构" /></p>
+<p><strong>对于不同类型的value，操作的方法也是不同的</strong>。这里我们先介绍一些常用的操作方法，具体的可以查看<a href="https://www.redis.net.cn/tutorial/3501.html" target="_blank" rel="noopener"><strong>redis教程</strong></a></p>
+<h4 id="字符串类型"><a class="markdownIt-Anchor" href="#字符串类型"></a> 字符串类型</h4>
+<p><a href="https://www.redis.net.cn/tutorial/3508.html" target="_blank" rel="noopener">Redis 字符串(String)</a></p>
+<ul>
+<li><strong>存储：<code>set key value</code></strong></li>
+<li><strong>获取：<code>get key</code></strong></li>
+<li><strong>删除：<code>del key</code></strong></li>
+</ul>
+<img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220713181408.png" alt="value为字符串类型"  />
+<h4 id="哈希类型"><a class="markdownIt-Anchor" href="#哈希类型"></a> 哈希类型</h4>
+<p><a href="https://www.redis.net.cn/tutorial/3509.html" target="_blank" rel="noopener">Redis 哈希(Hash)</a></p>
+<p><strong>Redis hash 是一个string类型的field和value的映射表，hash特别适合用于存储对象。</strong></p>
+<ul>
+<li><strong>存储：<code>hset key field value</code></strong></li>
+<li><strong>获取：</strong>
+<ul>
+<li><strong><code>hget key field</code>：获取指定的field的对应的值</strong></li>
+<li><strong><code>hgetall key</code>：获取所有的field和value</strong></li>
+</ul>
+</li>
+<li><strong>删除：<code>hdel key field</code></strong></li>
+</ul>
+<img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220713181430.png" alt="value为哈希类型"  />
+<h4 id="列表类型"><a class="markdownIt-Anchor" href="#列表类型"></a> 列表类型</h4>
+<p><a href="https://www.redis.net.cn/tutorial/3510.html" target="_blank" rel="noopener">Redis 列表(List)</a></p>
+<p><strong>Redis列表是简单的字符串列表</strong>，按照插入顺序排序。<strong>可以添加一个元素到列表的头部（左边）或者尾部（右边）</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103451.bmp" alt="列表list数据结构" /></p>
+<p><strong>添加：</strong></p>
+<ul>
+<li><strong><code>lpush key value</code>：将元素加入列表左边</strong></li>
+<li><strong><code>rpush key value</code>：将元素加入列表右边</strong></li>
+</ul>
+<p><strong>获取：</strong></p>
+<ul>
+<li><strong><code>lrange key start end</code>：范围获取</strong>
+<ul>
+<li><strong>Redis Lrange 返回列表中指定区间内的元素，区间以偏移量 START 和 END 指定。 其中 0 表示列表的第一个元素， 1 表示列表的第二个元素，以此类推。 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。</strong></li>
+</ul>
+</li>
+</ul>
+<p><strong>删除：</strong></p>
+<ul>
+<li><strong><code>lpop key</code>：删除列表最左边的元素，并将元素返回</strong></li>
+<li><strong><code>rpop key</code>：删除列表最右边的元素，并将元素返回</strong></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103504.png" alt="" /></p>
+<h4 id="集合类型"><a class="markdownIt-Anchor" href="#集合类型"></a> 集合类型</h4>
+<p><a href="https://www.redis.net.cn/tutorial/3511.html" target="_blank" rel="noopener">Redis 集合(Set)</a></p>
+<p>**Redis的Set是string类型的无序集合。集合成员是唯一的，这就意味着集合中不能出现重复的数据。**Redis 中 集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是O(1)。</p>
+<ul>
+<li><strong>存储：<code>sadd key value</code></strong></li>
+<li><strong>获取：<code>smembers key</code>（获取set集合中所有元素）</strong></li>
+<li><strong>删除：<code>srem key value</code>（删除set集合中某个元素）</strong></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103520.png" alt="" /></p>
+<h4 id="有序集合类型"><a class="markdownIt-Anchor" href="#有序集合类型"></a> 有序集合类型</h4>
+<p><a href="https://www.redis.net.cn/tutorial/3512.html" target="_blank" rel="noopener">Redis 有序集合(sorted set)</a></p>
+<p><strong>Redis 有序集合和集合一样也是string类型元素的集合,且不允许重复的成员。</strong></p>
+<p><strong>不同的是每个元素都会关联一个double类型的分数。redis正是通过分数来为集合中的成员进行从小到大的排序。有序集合的成员是唯一的,但分数(score)却可以重复。</strong></p>
+<p>集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是O(1)。</p>
+<ul>
+<li>存储：<code>zadd key score value</code></li>
+<li>获取：<code>zrange key start end [withscores]</code>
+<ul>
+<li>下标参数 start 和 stop 都以 0 为底，也就是说，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，以此类推。也可以使用负数下标，以 -1 表示最后一个成员， -2 表示倒数第二个成员，以此类推。</li>
+<li>其中成员的位置按分数值递增(从小到大)来排序。如果需要成员按分数值递减(从大到小)来排列，请使用 <a href="https://www.runoob.com/redis/sorted-sets-zrevrange.html" target="_blank" rel="noopener">zrevrange</a> 命令（如：<code>ZREVRANGE salary 0 -1 WITHSCORES # 递减排列</code>）</li>
+</ul>
+</li>
+<li>删除：<code>zrem key value</code></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103533.png" alt="" /></p>
+<h4 id="redis通用命令"><a class="markdownIt-Anchor" href="#redis通用命令"></a> Redis通用命令</h4>
+<ul>
+<li>查询所有的键：<code>keys *</code></li>
+<li>获取键对应的value的类型：<code>type key</code></li>
+<li>删除指定的key-value：<code>del key</code></li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103547.png" alt="" /></p>
+<h3 id="redis持久化"><a class="markdownIt-Anchor" href="#redis持久化"></a> Redis持久化</h3>
+<blockquote>
+<p><strong>Redis有两种持久化的方式：快照（<code>RDB</code>文件）和追加式文件（<code>AOF</code>文件）：</strong></p>
+<ul>
+<li><strong>RDB持久化方式会在一个特定的间隔保存那个时间点的一个数据快照</strong></li>
+<li><strong>AOF持久化方式则会记录每一个服务器收到的写操作。在服务启动时，这些记录的操作会逐条执行从而重建出原来的数据。写操作命令记录的格式跟Redis协议一致，以追加的方式进行保存</strong></li>
+<li>Redis的持久化是可以禁用的，就是说你可以让数据的生命周期只存在于服务器的运行时间里</li>
+<li>两种方式的持久化是可以同时存在的，但是当Redis重启时，AOF文件会被优先用于重建数据</li>
+</ul>
+</blockquote>
+<p><a href="https://segmentfault.com/a/1190000002906345" target="_blank" rel="noopener">Redis持久化</a></p>
+<p><strong>redis是一个内存数据库</strong>，当redis服务器重启（或者电脑重启），数据就会丢失，<strong>我们可以将redis内存中的数据持久化保存到硬盘的文件中。</strong></p>
+<p><strong>Redis持久化有两种方式：</strong></p>
+<ul>
+<li><strong>RDB：在一定的间隔时间中，检测key的变化情况，然后持久化数据。默认方式，不需要进行配置，默认就使用这种机制</strong></li>
+<li><strong>AOF：日志记录的方式，可以记录每一条命令的操作。可以每一次命令操作后，持久化数据</strong></li>
+</ul>
+<h4 id="rdb持久化"><a class="markdownIt-Anchor" href="#rdb持久化"></a> RDB持久化</h4>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=880" target="_blank" rel="noopener">视频讲解</a></p>
+<p>在redis目录下的redis.windows.conf配置文件中有这么一段：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103603.png" alt="配置文件部分内容" /></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#   In the example below the behaviour will be to save:</span><br><span class="line">#   after 900 sec (15 min) if at least 1 key changed</span><br><span class="line">#   after 300 sec (5 min) if at least 10 keys changed</span><br><span class="line">#   after 60 sec if at least 10000 keys changed</span><br><span class="line">#</span><br><span class="line">#   Note: you can disable saving at all commenting all the &quot;save&quot; lines.</span><br><span class="line">#</span><br><span class="line">#   It is also possible to remove all the previously configured save</span><br><span class="line">#   points by adding a save directive with a single empty string argument</span><br><span class="line">#   like in the following example:</span><br><span class="line">#</span><br><span class="line">#   save &quot;&quot;</span><br><span class="line"></span><br><span class="line">save 900 1</span><br><span class="line">save 300 10</span><br><span class="line">save 60 10000</span><br></pre></td></tr></table></figure>
+<p>其中相关说明为：</p>
+<ul>
+<li>after 900 sec (15 min) if at least 1 key changed</li>
+<li>after 300 sec (5 min) if at least 10 keys changed</li>
+<li>after 60 sec if at least 10000 keys changed</li>
+</ul>
+<p>举一个例子：<strong><code>save 300 10</code>表示如果300秒内有10个keys改变了，就持久化保存一次数据</strong></p>
+<p>进行持久化存储后，我们关闭redis服务器。再<strong>重新启动redis服务器，并指定配置文件名称</strong>：</p>
+<p>在cmd中进入redis目录，输入：<strong><code>redis-server.exe redis.windows.conf</code></strong></p>
+<p><strong>可以发现之前的数据并没有消失，表示已经持久化存储了。</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103617.png" alt="" /></p>
+<h4 id="aof持久化"><a class="markdownIt-Anchor" href="#aof持久化"></a> AOF持久化</h4>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=881&amp;spm_id_from=pageDriver" target="_blank" rel="noopener">视频讲解</a></p>
+<p>同样地，我们来看redis.windows.conf配置文件：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103630.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220509103644.png" alt="" /></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># AOF and RDB persistence can be enabled at the same time without problems.</span><br><span class="line"># If the AOF is enabled on startup Redis will load the AOF, that is the file</span><br><span class="line"># with the better durability guarantees.</span><br><span class="line">#</span><br><span class="line"># Please check http:&#x2F;&#x2F;redis.io&#x2F;topics&#x2F;persistence for more information.</span><br><span class="line"></span><br><span class="line">appendonly no</span><br><span class="line"></span><br><span class="line"># The name of the append only file (default: &quot;appendonly.aof&quot;)</span><br><span class="line"># appendfilename appendonly.aof</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"># appendfsync always</span><br><span class="line">appendfsync everysec</span><br><span class="line"># appendfsync no</span><br></pre></td></tr></table></figure>
+<p><strong>要开启AOF，首先要将<code>appendonly no</code>设置为<code>appendonly yes</code></strong></p>
+<p>三个选项：</p>
+<ul>
+<li><strong><code>appendfsync always</code>：每一次操作都进行持久化</strong></li>
+<li><strong><code>appendfsync everysec</code>：每隔一秒进行一次持久化</strong></li>
+<li><strong><code>appendfsync no</code>：不进行持久化</strong></li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#nosql"><span class="toc-text"> NoSql</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nosql和关系型数据库比较"><span class="toc-text"> NoSQL和关系型数据库比较</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#主流的nosql产品"><span class="toc-text"> 主流的NoSQL产品</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis"><span class="toc-text"> Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis基本知识"><span class="toc-text"> Redis基本知识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis下载和安装"><span class="toc-text"> Redis下载和安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#操作redis"><span class="toc-text"> 操作Redis</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis持久化"><span class="toc-text"> Redis持久化</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2022/05/22/Go%E6%93%8D%E4%BD%9CRedis/">
+            <span class="related-notes__meta">
+              <time datetime="2022-05-22T00:47:03.000Z">2022.05.22</time>
+              <span>#Database · #Redis</span>
+            </span>
+            <strong>Go操作Redis</strong>
+          </a>
+        
+          <a href="/2021/04/11/Jedis/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-11T00:47:03.000Z">2021.04.11</time>
+              <span>#Database · #Redis</span>
+            </span>
+            <strong>Jedis</strong>
+          </a>
+        
+          <a href="/2022/08/15/SQL%E4%B9%8Bcount()%E7%B3%BB%E5%88%97/">
+            <span class="related-notes__meta">
+              <time datetime="2022-08-15T00:47:03.000Z">2022.08.15</time>
+              <span>#Database</span>
+            </span>
+            <strong>阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)?</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/04/11/Jedis/"><span>上一篇</span><strong>Jedis</strong></a>
+    <a href="/2021/04/07/Filter&Listener/"><span>下一篇</span><strong>Filter&amp;Listener</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

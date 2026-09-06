@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Linux · Quinn</title>
+<meta name="description" content="Linux 在学习Nginx之前，我们先简单过一下Linux。虽然还没有系统地学习过Linux，但是之前的学习中或多或少接触过也对Linux的基本使用有一定了解，这里简单做个笔记。 W3C教程 菜鸟教程 C语言中文网教程 linux基础与s…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2021/04/26/Linux/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux · Quinn" />
+<meta property="og:description" content="Linux 在学习Nginx之前，我们先简单过一下Linux。虽然还没有系统地学习过Linux，但是之前的学习中或多或少接触过也对Linux的基本使用有一定了解，这里简单做个笔记。 W3C教程 菜鸟教程 C语言中文网教程 linux基础与s…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2021/04/26/Linux/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171728.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171728.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Linux · 2021.04.26
+      
+    </p>
+    <h1>Linux</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“Unix是一个强大的多用户、多任务操作系统。于1969年在AT&amp;T的贝尔实验室开发。UNIX的商标权由国际开放标准组织（The Open Group）所拥有。UNIX操作系统是商业版，需要收费，价格比Microsoft Windows正版要贵一些。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Linux/">Linux</a>
+  
+  <span class="post-meta__item">10 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Linux/">#Linux</a>
+      
+        <a href="/tags/Shell/">#Shell</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p>在学习Nginx之前，我们先简单过一下Linux。虽然还没有系统地学习过Linux，但是之前的学习中或多或少接触过也对Linux的基本使用有一定了解，这里简单做个笔记。</p>
+<p><a href="https://www.w3cschool.cn/linux/" target="_blank" rel="noopener">W3C教程</a></p>
+<p><a href="https://www.runoob.com/linux/linux-tutorial.html" target="_blank" rel="noopener">菜鸟教程</a></p>
+<p><a href="http://c.biancheng.net/linux_tutorial/" target="_blank" rel="noopener"><strong>C语言中文网教程</strong></a></p>
+<p><a href="https://www.kancloud.cn/digest/linux-world/145277" target="_blank" rel="noopener">linux基础与shell编程</a></p>
+<h2 id="linux概述"><a class="markdownIt-Anchor" href="#linux概述"></a> Linux概述</h2>
+<p>学习Linux之前我们先了解一下Unix：</p>
+
+<p>Linux概述：</p>
+<blockquote>
+<p>Linux是基于Unix的。Linux是一种自由和开放源码的操作系统，存在着许多不同的Linux版本，但<strong>它们都使用了Linux内核</strong>。Linux可安装在各种计算机硬件设备中，比如手机、平板电脑、路由器、台式计算机。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171802.jpg" alt="" /></p>
+<p>诞生于1991 年10 月5 日，由芬兰赫尔辛基大学学生<strong>Linus Torvalds</strong>和后来加入的众多爱好者共同开发完成。</p>
+<center class="half">
+    <img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220713181235.jpg" width="300" height="300" />
+    <img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220713181257.jpg" width="300" height="300" />
+</center>
+</blockquote>
+<p>Linux历史：</p>
+<blockquote>
+<p>Linux最初是由芬兰赫尔辛基大学学生Linus Torvalds由于自己不满意教学中使用的MINIX操作系统， 所以在1990年底由于个人爱好设计出了LINUX系统核心。后来发布于芬兰最大的ftp服务器上，用户可以免费下载，所以它的周边的程序越来越多，Linux本身也逐渐发展壮大起来，之后Linux在不到三年的时间里成为了一个功能完善，稳定可靠的操作系统。</p>
+</blockquote>
+<p>Linux系统应用：</p>
+<ul>
+<li>服务器系统：Web应用服务器、数据库服务器、接口服务器、DNS、FTP等等</li>
+<li>嵌入式系统：路由器、防火墙、手机、PDA、IP 分享器、交换器、家电用品的微电脑控制器</li>
+<li>桌面应用系统</li>
+<li>移动手持系统</li>
+</ul>
+<p>高性能运算、计算密集型应用Linux有强大的运算能力</p>
+<p>Linux的版本分为两种：<strong>内核版本</strong>和<strong>发行版本</strong></p>
+<ul>
+<li>内核版本是指在Linus领导下的内核小组开发维护的系统内核的版本号</li>
+<li>发行版本则是内核版本的基础上添加了一些工具软件的基础上构成的一套庞大复杂的操作系统。虽然内核都是一样的，但添加部分各不相同，这就构成了不同的发行版本</li>
+</ul>
+<p>Linux的主流发行版本：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171814.jpg" alt="Linux主流发行版本" /></p>
+<h2 id="linux安装和远程连接"><a class="markdownIt-Anchor" href="#linux安装和远程连接"></a> Linux安装和远程连接</h2>
+<p>虚拟机：一台虚拟的电脑</p>
+<p>常用虚拟机软件：</p>
+<ul>
+<li>VmWare（收费）</li>
+<li>VirtualBox（免费）</li>
+</ul>
+<p>安装Linux可以选择双系统，或者买一台电脑安装Linux系统。这里我们选择使用虚拟机软件<a href="https://www.vmware.com/" target="_blank" rel="noopener">VmWare</a>来安装Linux（这里我们以CentOs作为学习）。</p>
+<p>linux的远程连接可以使用<a href="https://www.netsarang.com/zh/xshell/" target="_blank" rel="noopener">xshell</a>，也可以使用<a href="https://www.hostbuf.com/" target="_blank" rel="noopener">finalshell</a>。</p>
+<p>关于Linux安装和远程连接网上相关教程有很多了，这里就先不说了</p>
+<h2 id="linux目录结构"><a class="markdownIt-Anchor" href="#linux目录结构"></a> Linux目录结构</h2>
+<p><a href="https://www.runoob.com/linux/linux-system-contents.html" target="_blank" rel="noopener">Linux 系统目录结构</a></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171830.jpg" alt="linux目录结构" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171841.png" alt="" /></p>
+<ul>
+<li>root管理员的home目录root</li>
+<li>其他用户的home目录home目录中</li>
+</ul>
+<h2 id="linux常用命令"><a class="markdownIt-Anchor" href="#linux常用命令"></a> Linux常用命令</h2>
+<p>Linux命令大全(修改版)可在本地查看。</p>
+<p>Linux常用命令可在各大教程网站查询</p>
+<p>菜鸟教程：<a href="https://www.runoob.com/linux/linux-command-manual.html" target="_blank" rel="noopener">Linux 命令大全</a></p>
+<ul>
+<li><a href="https://www.runoob.com/linux/linux-file-content-manage.html" target="_blank" rel="noopener">Linux 文件与目录管理</a></li>
+<li><a href="https://www.runoob.com/linux/linux-user-manage.html" target="_blank" rel="noopener">Linux 用户和用户组管理</a></li>
+<li><a href="https://www.runoob.com/linux/linux-filesystem.html" target="_blank" rel="noopener">Linux 磁盘管理</a></li>
+<li><a href="https://www.runoob.com/linux/linux-vim.html" target="_blank" rel="noopener">Linux vi/vim</a></li>
+<li><a href="https://www.runoob.com/linux/linux-yum.html" target="_blank" rel="noopener">Linux yum 命令</a></li>
+<li><a href="https://www.runoob.com/linux/linux-comm-apt.html" target="_blank" rel="noopener">Linux apt 命令</a></li>
+</ul>
+<p><strong>C语言中文网：</strong></p>
+<ul>
+<li><a href="http://c.biancheng.net/linux_tutorial/file_content/" target="_blank" rel="noopener">Linux文件和目录管理</a></li>
+<li><a href="http://c.biancheng.net/linux_tutorial/bale_compress/" target="_blank" rel="noopener">Linux打包（归档）和压缩详解</a></li>
+<li><a href="http://c.biancheng.net/linux_tutorial/40/" target="_blank" rel="noopener">Vim文本编辑器及其应用详解</a></li>
+<li><a href="http://c.biancheng.net/linux_tutorial/text_processing/" target="_blank" rel="noopener">Linux文本处理（Linux三剑客grep、sed和awk）详解</a></li>
+<li><a href="http://c.biancheng.net/linux_tutorial/50/" target="_blank" rel="noopener">Linux系统软件安装</a></li>
+<li><a href="http://c.biancheng.net/linux_tutorial/60/" target="_blank" rel="noopener">Linux用户和用户组管理详解</a></li>
+<li><a href="http://c.biancheng.net/linux_tutorial/70/" target="_blank" rel="noopener">Linux权限管理详解</a></li>
+<li><a href="http://c.biancheng.net/linux_tutorial/80/" target="_blank" rel="noopener">Linux文件系统管理</a></li>
+</ul>
+<p>补充：</p>
+<ul>
+<li>
+<p><strong><code>cd -</code>：回到上一级目录</strong></p>
+</li>
+<li>
+<p><strong>tar命令：</strong></p>
+<blockquote>
+<p>​	tar命令位于/bin目录下，它能够<strong>将用户所指定的文件或目录打包成一个文件（.tar后缀）</strong>，但不做压缩。<strong>一般Linux上常用的压缩方式是选用tar将许多文件打包成一个文件（xxx.tar），再以gzip压缩命令压缩成xxx.tar.gz(或称为xxx.tgz)的文件</strong>。常用参数：</p>
+<ul>
+<li><strong>-c：创建一个新tar文件</strong></li>
+<li><strong>-v：显示运行过程的信息</strong></li>
+<li><strong>-f：指定文件名</strong></li>
+<li><strong>-z：调用gzip压缩命令进行压缩</strong></li>
+<li><strong>-t：查看压缩文件的内容</strong></li>
+<li><strong>-x：解开tar文件</strong></li>
+<li><strong>-C 目录： 指定解打包位置</strong></li>
+</ul>
+<p>打包：<code>tar –cvf xxx.tar ./*</code></p>
+<p>打包并且压缩：<code>tar –zcvf xxx.tar.gz ./*</code></p>
+<p>解压：</p>
+<ul>
+<li><code>tar –xvf xxx.tar</code></li>
+<li><code>tar -zxvf xxx.tar.gz -C /usr/aaa</code></li>
+</ul>
+</blockquote>
+</li>
+<li>
+<p><strong>find命令：</strong></p>
+<blockquote>
+<p>find指令用于查找符合条件的文件</p>
+<p>示例：</p>
+<ul>
+<li><code>find / -name “ins*”</code>：查找文件名称是以ins开头的文件</li>
+<li><code>find / -name “ins*” –ls</code>：</li>
+<li><code>find / –user itcast –ls</code>：查找用户itcast的文件</li>
+<li><code>find / –user itcast –type d –ls</code>：查找用户itcast的目录</li>
+<li><code>find /-perm -777 –type d-ls</code>：查找权限是777的文件</li>
+</ul>
+</blockquote>
+</li>
+<li>
+<p><strong>grep命令：</strong></p>
+<blockquote>
+<p>grep命令用于查找文件里符合条件的字符串</p>
+<p>用法: grep [选项]… PATTERN [FILE]…</p>
+<p>示例：</p>
+<ul>
+<li><code>grep lang anaconda-ks.cfg</code>：在文件中查找lang</li>
+<li><code>grep lang anaconda-ks.cfg –color</code>：高亮显示</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h2 id="vi和vim编辑器"><a class="markdownIt-Anchor" href="#vi和vim编辑器"></a> <mark>Vi和Vim编辑器</mark></h2>
+<p>菜鸟教程：<a href="https://www.runoob.com/linux/linux-vim.html" target="_blank" rel="noopener">Linux vi/vim</a></p>
+<p>C语言中文网：<a href="http://c.biancheng.net/linux_tutorial/40/" target="_blank" rel="noopener">Vim文本编辑器及其应用详解</a></p>
+<blockquote>
+<p>所有的 Unix Like 系统都会内建 vi 文书编辑器，其他的文书编辑器则不一定会存在。但是目前我们使用比较多的是 vim 编辑器。vim 具有程序编辑的能力，可以主动的以字体颜色辨别语法的正确性，方便程序设计。</p>
+<p>什么是 vim？</p>
+<p>Vim是从 vi 发展出来的一个文本编辑器。代码补完、编译及错误跳转等方便编程的功能特别丰富，在程序员中被广泛使用。简单的来说， <strong>vi 是老式的字处理器，不过功能已经很齐全了，但是还是有可以进步的地方。 vim 则可以说是程序开发者的一项很好用的工具。</strong></p>
+<p>连 vim 的<a href="http://www.vim.org/" target="_blank" rel="noopener">官方网站</a>自己也说 vim 是一个程序开发工具而不是文字处理软件。</p>
+</blockquote>
+<p>vim 键盘图：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171854.png" alt="" /></p>
+<p>（Vim命令合集可在本地查看）</p>
+<p>在Linux下一般使用vi/vim编辑器来编辑文件。基本上 vi/vim 共分为三种模式，分别是<strong>命令模式（Command mode）</strong>，<strong>输入模式（Insert mode）<strong>和</strong>底线命令模式（Last line mode）</strong>。 这三种模式的作用分别是：</p>
+<ul>
+<li><strong>命令模式</strong>：用户刚刚启动 vi/vim，便进入了命令模式。<strong>此状态下敲击键盘动作会被Vim识别为命令，而非输入字符</strong>。比如我们此时按下i，并不会输入一个字符，i被当作了一个命令。以下是常用的几个命令：
+<ul>
+<li><strong><code>i</code></strong>   切换到输入模式，以输入字符。</li>
+<li><strong><code>x</code></strong>   删除当前光标所在处的字符。</li>
+<li><strong><code>:</code></strong>   切换到底线命令模式，以在最底一行输入命令。</li>
+</ul>
+</li>
+</ul>
+<p><strong>若想要编辑文本</strong>：启动Vim，<strong>进入了命令模式，按下i，切换到输入模式</strong>。命令模式只有一些最基本的命令，因此仍要依靠底线命令模式输入更多命令。</p>
+<ul>
+<li>
+<p><strong>输入模式</strong>：在命令模式下按下i就进入了输入模式。在输入模式中，可以使用以下按键：</p>
+<ul>
+<li><strong>字符按键以及Shift组合</strong>：输入字符</li>
+<li><strong>ENTER</strong>：回车键，换行</li>
+<li><strong>BACK SPACE</strong>：退格键，删除光标前一个字符</li>
+<li><strong>DEL</strong>：删除键，删除光标后一个字符</li>
+<li><strong>方向键</strong>：在文本中移动光标</li>
+<li><strong>HOME</strong>/<strong>END</strong>：移动光标到行首/行尾</li>
+<li><strong>Page Up</strong>/<strong>Page Down</strong>：上/下翻页</li>
+<li><strong>Insert</strong>：切换光标为输入/替换模式，光标将变成竖线/下划线</li>
+<li><strong>ESC</strong>：退出输入模式，切换到命令模式</li>
+</ul>
+</li>
+<li>
+<p><strong>底线命令模式</strong>：<strong>在命令模式下按下<code>:</code></strong>（英文冒号）就<strong>进入了底线命令模式</strong>。底线命令模式可以输入单个或多个字符的命令，可用的命令非常多。在底线命令模式中，基本的命令有（已经省略了冒号）：</p>
+<ul>
+<li>q 退出程序（加<code>!</code>表示强制退出）</li>
+<li>w 保存文件</li>
+</ul>
+</li>
+</ul>
+<p>按ESC键可随时退出底线命令模式</p>
+<p>vi/vim的工作模式可表示为：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171905.png" alt="vi/vim工作模式" /></p>
+<h2 id="重定向输出和"><a class="markdownIt-Anchor" href="#重定向输出和"></a> 重定向输出&gt;和&gt;&gt;</h2>
+<p><a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=976" target="_blank" rel="noopener">视频讲解</a></p>
+<ul>
+<li>重定向输出，覆盖原有内容</li>
+<li>重定向输出，又追加功能</li>
+</ul>
+<p>示例：</p>
+<ul>
+<li><code>cat /etc/passwd &gt; a.txt</code> ： 将输出定向到a.txt中（实例：ifconfig &gt; ifconfig.txt）</li>
+<li><code>cat /etc/passwd &gt;&gt; a.txt</code>：输出并且追加</li>
+</ul>
+<h2 id="系统管理命令"><a class="markdownIt-Anchor" href="#系统管理命令"></a> <mark>系统管理命令</mark></h2>
+<p><a href="http://c.biancheng.net/linux_tutorial/14/" target="_blank" rel="noopener"><strong>Linux系统管理（进程管理、工作管理和系统定时任务）</strong></a></p>
+<p>ps 正在运行的某个进程的状态</p>
+<ul>
+<li><code>ps –ef</code>  查看所有进程</li>
+<li><code>ps –ef | grep ssh</code> 查找某一进程</li>
+<li><code>kill 2868</code>  杀掉2868编号的进程</li>
+<li><code>kill -9 2868</code>  强制杀死2868编号的进程</li>
+</ul>
+<p>（<a href="https://www.bilibili.com/video/BV1uJ411k7wy?p=976" target="_blank" rel="noopener">视频讲解</a>）</p>
+<h2 id="管道"><a class="markdownIt-Anchor" href="#管道"></a> 管道</h2>
+<p><a href="http://c.biancheng.net/view/3131.html" target="_blank" rel="noopener">Linux Shell管道详解</a></p>
+<p><strong>管道</strong>是Linux命令中重要的一个概念，<strong>其作用是将一个命令的输出用作另一个命令的输入</strong>。示例：</p>
+<ul>
+<li>ls --help | more  分页查询帮助信息</li>
+<li>ps –ef | grep java  查询名称中包含java的进程</li>
+</ul>
+<h2 id="linux权限命令"><a class="markdownIt-Anchor" href="#linux权限命令"></a> <mark>Linux权限命令</mark></h2>
+<p><strong><a href="http://c.biancheng.net/linux_tutorial/70/" target="_blank" rel="noopener">Linux权限管理详解</a></strong></p>
+<p>菜鸟教程：<a href="https://www.runoob.com/linux/linux-file-attr-permission.html" target="_blank" rel="noopener"><strong>Linux 文件基本属性</strong></a></p>
+<p>在 Linux 中我们可以使用 <code>ll</code> 或者 <code>ls –l</code> 命令来显示一个文件的属性以及文件所属的用户和组，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# ll</span><br><span class="line">总用量 1025316</span><br><span class="line">-rw-------.  1 root root      1243 3月  23 2020 anaconda-ks.cfg</span><br><span class="line">lrwxrwxrwx.  1 root root        12 4月  15 2020 hadoop -&gt; hadoop-2.7.3</span><br><span class="line">drwxr-xr-x. 11 root root       172 4月  15 2020 hadoop-2.7.3</span><br><span class="line">-rw-r--r--.  1 root root 214092195 4月  15 2020 hadoop-2.7.3.tar.gz</span><br><span class="line">lrwxrwxrwx.  1 root root        13 4月  15 2020 jdk -&gt; jdk1.8.0_171&#x2F;</span><br><span class="line">drwxr-xr-x.  8   10  143       255 3月  29 2018 jdk1.8.0_171</span><br><span class="line">-rw-r--r--.  1 root root 190890122 4月  15 2020 jdk-8u171-linux-x64.tar.gz</span><br><span class="line">-rw-r--r--.  1 root root 644930593 3月  24 2020 mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171914.png" alt="" /></p>
+<p>实例中，<strong>hadoop-2.7.3</strong> 文件的第一个属性用 <strong>d</strong> 表示。<strong>d</strong> 在 Linux 中代表该文件是一个目录文件。</p>
+<p>在 Linux 中第一个字符代表这个文件是目录、文件或链接文件等等：</p>
+<ul>
+<li>当为 <strong><code>d</code></strong> 则是目录</li>
+<li>当为 <strong><code>-</code></strong> 则是文件</li>
+<li>若是 <strong><code>l</code></strong> 则表示为链接文档(link file)</li>
+<li>若是 <strong><code>b</code></strong> 则表示为装置文件里面的可供储存的接口设备(可随机存取装置)</li>
+<li>若是 <strong><code>c</code></strong> 则表示为装置文件里面的串行端口设备，例如键盘、鼠标(一次性读取装置)</li>
+</ul>
+<p><strong>接下来的字符中，以三个为一组，且均为 <code>rwx</code> 的三个参数的组合</strong>。其中， <strong><code>r</code> 代表可读(read)、 <code>w</code> 代表可写(write)、 <code>x</code> 代表可执行(execute)</strong>。 <strong>要注意的是，这三个权限的位置不会改变，如果没有权限，就会出现减号 <code>-</code> 而已。</strong></p>
+<ul>
+<li><code>r</code>：对文件是指可读取内容 对目录是可以ls</li>
+<li><code>w</code>：对文件是指可修改文件内容，对目录 是指可以在其中创建或删除子节点(目录或文件)</li>
+<li><code>x</code>：对文件是指是否可以运行这个文件，对目录是指是否可以cd进入这个目录</li>
+</ul>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171927.png" alt="" /></p>
+<p><strong>每个文件的属性由左边第一部分的 10 个字符来确定：</strong></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171939.png" alt="" /></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508171957.jpg" alt="文件权限" /></p>
+<h3 id="linux文件属主和属组"><a class="markdownIt-Anchor" href="#linux文件属主和属组"></a> Linux文件属主和属组</h3>
+<p><strong>对于文件来说，它都有一个特定的所有者，也就是对该文件具有所有权的用户</strong>。同时，<strong>在Linux系统中，用户是按组分类的，一个用户属于一个或多个组。</strong></p>
+<p><strong>文件所有者以外的用户又可以分为文件所有者的同组用户和其他用户</strong>。因此，Linux系统按<strong>文件所有者（属主）</strong>、<strong>文件所有者同组用户（属组）<strong>和</strong>其他用户</strong>来规定了不同的文件访问权限。</p>
+<p>在以上实例中（<code>drwxr-xr-x. 11 root root 172 4月 15 2020 hadoop-2.7.3</code>），hadoop-2.7.3文件是一个目录文件，属主和属组都为 root，属主有可读、可写、可执行的权限；与属主同组的其他用户有可读和可执行的权限；其他用户也有可读和可执行的权限。</p>
+<p><strong>对于 root 用户来说，一般情况下，文件的权限对其不起作用。</strong></p>
+<h3 id="更改文件属性"><a class="markdownIt-Anchor" href="#更改文件属性"></a> 更改文件属性</h3>
+<ul>
+<li><strong><code>chgrp</code>：更改文件属组</strong></li>
+<li><strong><code>chown</code>：更改文件属主，也可以同时更改文件属组</strong></li>
+<li><strong>chmod：更改文件9个属性</strong></li>
+</ul>
+<p>更多参考内容：</p>
+<ul>
+<li><a href="https://www.runoob.com/linux/linux-comm-chgrp.html" target="_blank" rel="noopener">Linux chgrp 命令</a></li>
+<li><a href="https://www.runoob.com/linux/linux-comm-chown.html" target="_blank" rel="noopener">Linux chown 命令</a></li>
+<li><a href="https://www.runoob.com/linux/linux-comm-chmod.html" target="_blank" rel="noopener">Linux chmod 命令</a></li>
+</ul>
+<h4 id="chgrp更改文件属组"><a class="markdownIt-Anchor" href="#chgrp更改文件属组"></a> chgrp：更改文件属组</h4>
+<p>语法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chgrp [-R] 属组名 文件名</span><br></pre></td></tr></table></figure>
+<p>参数选项：</p>
+<ul>
+<li><code>-R</code>：递归更改文件属组，就是在更改某个目录文件的属组时，如果加上-R的参数，那么该目录下的所有文件的属组都会更改。</li>
+</ul>
+<h4 id="chown更改文件属主也可以同时更改文件属组"><a class="markdownIt-Anchor" href="#chown更改文件属主也可以同时更改文件属组"></a> chown：更改文件属主，也可以同时更改文件属组</h4>
+<p>语法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chown [–R] 属主名 文件名</span><br><span class="line">chown [-R] 属主名：属组名 文件名</span><br></pre></td></tr></table></figure>
+<p>参数选项：</p>
+<ul>
+<li><code>-R</code>：递归更改文件属组，就是在更改某个目录文件的属组时，如果加上-R的参数，那么该目录下的所有文件的属组都会更改。</li>
+</ul>
+<p>例子：进入 /root 目录（~）将install.log的拥有者改为bin这个账号：<code>chown bin install.log</code></p>
+<h4 id="chmod更改文件9个属性"><a class="markdownIt-Anchor" href="#chmod更改文件9个属性"></a> chmod：更改文件9个属性</h4>
+<p><strong>Linux文件属性有两种设置方法，一种是数字，一种是符号。</strong></p>
+<h5 id="数字类型改变文件权限"><a class="markdownIt-Anchor" href="#数字类型改变文件权限"></a> 数字类型改变文件权限</h5>
+<p>Linux 文件的基本权限就有九个，分别是 <strong>owner/group/others(拥有者/组/其他)</strong> 三种身份各有自己的 <strong>read/write/execute</strong> 权限。</p>
+<p>先复习一下刚刚上面提到的数据：文件的权限字符为： <strong><code>-rwxrwxrwx</code></strong> ， 这九个权限是三个三个一组的！其中，我们可以使用数字来代表各个权限，各权限的分数对照表如下：</p>
+<ul>
+<li><code>r</code>：4</li>
+<li><code>w</code>：2</li>
+<li><code>x</code>：1</li>
+</ul>
+<p>每种身份(owner/group/others)各自的三个权限(r/w/x)分数是需要累加的，例如当权限为： <strong><code>-rwxrwx---</code></strong> 分数则是：</p>
+<ul>
+<li>owner = rwx = 4+2+1 = 7</li>
+<li>group = rwx = 4+2+1 = 7</li>
+<li>others= — = 0+0+0 = 0</li>
+</ul>
+<p>所以等一下我们设定权限的变更时，该文件的权限数字就是 <strong>770</strong>。</p>
+<p>变更权限的指令 chmod 的语法是这样的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod [-R] xyz 文件或目录</span><br></pre></td></tr></table></figure>
+<p>选项与参数：</p>
+<ul>
+<li><code>xyz</code> : 就是刚刚提到的数字类型的权限属性，为 rwx 属性数值的相加。</li>
+<li><code>-R</code> : 进行递归(recursive)的持续变更，亦即连同次目录下的所有文件都会变更</li>
+</ul>
+<p>举例来说，如果要将 .bashrc 这个文件所有的权限都设定启用，那么命令如下：<code>chmod 777 .bashrc</code></p>
+<h5 id="符号类型改变文件权限"><a class="markdownIt-Anchor" href="#符号类型改变文件权限"></a> 符号类型改变文件权限</h5>
+<p>还有一个改变权限的方法。从之前的介绍中我们可以发现，基本上就九个权限分别是：</p>
+<ul>
+<li>user：用户</li>
+<li>group：组</li>
+<li>others：其他</li>
+</ul>
+<p>那么我们就可以使用 <strong><code>u</code>, <code>g</code>, <code>o</code></strong> 来代表三种身份的权限。</p>
+<p>此外， <strong>a</strong> 则代表 <strong>all</strong>，即全部的身份。读写的权限可以写成 <strong>r, w, x</strong>，也就是可以使用下表的方式来看：</p>
+<table>
+<thead>
+<tr>
+<th>chmod</th>
+<th>u g o a</th>
+<th>+(加入) -(除去) =(设定)</th>
+<th>r w x</th>
+<th>文件或目录</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+<p>如果我们需要将文件权限设置为 <strong>-rwxr-xr–</strong> ，可以使用 <strong><code>chmod u=rwx,g=rx,o=r 文件名</code></strong> 来设定。比如说我们要修改test1的权限：<code>chmod u=rwx,g=rx,o=r test1</code></p>
+<p>如果要去掉全部人的可执行权限（x）：<code>chmod a-x test1</code></p>
+<h2 id="linux网络操作"><a class="markdownIt-Anchor" href="#linux网络操作"></a> Linux网络操作</h2>
+<p><a href="https://www.kancloud.cn/digest/linux-world/145283" target="_blank" rel="noopener">linux基础(六)----linux命令系统学习----网络操作命令</a></p>
+<p><a href="https://blog.csdn.net/21aspnet/article/details/1534113" target="_blank" rel="noopener">Linux必学的网络操作命令</a></p>
+<h3 id="主机名配置"><a class="markdownIt-Anchor" href="#主机名配置"></a> 主机名配置</h3>
+<ul>
+<li><code>hostname</code>：查看主机名</li>
+<li><code>hostname xxx</code>：修改主机名 重启后无效
+<ul>
+<li>如果想要永久生效，可以修改<code>/etc/sysconfig/network</code>文件</li>
+</ul>
+</li>
+</ul>
+<h3 id="ip地址配置"><a class="markdownIt-Anchor" href="#ip地址配置"></a> IP地址配置</h3>
+<ul>
+<li><code>ifconfig</code>：查看(修改)ip地址(重启后无效)</li>
+<li><code>ifconfig eth0 192.168.12.22</code>：修改ip地址为192.168.12.22</li>
+</ul>
+<p>如果想要永久生效，需要修改 <code>/etc/sysconfig/network-scripts/ifcfg-eth0</code>文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DEVICE&#x3D;eth0 #网卡名称</span><br><span class="line">BOOTPROTO&#x3D;static #获取ip的方式(static&#x2F;dhcp&#x2F;bootp&#x2F;none)</span><br><span class="line">HWADDR&#x3D;00:0C:29:B5:B2:69 #MAC地址</span><br><span class="line">IPADDR&#x3D;192.168.177.129 #IP地址</span><br><span class="line">NETMASK&#x3D;255.255.255.0 #子网掩码</span><br><span class="line">NETWORK&#x3D;192.168.177.0 #网络地址</span><br><span class="line">BROADCAST&#x3D;192.168.0.255 #广播地址</span><br><span class="line">NBOOT&#x3D;yes #  系统启动时是否设置此网络接口，设置为yes时，系统启动时激活此设备。</span><br></pre></td></tr></table></figure>
+<h3 id="域名映射"><a class="markdownIt-Anchor" href="#域名映射"></a> 域名映射</h3>
+<p><strong><code>/etc/hosts</code>文件用于在通过主机名进行访问时做ip地址解析之用</strong>，相当于windows系统的C:\Windows\System32\drivers\etc\hosts文件的功能</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220508172008.png" alt="" /></p>
+<h3 id="网络服务管理"><a class="markdownIt-Anchor" href="#网络服务管理"></a> 网络服务管理</h3>
+<p>常用命令：</p>
+<ul>
+<li><code>service network status</code>：查看指定服务的状态</li>
+<li><code>service network stop</code>：停止指定服务</li>
+<li><code>service network start</code>：启动指定服务</li>
+<li><code>service network restart</code>：重启指定服务</li>
+<li><code>service --status–all</code>：查看系统中所有后台服务</li>
+<li><code>netstat –nltp</code>：查看系统中网络进程的端口监听情况</li>
+</ul>
+<p>防火墙设置</p>
+<p>防火墙根据配置文件<code>/etc/sysconfig/iptables</code>来控制本机的”出”、”入”网络访问行为</p>
+<ul>
+<li><code>service iptables status</code>：查看防火墙状态</li>
+<li><code>service iptables stop</code>：关闭防火墙</li>
+<li><code>service iptables start</code>：启动防火墙</li>
+<li><code>chkconfig iptables off</code>：禁止防火墙自启</li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#linux概述"><span class="toc-text"> Linux概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux安装和远程连接"><span class="toc-text"> Linux安装和远程连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux目录结构"><span class="toc-text"> Linux目录结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux常用命令"><span class="toc-text"> Linux常用命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vi和vim编辑器"><span class="toc-text"> Vi和Vim编辑器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重定向输出和"><span class="toc-text"> 重定向输出&gt;和&gt;&gt;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#系统管理命令"><span class="toc-text"> 系统管理命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#管道"><span class="toc-text"> 管道</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux权限命令"><span class="toc-text"> Linux权限命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#linux文件属主和属组"><span class="toc-text"> Linux文件属主和属组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更改文件属性"><span class="toc-text"> 更改文件属性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux网络操作"><span class="toc-text"> Linux网络操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#主机名配置"><span class="toc-text"> 主机名配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ip地址配置"><span class="toc-text"> IP地址配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#域名映射"><span class="toc-text"> 域名映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#网络服务管理"><span class="toc-text"> 网络服务管理</span></a></li></ol></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2021/04/27/Nginx/">
+            <span class="related-notes__meta">
+              <time datetime="2021-04-27T00:47:03.000Z">2021.04.27</time>
+              <span>#Linux</span>
+            </span>
+            <strong>Nginx</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2021/04/27/Nginx/"><span>上一篇</span><strong>Nginx</strong></a>
+    <a href="/2021/04/21/Maven%E9%A1%B9%E7%9B%AE/"><span>下一篇</span><strong>Maven项目之黑马旅游网</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

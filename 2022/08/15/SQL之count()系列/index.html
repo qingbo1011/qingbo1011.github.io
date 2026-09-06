@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)? · Quinn</title>
+<meta name="description" content="阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)? 关于SQL的count…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2022/08/15/SQL%E4%B9%8Bcount()%E7%B3%BB%E5%88%97/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)? · Quinn" />
+<meta property="og:description" content="阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)? 关于SQL的count…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2022/08/15/SQL%E4%B9%8Bcount()%E7%B3%BB%E5%88%97/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220815164718.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220815164718.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Database · 2022.08.15
+      
+    </p>
+    <h1>阅读随记：What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)?</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“强烈推荐阅读原文。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Database/">Database</a>
+  
+  <span class="post-meta__item">6 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Database/">#Database</a>
+      
+        <a href="/tags/MySQL/">#MySQL</a>
+      
+        <a href="/tags/SQL/">#SQL</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p>关于SQL的count()系列，找到了一篇非常好的文章：<strong><a href="https://learnsql.com/blog/difference-between-count-distinct/" target="_blank" rel="noopener">What is the Difference Between COUNT(*), COUNT(1), COUNT(column name), and COUNT(DISTINCT column name)?</a></strong>，这里简单记录一下。</p>
+
+<p>主要讨论以下count系列函数：</p>
+<ul>
+<li><code>COUNT(*)</code></li>
+<li><code>COUNT(1)</code></li>
+<li><code>COUNT(column name)</code></li>
+<li><code>COUNT(DISTINCT column name)</code></li>
+</ul>
+<h2 id="count-vs-count1"><a class="markdownIt-Anchor" href="#count-vs-count1"></a> COUNT(*) vs COUNT(1)</h2>
+<p>关于<code>count(*)</code>和<code>count(1)</code>的争论，网上各种各样的说法，可能参阅的文章越多，反而会使你更加疑惑。</p>
+<p>答案简单来说，就是<code>count(*)</code>和<code>count(1)</code>没有任何区别。</p>
+<blockquote>
+<p>So, is there any difference? The simple answer is no – there is no difference at all.</p>
+</blockquote>
+<p><code>count(*)</code>计算表中的总行数，包括<code>NULL</code>的行。<code>count(1)</code>和<code>count(*)</code>的语义略有不同，但是返回的结果是完全一样的。</p>
+<p>在这里提前说一下语义略微的不同：<code>count(*)</code>使用<code>*</code>来填充每一行，而<code>count(1)</code>使用<code>1</code>来填充每一行。所以我们说<code>count(*)</code>和<code>count(1)</code>几乎没有任何区别。</p>
+<p>（对<code>count(1)</code>来说<code>1</code>不过是一个非空表达式罢了。）</p>
+<blockquote>
+<p>“1” is a non-null expression: so it’s the same as <code>COUNT(*)</code>. The optimizer recognizes it for what it is: trivial.</p>
+</blockquote>
+<p>接下来我们创建一个表来测试。</p>
+<blockquote>
+<p>Let’s test this claim using an example query. Suppose I have a table named <code>orders</code> that contains these columns:</p>
+<ul>
+<li><code>order_id</code>: The ID of the order.</li>
+<li><code>customer_id</code>: The ID of the customer who placed the order.</li>
+<li><code>order_value</code>: The total value of the ordered items, in euros.</li>
+<li><code>payment_date</code>: When the order was paid by the customer.</li>
+</ul>
+</blockquote>
+<p>如果要知道表的行数，使用<code>count(*)</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(*) <span class="keyword">AS</span> number_of_rows <span class="keyword">FROM</span> orders;</span><br></pre></td></tr></table></figure>
+<p>或<code>count(1)</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(<span class="number">1</span>) <span class="keyword">AS</span> number_of_rows <span class="keyword">FROM</span> orders;</span><br></pre></td></tr></table></figure>
+<p>在网上有一种广为流传的<strong>错误说法</strong>：<s><code>count(1)</code>统计表的第一列的行数，而<code>count(*)</code>统计表的所有列的行数</s>。在这种错误说法之上又引申了另一种<strong>错误说法</strong>：<s><code>count(1)</code>比<code>count(*)</code>快，因为<code>count(1)</code>只统计第1列的行数而<code>count(*)</code>统计所有列的行数</s>。</p>
+<blockquote>
+<p>There’s a popular misconception that “1” in <code>COUNT(1)</code> means “count the values in the first column and return the number of rows.” From that misconception follows a second: that <code>COUNT(1)</code> is faster because it will count only the first column, while <code>COUNT(*)</code> will use the whole table to get to the same result.</p>
+</blockquote>
+<p>这种说法是不正确的！<code>count()</code>括号里面的数<strong>并没有什么实际意义，更不会代表所统计表的第几列</strong>。</p>
+<p>比如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(<span class="number">-13</span>) <span class="keyword">AS</span> number_of_rows <span class="keyword">FROM</span> orders;</span><br></pre></td></tr></table></figure>
+<p>结果跟<code>count(*)</code>和<code>count(1)</code>是完全一样的。</p>
+<p>或者再任性一点：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(<span class="string">"fxxk you"</span>) <span class="keyword">AS</span> number_of_rows <span class="keyword">FROM</span> orders;</span><br></pre></td></tr></table></figure>
+<p>结果也是和上面一样的。</p>
+<p>那么<code>count()</code>的括号内的内容到底是什么意思呢？其实<strong>只是一种非空表达式，用来填充用的罢了。</strong></p>
+<blockquote>
+<p>So what does the value in the parenthesis of <code>COUNT()</code> mean? It’s the value that <strong>the <code>COUNT()</code> function will assign to every row</strong> in the table. The function will then count how many times the asterisk (*) or (1) or (-13) has been assigned. Of course, it will be assigned a number of times that’s equal to the number of rows in the table. In other words, <code>COUNT(1)</code> assigns the value from the parentheses (number 1, in this case) to every row in the table, then the same function counts how many times the value in the parenthesis (1, in our case) has been assigned; naturally, this will always be equal to the number of rows in the table. <strong>The parentheses can contain any value; the only thing that won’t work will be leaving the parentheses empty.</strong></p>
+</blockquote>
+<p>因为<code>count()</code>括号中的值是什么并不重要，所以我们说<code>count(*)</code>和<code>count(1)</code>没有任何区别。更不会存在性能的差别，<s>count(1)比count(*)快</s>完全是无稽之谈。</p>
+<blockquote>
+<p>Since it doesn’t matter which value you put in the parentheses, it follows that <code>COUNT(*)</code> and <code>COUNT(1)</code> are precisely the same. They are precisely the same because the value in the <code>COUNT()</code> parentheses serves only to tell the query what it will count.</p>
+<p>If these statements are precisely the same, then there’s no difference in the performance. Don’t let the asterisk (*) make you think it has the same use as in <code>SELECT *</code> statement. No, <code>COUNT(*)</code> will not go through the whole table before returning the number of rows, making itself slower than <code>COUNT(1)</code>.</p>
+</blockquote>
+<p>虽然在性能的battle上是平局，不过我们还是推荐使用<code>count(*)</code>，因为这样看起来对SQL Boy比较友好😊，一眼能看懂是什么意思（计算表中的总行数，包括<code>NULL</code>）。</p>
+<h2 id="count-vs-countcolumn-name"><a class="markdownIt-Anchor" href="#count-vs-countcolumn-name"></a> COUNT(*) vs COUNT(column name)</h2>
+<blockquote>
+<p>Always remember:  <code>COUNT(column name)</code> will only count rows where the given column is NOT NULL.</p>
+</blockquote>
+<p>上面已经提到过了，<code>count(*)</code>和<code>count(1)</code>没有任何区别，那么<code>count(*)</code> 和<code>count(column name)</code>呢？这两个当然是有区别的：</p>
+<ul>
+<li><code>count(*)</code>：统计表中所有行数，包括NULL</li>
+<li><code>count(column name)</code>：只统计指定列名的行数，且不包括NULL</li>
+</ul>
+<p>举个例子，表数据如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220815162819.png" alt="" /></p>
+<ul>
+<li>
+<p>执行<code>SELECT COUNT(*) AS number_of_rows FROM orders;</code>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220815162946.png" alt="" /></p>
+</li>
+<li>
+<p>执行<code>SELECT COUNT(customer_id) AS number_of_rows FROM orders;</code>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220815162928.png" alt="" /></p>
+</li>
+</ul>
+<p>我们还可以结合<code>CASE</code>来使用<code>count()</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">COUNT</span>(<span class="keyword">CASE</span> <span class="keyword">WHEN</span> order_value &gt; <span class="number">250</span> <span class="keyword">THEN</span> * <span class="keyword">END</span>) <span class="keyword">AS</span> significant_orders <span class="keyword">FROM</span> orders;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220815163423.png" alt="" /></p>
+<p>因为只统计了order_value列中value大于250的行数，所以统计结果为2。</p>
+<blockquote>
+<p>上面的代码是使用<code>1</code>来填充，当然也可以使用<code>*</code>来填充：<code>SELECT COUNT(CASE WHEN order_value &gt; 250 THEN '*' END) AS significant_orders FROM orders;</code></p>
+</blockquote>
+<h2 id="countcolumn-name-vs-count-distinct-column_name"><a class="markdownIt-Anchor" href="#countcolumn-name-vs-count-distinct-column_name"></a> COUNT(column name) vs COUNT (DISTINCT column_name)</h2>
+<blockquote>
+<p><code>COUNT(column_name)</code> will include duplicate values when counting. In contrast, <code>COUNT (DISTINCT column_name)</code> will count only distinct (unique) rows in the defined column.</p>
+</blockquote>
+<p>至于<code>COUNT(column_name)</code> 和<code>COUNT (DISTINCT column_name)</code>的区别就更明显了：</p>
+<ul>
+<li><code>COUNT(column_name)</code>：统计指定列中不包括NULL的行数（但包括重复值）</li>
+<li><code>COUNT (DISTINCT column_name)</code>：统计指定列中不包括NULL且不包括重复值的行数</li>
+</ul>
+<p>比较一下<code>SELECT COUNT(customer_id) AS number_of_rows FROM orders;</code>和</p>
+<p><code>SELECT COUNT(DISTINCT customer_id) AS number_of_rows FROM orders;</code>的运行结果就清楚了。</p>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#count-vs-count1"><span class="toc-text"> COUNT(*) vs COUNT(1)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#count-vs-countcolumn-name"><span class="toc-text"> COUNT(*) vs COUNT(column name)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#countcolumn-name-vs-count-distinct-column_name"><span class="toc-text"> COUNT(column name) vs COUNT (DISTINCT column_name)</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2022/06/25/Gorm%20v2/">
+            <span class="related-notes__meta">
+              <time datetime="2022-06-25T00:47:03.000Z">2022.06.25</time>
+              <span>#Database · #MySQL</span>
+            </span>
+            <strong>GORM v2操作MySQL</strong>
+          </a>
+        
+          <a href="/2021/03/17/MySQL%EF%BC%88%E5%9B%9B%EF%BC%89/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-17T00:47:03.000Z">2021.03.17</time>
+              <span>#Database · #MySQL</span>
+            </span>
+            <strong>MySQL（四）</strong>
+          </a>
+        
+          <a href="/2021/03/16/MySQL%EF%BC%88%E4%B8%89%EF%BC%89/">
+            <span class="related-notes__meta">
+              <time datetime="2021-03-16T00:47:03.000Z">2021.03.16</time>
+              <span>#Database · #MySQL</span>
+            </span>
+            <strong>MySQL（三）</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2022/09/01/%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0%EF%BC%9A%E6%95%B0%E7%BB%84/"><span>上一篇</span><strong>算法学习：数组</strong></a>
+    <a href="/2022/06/26/Gin+Gorm%20v2+Github%20Action%E7%9A%84%E5%AE%9E%E8%B7%B5/"><span>下一篇</span><strong>Gin+Gorm v2+Github Action的实践</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

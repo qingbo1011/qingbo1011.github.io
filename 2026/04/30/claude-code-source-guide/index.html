@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Claude Code 源码学习指南 · Quinn</title>
+<meta name="description" content="Claude Code 源码学习指南 面向不熟悉 TypeScript 的开发者，聚焦架构设计与工程思想。 本文基于对 claude-code/src/ 目录的完整分析整理。 目录 前言：为什么用 TypeScript 开发 CLI 工具？…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/04/30/claude-code-source-guide/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Claude Code 源码学习指南 · Quinn" />
+<meta property="og:description" content="Claude Code 源码学习指南 面向不熟悉 TypeScript 的开发者，聚焦架构设计与工程思想。 本文基于对 claude-code/src/ 目录的完整分析整理。 目录 前言：为什么用 TypeScript 开发 CLI 工具？…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/04/30/claude-code-source-guide/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20260505150357404.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        AI应用 · 2026.04.30
+      
+    </p>
+    <h1>Claude Code 源码学习指南</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“面向不熟悉 TypeScript 的开发者，聚焦架构设计与工程思想。 本文基于对 claude-code/src/ 目录的完整分析整理。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/AI%E5%BA%94%E7%94%A8/">AI应用</a>
+  
+  <span class="post-meta__item">14 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Claude-Code/">#Claude Code</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="目录"><a class="markdownIt-Anchor" href="#目录"></a> 目录</h2>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-typescript-%E5%BC%80%E5%8F%91-cli-%E5%B7%A5%E5%85%B7">前言：为什么用 TypeScript 开发 CLI 工具？</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%AB%A0%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84%E4%B8%8E%E6%A8%A1%E5%9D%97%E5%88%92%E5%88%86">第一章：项目全景——目录结构与模块划分</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E4%BB%8E%E6%95%B2%E4%B8%8B%E5%91%BD%E4%BB%A4%E5%88%B0%E7%95%8C%E9%9D%A2%E5%B0%B1%E7%BB%AA">第二章：启动流程——从敲下命令到界面就绪</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%AB%A0agent-%E5%BE%AA%E7%8E%AF%E5%A4%A7%E8%84%91%E5%A6%82%E4%BD%95%E6%80%9D%E8%80%83%E4%B8%8E%E8%A1%8C%E5%8A%A8">第三章：Agent 循环——大脑如何思考与行动</a></li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9Fagent-%E7%9A%84%E5%8F%8C%E6%89%8B">第四章：工具系统——Agent 的双手</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%94%E7%AB%A0%E6%9D%83%E9%99%90%E4%B8%8E%E5%AE%89%E5%85%A8%E4%BF%A1%E4%BB%BB%E7%9A%84%E8%BE%B9%E7%95%8C">第五章：权限与安全——信任的边界</a></li>
+<li><a href="#%E7%AC%AC%E5%85%AD%E7%AB%A0%E7%BB%88%E7%AB%AF-ui%E5%9C%A8%E5%91%BD%E4%BB%A4%E8%A1%8C%E9%87%8C%E5%81%9A%E5%89%8D%E7%AB%AF">第六章：终端 UI——在命令行里做&quot;前端&quot;</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%83%E7%AB%A0%E9%85%8D%E7%BD%AE%E7%B3%BB%E7%BB%9F%E7%81%B5%E6%B4%BB%E6%80%A7%E7%9A%84%E6%9D%A5%E6%BA%90">第七章：配置系统——灵活性的来源</a></li>
+<li><a href="#%E7%AC%AC%E5%85%AB%E7%AB%A0%E6%89%A9%E5%B1%95%E6%9C%BA%E5%88%B6%E6%8F%92%E4%BB%B6%E6%8A%80%E8%83%BD%E4%B8%8E%E5%A4%9A-agent">第八章：扩展机制——插件、技能与多 Agent</a></li>
+<li><a href="#%E7%AC%AC%E4%B9%9D%E7%AB%A0%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%E5%80%BC%E5%BE%97%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F">第九章：工程实践——值得学习的设计模式</a></li>
+<li><a href="#%E9%99%84%E5%BD%95%E5%85%B3%E4%BA%8E-cli-%E5%B7%A5%E5%85%B7%E7%9A%84%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B">附录：关于 CLI 工具的技术选型</a></li>
+</ul>
+<hr />
+<h2 id="前言为什么用-typescript-开发-cli-工具"><a class="markdownIt-Anchor" href="#前言为什么用-typescript-开发-cli-工具"></a> 前言：为什么用 TypeScript 开发 CLI 工具？</h2>
+<h3 id="直接原因npm-是-cli-分发的最佳渠道之一"><a class="markdownIt-Anchor" href="#直接原因npm-是-cli-分发的最佳渠道之一"></a> 直接原因：npm 是 CLI 分发的最佳渠道之一</h3>
+<p>Claude Code 通过 <code>npm install -g @anthropic-ai/claude-code</code> 安装。这意味着：</p>
+<ul>
+<li>用户只需要有 Node.js 环境（几乎所有开发者的电脑上都有）</li>
+<li><code>npm</code> 提供了成熟的版本管理、全局安装、依赖解析能力</li>
+<li>一行命令即可安装，跨 macOS / Linux / Windows 三平台</li>
+</ul>
+<p><strong>既然选择了 npm 作为分发渠道，用 TypeScript（编译为 JavaScript）开发就是最自然的选择</strong>——它和 npm 生态是&quot;亲生的&quot;关系。</p>
+<h3 id="深层原因typescript-特别适合这类工具"><a class="markdownIt-Anchor" href="#深层原因typescript-特别适合这类工具"></a> 深层原因：TypeScript 特别适合这类工具</h3>
+<table>
+<thead>
+<tr>
+<th>优势</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>生态丰富</strong></td>
+<td>终端 UI（Ink/React）、命令行解析（Commander.js）、schema 校验（Zod）等高质量库随手可用</td>
+</tr>
+<tr>
+<td><strong>类型安全</strong></td>
+<td>TypeScript 的类型系统帮助管理 50 万行代码的复杂度，LLM 返回的 JSON 可以用 Zod 做运行时校验</td>
+</tr>
+<tr>
+<td><strong>异步友好</strong></td>
+<td><code>async/await</code>、<code>AsyncGenerator</code> 天然适合处理 LLM 流式响应和并发工具调用</td>
+</tr>
+<tr>
+<td><strong>前后端同构</strong></td>
+<td>终端 UI 使用 React（Ink），和 Web 前端用同一套思维模型，Claude Code 还有 VS Code 插件——共享代码很方便</td>
+</tr>
+<tr>
+<td><strong>开发效率高</strong></td>
+<td>动态语言的灵活性 + 静态类型的安全性，迭代速度快</td>
+</tr>
+</tbody>
+</table>
+<h3 id="市面上主流-cli-工具都用-ts-吗"><a class="markdownIt-Anchor" href="#市面上主流-cli-工具都用-ts-吗"></a> 市面上主流 CLI 工具都用 TS 吗？</h3>
+<p><strong>不是的。</strong> CLI 工具的技术选型非常多元，取决于使用场景：</p>
+<table>
+<thead>
+<tr>
+<th>语言</th>
+<th>代表工具</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Go</strong></td>
+<td>Docker CLI, kubectl, gh (GitHub CLI), terraform</td>
+<td>需要编译为单个二进制文件、追求极致性能、需要交叉编译</td>
+</tr>
+<tr>
+<td><strong>Rust</strong></td>
+<td>ripgrep (rg), fd, bat, delta</td>
+<td>系统级工具、对性能极度敏感</td>
+</tr>
+<tr>
+<td><strong>Python</strong></td>
+<td>aws-cli, pip, poetry, httpie</td>
+<td>数据/AI 领域、脚本场景、快速原型</td>
+</tr>
+<tr>
+<td><strong>TypeScript/JS</strong></td>
+<td>Claude Code, Cursor, eslint, prettier, npm 自身</td>
+<td>前端/Node.js 生态、需要丰富 UI、npm 分发</td>
+</tr>
+<tr>
+<td><strong>Bash/Shell</strong></td>
+<td>oh-my-zsh, nvm</td>
+<td>简单脚本、系统管理</td>
+</tr>
+</tbody>
+</table>
+<p><strong>选型规律：</strong></p>
+<ul>
+<li>需要<strong>零依赖分发</strong>（一个二进制文件搞定） → Go / Rust</li>
+<li>需要<strong>极致性能</strong>（处理大量文件/数据） → Rust / Go</li>
+<li>面向 <strong>Node.js/前端开发者</strong>、需要<strong>丰富交互 UI</strong> → TypeScript</li>
+<li>面向<strong>数据/AI 开发者</strong> → Python</li>
+</ul>
+<p>Claude Code 选 TypeScript 的核心逻辑是：<strong>它的目标用户是开发者，分发渠道是 npm，产品形态需要复杂的终端交互 UI</strong>。在这个交叉点上，TypeScript 是最优解。</p>
+<hr />
+<h2 id="第一章项目全景目录结构与模块划分"><a class="markdownIt-Anchor" href="#第一章项目全景目录结构与模块划分"></a> 第一章：项目全景——目录结构与模块划分</h2>
+<p>Claude Code 的 <code>src/</code> 目录包含约 <strong>1900 个文件、50 万行代码</strong>。下面用功能域来划分理解：</p>
+<h3 id="11-核心骨架必须先理解的部分"><a class="markdownIt-Anchor" href="#11-核心骨架必须先理解的部分"></a> 1.1 核心骨架（必须先理解的部分）</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">src&#x2F;</span><br><span class="line">├── entrypoints&#x2F;cli.tsx    # 真正的入口：CLI 启动分发器</span><br><span class="line">├── main.tsx               # 主流程：命令行解析 + 启动 REPL</span><br><span class="line">├── query.ts               # ★ 核心：Agent 循环（异步生成器）</span><br><span class="line">├── QueryEngine.ts         # Agent 循环的类封装</span><br><span class="line">├── Tool.ts                # ★ 核心：工具类型定义</span><br><span class="line">├── tools.ts               # 工具注册表</span><br><span class="line">└── context.ts             # 系统提示词&#x2F;上下文组装</span><br></pre></td></tr></table></figure>
+<h3 id="12-功能模块"><a class="markdownIt-Anchor" href="#12-功能模块"></a> 1.2 功能模块</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">├── tools&#x2F;                 # 44 个内置工具的具体实现</span><br><span class="line">│   ├── BashTool&#x2F;          #   执行 Shell 命令（最复杂的工具）</span><br><span class="line">│   ├── FileReadTool&#x2F;      #   读文件</span><br><span class="line">│   ├── FileEditTool&#x2F;      #   编辑文件</span><br><span class="line">│   ├── GrepTool&#x2F;          #   搜索文件内容</span><br><span class="line">│   ├── GlobTool&#x2F;          #   搜索文件名</span><br><span class="line">│   ├── AgentTool&#x2F;         #   启动子 Agent</span><br><span class="line">│   └── ...</span><br><span class="line">├── commands&#x2F;              # 88 个斜杠命令（&#x2F;commit, &#x2F;review 等）</span><br><span class="line">├── services&#x2F;              # 外部服务集成</span><br><span class="line">│   ├── api&#x2F;               #   LLM API 调用（流式）</span><br><span class="line">│   ├── mcp&#x2F;               #   MCP 协议客户端</span><br><span class="line">│   ├── oauth&#x2F;             #   认证</span><br><span class="line">│   └── compact&#x2F;           #   上下文压缩</span><br><span class="line">├── screens&#x2F;               # 全屏页面</span><br><span class="line">│   └── REPL.tsx           #   主交互界面（最大的单文件：896KB）</span><br><span class="line">├── components&#x2F;            # UI 组件</span><br><span class="line">├── hooks&#x2F;                 # React Hooks</span><br><span class="line">└── state&#x2F;                 # 应用状态管理</span><br></pre></td></tr></table></figure>
+<h3 id="13-基础设施"><a class="markdownIt-Anchor" href="#13-基础设施"></a> 1.3 基础设施</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">├── ink&#x2F;                   # ★ 定制版 Ink（终端 React 渲染器）</span><br><span class="line">├── utils&#x2F;                 # 200+ 工具函数</span><br><span class="line">│   ├── permissions&#x2F;       #   权限系统</span><br><span class="line">│   ├── settings&#x2F;          #   配置加载</span><br><span class="line">│   └── ...</span><br><span class="line">├── types&#x2F;                 # TypeScript 类型定义</span><br><span class="line">├── schemas&#x2F;               # 数据校验 schema</span><br><span class="line">├── constants&#x2F;             # 常量</span><br><span class="line">└── migrations&#x2F;            # 配置迁移脚本</span><br></pre></td></tr></table></figure>
+<h3 id="14-扩展能力"><a class="markdownIt-Anchor" href="#14-扩展能力"></a> 1.4 扩展能力</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">├── plugins&#x2F;               # 插件系统</span><br><span class="line">├── skills&#x2F;                # 技能系统（可复用工作流）</span><br><span class="line">├── coordinator&#x2F;           # 多 Agent 协调模式</span><br><span class="line">├── bridge&#x2F;                # IDE 集成（VS Code &#x2F; JetBrains）</span><br><span class="line">├── voice&#x2F;                 # 语音输入</span><br><span class="line">└── vim&#x2F;                   # Vim 模式</span><br></pre></td></tr></table></figure>
+<h3 id="关键设计思想"><a class="markdownIt-Anchor" href="#关键设计思想"></a> 关键设计思想</h3>
+<blockquote>
+<p><strong>关注点分离（Separation of Concerns）</strong>：每个目录只负责一件事。工具的定义（<code>Tool.ts</code>）、注册（<code>tools.ts</code>）、执行（<code>services/tools/</code>）、权限（<code>utils/permissions/</code>）分布在不同模块中，彼此通过明确的接口交互。</p>
+</blockquote>
+<hr />
+<h2 id="第二章启动流程从敲下命令到界面就绪"><a class="markdownIt-Anchor" href="#第二章启动流程从敲下命令到界面就绪"></a> 第二章：启动流程——从敲下命令到界面就绪</h2>
+<p>当用户在终端敲下 <code>claude</code> 并回车，发生了什么？</p>
+<h3 id="21-四阶段启动"><a class="markdownIt-Anchor" href="#21-四阶段启动"></a> 2.1 四阶段启动</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────┐</span><br><span class="line">│ Phase 1: entrypoints&#x2F;cli.tsx                            │</span><br><span class="line">│   快速分发 —— 拦截简单请求（--version 等）              │</span><br><span class="line">│   不加载任何重模块，毫秒级响应                          │</span><br><span class="line">│                         ↓                               │</span><br><span class="line">│ Phase 2: main.tsx                                       │</span><br><span class="line">│   并行预取 —— 同时启动多个子进程读取配置                │</span><br><span class="line">│   解析命令行参数（Commander.js）                        │</span><br><span class="line">│                         ↓                               │</span><br><span class="line">│ Phase 3: entrypoints&#x2F;init.ts                            │</span><br><span class="line">│   初始化 —— 配置、证书、环境变量、API 预连接            │</span><br><span class="line">│                         ↓                               │</span><br><span class="line">│ Phase 4: replLauncher.tsx                               │</span><br><span class="line">│   渲染 React 组件树，启动交互式 REPL                    │</span><br><span class="line">│   &lt;App&gt; → &lt;REPL&gt; → 等待用户输入                         │</span><br><span class="line">└─────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<h3 id="22-性能优化亮点"><a class="markdownIt-Anchor" href="#22-性能优化亮点"></a> 2.2 性能优化亮点</h3>
+<p>这个启动流程体现了一个重要的工程思想：<strong>把 I/O 等待和 CPU 计算重叠执行</strong>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">时间轴 ──────────────────────────────────────────→</span><br><span class="line"></span><br><span class="line">main.tsx 入口:</span><br><span class="line">  ├── 启动 MDM 配置读取子进程 ──────── (等待 ~65ms)</span><br><span class="line">  ├── 启动 Keychain 密钥读取 ──────── (等待 ~65ms)</span><br><span class="line">  └── 同时：加载模块、解析参数 ────── (CPU ~135ms)</span><br><span class="line">                                          ↓</span><br><span class="line">init.ts:</span><br><span class="line">  ├── 启动 API 预连接 (TCP+TLS) ───── (等待 ~100ms)</span><br><span class="line">  └── 同时：加载其他配置 ─────────── (CPU ~50ms)</span><br><span class="line">                                          ↓</span><br><span class="line">                             REPL 就绪，用户可以输入</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>学习要点</strong>：好的 CLI 工具对启动速度极其敏感。Claude Code 用了&quot;快速路径分发&quot;和&quot;并行预取&quot;两个技巧来优化冷启动时间。</p>
+</blockquote>
+<hr />
+<h2 id="第三章agent-循环大脑如何思考与行动"><a class="markdownIt-Anchor" href="#第三章agent-循环大脑如何思考与行动"></a> 第三章：Agent 循环——大脑如何思考与行动</h2>
+<p>这是整个项目最核心的部分。理解了这里，就理解了 Coding Agent 的本质。</p>
+<h3 id="31-agent-循环是什么"><a class="markdownIt-Anchor" href="#31-agent-循环是什么"></a> 3.1 Agent 循环是什么？</h3>
+<p>一个 Coding Agent 的工作方式可以概括为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用户提问 → LLM 思考 → 调用工具 → 获取结果 → LLM 再思考 → ... → 最终回复</span><br></pre></td></tr></table></figure>
+<p>这个&quot;思考→行动→观察→再思考&quot;的循环就是 <strong>Agent Loop</strong>。</p>
+<h3 id="32-核心代码结构queryts"><a class="markdownIt-Anchor" href="#32-核心代码结构queryts"></a> 3.2 核心代码结构（query.ts）</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">query.ts 中的 queryLoop() 伪代码：</span><br><span class="line"></span><br><span class="line">while (true) &#123;</span><br><span class="line">    &#x2F;&#x2F; 1. 构建请求：系统提示词 + 对话历史 + 工具定义</span><br><span class="line">    request &#x3D; buildRequest(systemPrompt, messages, tools)</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 2. 调用 LLM（流式）</span><br><span class="line">    response &#x3D; await callModel(request)  &#x2F;&#x2F; 流式返回</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 3. 检查响应中是否有工具调用</span><br><span class="line">    toolCalls &#x3D; extractToolCalls(response)</span><br><span class="line"></span><br><span class="line">    if (toolCalls.length &#x3D;&#x3D;&#x3D; 0) &#123;</span><br><span class="line">        &#x2F;&#x2F; LLM 认为任务完成，返回最终文本</span><br><span class="line">        return response</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 4. 执行工具调用</span><br><span class="line">    toolResults &#x3D; await runTools(toolCalls)</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 5. 把工具结果加入对话历史</span><br><span class="line">    messages.push(response, toolResults)</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 6. 检查是否需要压缩上下文（防止超出 token 限制）</span><br><span class="line">    await autoCompactIfNeeded(messages)</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; 7. 回到循环顶部，让 LLM 看到工具结果后继续思考</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="33-关键设计异步生成器asyncgenerator"><a class="markdownIt-Anchor" href="#33-关键设计异步生成器asyncgenerator"></a> 3.3 关键设计：异步生成器（AsyncGenerator）</h3>
+<p>Claude Code 用 TypeScript 的 <code>async function*</code> 来实现 Agent 循环：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">async</span> <span class="function"><span class="keyword">function</span>* <span class="title">query</span>(<span class="params">params</span>): <span class="title">AsyncGenerator</span>&lt;<span class="title">StreamEvent</span> | <span class="title">Message</span>, <span class="title">Terminal</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>为什么用生成器而不是简单的循环？</strong></p>
+<p>因为循环过程中需要<strong>实时向 UI 推送中间结果</strong>：</p>
+<ul>
+<li>LLM 的流式文本（一个字一个字出现）</li>
+<li>工具调用的进度</li>
+<li>状态变化事件</li>
+</ul>
+<p>生成器通过 <code>yield</code> 把这些中间结果&quot;吐出来&quot;，UI 层通过 <code>for await (const event of query(...))</code> 消费。这实现了<strong>计算与展示的解耦</strong>。</p>
+<h3 id="34-工具执行的并发策略"><a class="markdownIt-Anchor" href="#34-工具执行的并发策略"></a> 3.4 工具执行的并发策略</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LLM 返回多个工具调用时：</span><br><span class="line"></span><br><span class="line">┌─────────────────────────────┐</span><br><span class="line">│ 分类：只读 or 写入？        │</span><br><span class="line">│                             │</span><br><span class="line">│ 只读工具（Read, Grep 等）   │──→ 并行执行（最多 10 个）</span><br><span class="line">│ 写入工具（Edit, Bash 等）   │──→ 串行执行（避免冲突）</span><br><span class="line">└─────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>学习要点</strong>：Agent 循环的精髓是 <strong>“让 LLM 决定下一步做什么”</strong>。代码只负责执行 LLM 的决策、管理上下文、处理边界情况（超时、重试、上下文溢出等）。</p>
+</blockquote>
+<hr />
+<h2 id="第四章工具系统agent-的双手"><a class="markdownIt-Anchor" href="#第四章工具系统agent-的双手"></a> 第四章：工具系统——Agent 的双手</h2>
+<h3 id="41-工具的定义"><a class="markdownIt-Anchor" href="#41-工具的定义"></a> 4.1 工具的定义</h3>
+<p>每个工具是一个符合 <code>Tool</code> 接口的对象，核心字段：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Tool &#123;</span><br><span class="line">    name             → 标识名（如 &quot;Bash&quot;, &quot;Read&quot;）</span><br><span class="line">    description()    → 告诉 LLM 这个工具干什么</span><br><span class="line">    prompt()         → 系统提示词中关于此工具的说明</span><br><span class="line">    inputSchema      → 输入参数的校验规则（Zod schema）</span><br><span class="line">    call()           → 实际执行逻辑</span><br><span class="line">    checkPermissions() → 权限检查</span><br><span class="line">    isReadOnly()     → 是否只读（影响并发策略）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="42-工具目录结构"><a class="markdownIt-Anchor" href="#42-工具目录结构"></a> 4.2 工具目录结构</h3>
+<p>每个工具是一个独立目录，内部按职责拆分文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">tools&#x2F;BashTool&#x2F;</span><br><span class="line">├── BashTool.tsx           # 工具定义与执行逻辑</span><br><span class="line">├── bashPermissions.ts     # 权限判断逻辑</span><br><span class="line">├── bashSecurity.ts        # 安全分析（命令注入检测等）</span><br><span class="line">├── prompt.ts              # 提示词文本</span><br><span class="line">├── UI.tsx                 # 终端渲染组件</span><br><span class="line">├── pathValidation.ts      # 路径校验</span><br><span class="line">└── readOnlyValidation.ts  # 只读命令判断</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这种&quot;按工具独立成目录&quot;的组织方式让每个工具像一个&quot;微模块&quot;，各自独立发展，互不干扰。</p>
+</blockquote>
+<h3 id="43-工具注册与发现"><a class="markdownIt-Anchor" href="#43-工具注册与发现"></a> 4.3 工具注册与发现</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tools.ts</span><br><span class="line">├── getAllBaseTools()     → 返回所有工具的主列表</span><br><span class="line">├── getTools()           → 过滤掉被禁用&#x2F;被拒绝的工具</span><br><span class="line">└── assembleToolPool()   → 合并内置工具 + MCP 外部工具</span><br><span class="line">                           （排序固定，利于 LLM 提示词缓存）</span><br></pre></td></tr></table></figure>
+<h3 id="44-mcp-工具的动态接入"><a class="markdownIt-Anchor" href="#44-mcp-工具的动态接入"></a> 4.4 MCP 工具的动态接入</h3>
+<p>Claude Code 支持 MCP（Model Context Protocol）协议，可以动态接入外部工具：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">内置工具:  Bash, Read, Edit, Grep, Glob, Agent, ...</span><br><span class="line">                         +</span><br><span class="line">MCP 工具:  mcp__github__create_pr, mcp__jira__list_issues, ...</span><br><span class="line">                         ↓</span><br><span class="line">            统一的工具池（Tool Pool）</span><br><span class="line">                         ↓</span><br><span class="line">              传给 LLM 做选择</span><br></pre></td></tr></table></figure>
+<p>MCP 工具的命名规则是 <code>mcp__&lt;服务器名&gt;__&lt;工具名&gt;</code>，通过统一的 Tool 接口与内置工具一视同仁。</p>
+<hr />
+<h2 id="第五章权限与安全信任的边界"><a class="markdownIt-Anchor" href="#第五章权限与安全信任的边界"></a> 第五章：权限与安全——信任的边界</h2>
+<p>这是 Claude Code 工程上最复杂的子系统之一，也是 Coding Agent 产品的生命线。</p>
+<h3 id="51-权限模式"><a class="markdownIt-Anchor" href="#51-权限模式"></a> 5.1 权限模式</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>行为</th>
+<th>场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>default</code></td>
+<td>危险操作前询问用户</td>
+<td>日常使用</td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>只读工具自动通过，写入需确认</td>
+<td>规划阶段</td>
+</tr>
+<tr>
+<td><code>acceptEdits</code></td>
+<td>文件编辑自动通过，Shell 仍询问</td>
+<td>信任文件修改</td>
+</tr>
+<tr>
+<td><code>bypassPermissions</code></td>
+<td>全部自动通过</td>
+<td>完全信任（危险）</td>
+</tr>
+<tr>
+<td><code>auto</code></td>
+<td>AI 分类器自动判断是否安全</td>
+<td>实验性功能</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-权限判断流程"><a class="markdownIt-Anchor" href="#52-权限判断流程"></a> 5.2 权限判断流程</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">工具调用请求</span><br><span class="line">     ↓</span><br><span class="line">① 全局拒绝规则检查 ──→ 匹配 → 拒绝</span><br><span class="line">     ↓ 不匹配</span><br><span class="line">② 全局允许规则检查 ──→ 匹配 → 放行</span><br><span class="line">     ↓ 不匹配</span><br><span class="line">③ 权限模式判断 ────→ bypass → 放行</span><br><span class="line">     ↓               plan → 只读放行&#x2F;写入询问</span><br><span class="line">④ 工具特定权限检查</span><br><span class="line">     ↓</span><br><span class="line">⑤ 向用户显示权限确认对话框</span><br><span class="line">     ↓</span><br><span class="line">   用户决定：允许 &#x2F; 拒绝 &#x2F; 总是允许</span><br></pre></td></tr></table></figure>
+<h3 id="53-bashtool-的安全分析"><a class="markdownIt-Anchor" href="#53-bashtool-的安全分析"></a> 5.3 BashTool 的安全分析</h3>
+<p>BashTool 是最危险的工具（可以执行任意 Shell 命令），因此有最复杂的安全机制：</p>
+<ul>
+<li><strong>命令解析</strong>：分析 Shell 命令的 AST，识别危险操作</li>
+<li><strong>路径校验</strong>：确保不会操作工作目录之外的文件</li>
+<li><strong>只读判断</strong>：识别 <code>git status</code>、<code>ls</code> 等只读命令可以自动放行</li>
+<li><strong>注入检测</strong>：防止通过巧妙构造的命令绕过安全检查</li>
+</ul>
+<blockquote>
+<p><strong>学习要点</strong>：在 Agent 系统中，<strong>权限不是可选的附加功能，而是核心架构的一部分</strong>。Claude Code 的权限系统贯穿了从工具定义到 UI 展示的整条链路。</p>
+</blockquote>
+<hr />
+<h2 id="第六章终端-ui在命令行里做前端"><a class="markdownIt-Anchor" href="#第六章终端-ui在命令行里做前端"></a> 第六章：终端 UI——在命令行里做&quot;前端&quot;</h2>
+<h3 id="61-技术选型inkreact-for-terminal"><a class="markdownIt-Anchor" href="#61-技术选型inkreact-for-terminal"></a> 6.1 技术选型：Ink（React for Terminal）</h3>
+<p>Claude Code 在终端中使用 <strong>React</strong> 来构建 UI，这听起来很反直觉，但非常巧妙：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Web 应用:   React → ReactDOM → 浏览器 DOM → 像素</span><br><span class="line">Claude Code: React → Ink → 终端虚拟 DOM → ANSI 字符</span><br></pre></td></tr></table></figure>
+<p>Ink 是一个把 React 组件渲染到终端的库。Claude Code 甚至<strong>自己 fork 了一份 Ink</strong>（在 <code>src/ink/</code> 目录），做了大量定制：</p>
+<ul>
+<li>自定义 React 协调器（reconciler）</li>
+<li>基于 Yoga 的 Flexbox 布局（是的，终端里也能用 Flexbox）</li>
+<li>文本选择支持</li>
+<li>点击事件处理</li>
+<li>高效的差异更新（只重绘变化的部分）</li>
+</ul>
+<h3 id="62-组件树结构"><a class="markdownIt-Anchor" href="#62-组件树结构"></a> 6.2 组件树结构</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;App&gt;                          # 全局状态 Provider</span><br><span class="line">  └── &lt;REPL&gt;                   # 主交互界面（896KB，最大的单文件）</span><br><span class="line">       ├── &lt;PromptInput&gt;       # 用户输入框（支持自动补全）</span><br><span class="line">       ├── &lt;Messages&gt;          # 对话消息列表（虚拟滚动）</span><br><span class="line">       ├── &lt;PermissionRequest&gt; # 权限确认对话框</span><br><span class="line">       ├── &lt;Spinner&gt;           # 加载动画</span><br><span class="line">       ├── &lt;StatusLine&gt;        # 底部状态栏</span><br><span class="line">       └── &lt;HighlightedCode&gt;   # 语法高亮代码块</span><br></pre></td></tr></table></figure>
+<h3 id="63-为什么-repltsx-有-896kb"><a class="markdownIt-Anchor" href="#63-为什么-repltsx-有-896kb"></a> 6.3 为什么 REPL.tsx 有 896KB？</h3>
+<p>这个文件管理了整个交互界面的所有状态和逻辑，包括：</p>
+<ul>
+<li>消息展示与虚拟滚动</li>
+<li>用户输入与自动补全</li>
+<li>工具权限弹窗</li>
+<li>LLM 流式响应的渲染</li>
+<li>会话管理（恢复、后台、导出）</li>
+<li>IDE 桥接</li>
+<li>语音输入</li>
+<li>Vim 模式</li>
+<li>快捷键处理</li>
+</ul>
+<blockquote>
+<p>这是一个典型的&quot;上帝组件&quot;——虽然不一定是最佳实践，但说明了交互式 REPL 的复杂度远超表面看起来的样子。</p>
+</blockquote>
+<hr />
+<h2 id="第七章配置系统灵活性的来源"><a class="markdownIt-Anchor" href="#第七章配置系统灵活性的来源"></a> 第七章：配置系统——灵活性的来源</h2>
+<h3 id="71-多层配置合并"><a class="markdownIt-Anchor" href="#71-多层配置合并"></a> 7.1 多层配置合并</h3>
+<p>Claude Code 的配置来自多个来源，按优先级从高到低合并：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">最高优先级</span><br><span class="line">    ↑  组织策略（policySettings）     ← 企业管理员强制设定</span><br><span class="line">    │  命令行标志（flagSettings）     ← 本次运行指定</span><br><span class="line">    │  本地配置（.claude&#x2F;settings.local.json） ← 不提交到 Git</span><br><span class="line">    │  项目配置（.claude&#x2F;settings.json）       ← 提交到 Git，团队共享</span><br><span class="line">    │  用户配置（~&#x2F;.claude&#x2F;settings.json）     ← 个人全局偏好</span><br><span class="line">    ↓  远程托管配置（managed）        ← 服务端下发</span><br><span class="line">最低优先级</span><br></pre></td></tr></table></figure>
+<h3 id="72-claudemd-记忆系统"><a class="markdownIt-Anchor" href="#72-claudemd-记忆系统"></a> 7.2 <a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a> 记忆系统</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">项目根目录&#x2F;CLAUDE.md       ← 项目级指令（提交到 Git）</span><br><span class="line">~&#x2F;.claude&#x2F;CLAUDE.md        ← 用户级指令（个人偏好）</span><br><span class="line">.claude&#x2F;settings.local.json ← 本地覆盖</span><br></pre></td></tr></table></figure>
+<p><a href="http://CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a> 文件会被自动发现并注入到系统提示词中，让 Agent &quot;记住&quot;项目特有的规范和偏好。</p>
+<hr />
+<h2 id="第八章扩展机制插件-技能与多-agent"><a class="markdownIt-Anchor" href="#第八章扩展机制插件-技能与多-agent"></a> 第八章：扩展机制——插件、技能与多 Agent</h2>
+<h3 id="81-插件系统plugins"><a class="markdownIt-Anchor" href="#81-插件系统plugins"></a> 8.1 插件系统（Plugins）</h3>
+<p>插件可以提供：</p>
+<ul>
+<li>额外的工具</li>
+<li>额外的斜杠命令</li>
+<li>Hook 处理器</li>
+<li>MCP 服务器配置</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">plugins&#x2F;</span><br><span class="line">├── builtinPlugins.ts     # 内置插件加载</span><br><span class="line">└── bundled&#x2F;              # 打包在内的插件</span><br></pre></td></tr></table></figure>
+<h3 id="82-技能系统skills"><a class="markdownIt-Anchor" href="#82-技能系统skills"></a> 8.2 技能系统（Skills）</h3>
+<p>技能是&quot;可复用的工作流模板&quot;，比插件更轻量：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;commit    → 触发 commit 技能 → 自动分析变更、生成提交信息</span><br><span class="line">&#x2F;review-pr → 触发 review 技能 → 自动审查 PR</span><br></pre></td></tr></table></figure>
+<h3 id="83-多-agent-协调"><a class="markdownIt-Anchor" href="#83-多-agent-协调"></a> 8.3 多 Agent 协调</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">协调者 Agent（Coordinator）</span><br><span class="line">    ├── 创建工作者 Agent A → 处理子任务 1</span><br><span class="line">    ├── 创建工作者 Agent B → 处理子任务 2</span><br><span class="line">    └── 汇总结果</span><br></pre></td></tr></table></figure>
+<p>工作者通过 <code>AgentTool</code>（启动子 Agent）和 <code>SendMessageTool</code>（消息传递）与协调者交互。工作者的权限通过 <code>bubble</code> 模式向上委托给协调者决策。</p>
+<hr />
+<h2 id="第九章工程实践值得学习的设计模式"><a class="markdownIt-Anchor" href="#第九章工程实践值得学习的设计模式"></a> 第九章：工程实践——值得学习的设计模式</h2>
+<h3 id="91-快速路径分发fast-path"><a class="markdownIt-Anchor" href="#91-快速路径分发fast-path"></a> 9.1 快速路径分发（Fast Path）</h3>
+<p>在 <code>entrypoints/cli.tsx</code> 中，像 <code>--version</code> 这样的简单请求<strong>在加载任何模块之前就被拦截返回</strong>。这避免了为一个简单的版本号查询加载 50 万行代码。</p>
+<p><strong>思想</strong>：区分&quot;轻量请求&quot;和&quot;重量请求&quot;，为轻量请求提供捷径。</p>
+<h3 id="92-并行预取parallel-prefetch"><a class="markdownIt-Anchor" href="#92-并行预取parallel-prefetch"></a> 9.2 并行预取（Parallel Prefetch）</h3>
+<p>启动时，配置读取、密钥读取、API 预连接等 I/O 操作<strong>并行发起</strong>，不等前一个完成再开始下一个。</p>
+<p><strong>思想</strong>：I/O 等待时间可以与 CPU 计算重叠，充分利用等待时间。</p>
+<h3 id="93-异步生成器实现流式处理"><a class="markdownIt-Anchor" href="#93-异步生成器实现流式处理"></a> 9.3 异步生成器实现流式处理</h3>
+<p><code>query()</code> 用 <code>async function*</code> 实现，允许 Agent 循环一边执行一边向 UI 推送结果。</p>
+<p><strong>思想</strong>：生成器是&quot;生产者-消费者&quot;模式的优雅实现，比回调和事件监听更易读。</p>
+<h3 id="94-依赖注入提高可测试性"><a class="markdownIt-Anchor" href="#94-依赖注入提高可测试性"></a> 9.4 依赖注入提高可测试性</h3>
+<p><code>query/deps.ts</code> 将外部依赖（API 调用、压缩等）抽象为接口，测试时可以替换为 mock 实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">生产环境: deps.callModel &#x3D; 真实的 API 调用</span><br><span class="line">测试环境: deps.callModel &#x3D; 返回预设响应的 mock</span><br></pre></td></tr></table></figure>
+<p><strong>思想</strong>：不直接依赖具体实现，依赖抽象接口。</p>
+<h3 id="95-工具即数据tool-as-data"><a class="markdownIt-Anchor" href="#95-工具即数据tool-as-data"></a> 9.5 工具即数据（Tool as Data）</h3>
+<p>每个工具不是一个&quot;类&quot;，而是一个符合 <code>Tool</code> 接口的&quot;数据对象&quot;。这让工具的注册、过滤、排序、序列化都变得简单。</p>
+<p><strong>思想</strong>：优先用数据描述行为，而不是用继承体系。</p>
+<h3 id="96-深度不可变deepimmutable"><a class="markdownIt-Anchor" href="#96-深度不可变deepimmutable"></a> 9.6 深度不可变（DeepImmutable）</h3>
+<p>权限上下文等关键数据结构使用 <code>DeepImmutable&lt;T&gt;</code> 类型，编译期就防止意外修改。</p>
+<p><strong>思想</strong>：重要状态应该是不可变的，修改状态应该是显式的。</p>
+<h3 id="97-构建时特性裁剪dead-code-elimination"><a class="markdownIt-Anchor" href="#97-构建时特性裁剪dead-code-elimination"></a> 9.7 构建时特性裁剪（Dead Code Elimination）</h3>
+<p>通过 <code>import { feature } from 'bun:bundle'</code>，在构建时决定哪些功能包含在最终产物中。不需要的功能代码<strong>在编译阶段就被删除</strong>，不会增加安装包体积。</p>
+<p><strong>思想</strong>：同一份代码可以产出不同功能集的产品（内部版 vs 公开版）。</p>
+<hr />
+<h2 id="附录关于-cli-工具的技术选型"><a class="markdownIt-Anchor" href="#附录关于-cli-工具的技术选型"></a> 附录：关于 CLI 工具的技术选型</h2>
+<h3 id="各语言的典型使用场景"><a class="markdownIt-Anchor" href="#各语言的典型使用场景"></a> 各语言的典型使用场景</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">                性能需求</span><br><span class="line">                  高</span><br><span class="line">                   │</span><br><span class="line">            Rust   │   Go</span><br><span class="line">          (ripgrep,│ (docker, kubectl,</span><br><span class="line">           fd, bat)│  gh, terraform)</span><br><span class="line">                   │</span><br><span class="line">───────────────────┼───────────────────</span><br><span class="line">                   │</span><br><span class="line">         Python    │  TypeScript</span><br><span class="line">       (aws-cli,   │ (Claude Code, eslint,</span><br><span class="line">        poetry)    │  prettier, Cursor)</span><br><span class="line">                   │</span><br><span class="line">                  低</span><br><span class="line">       脚本&#x2F;AI 生态          Web&#x2F;Node 生态</span><br></pre></td></tr></table></figure>
+<h3 id="选型决策树"><a class="markdownIt-Anchor" href="#选型决策树"></a> 选型决策树</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">你的 CLI 需要：</span><br><span class="line">├── 编译为单个无依赖二进制？</span><br><span class="line">│   ├── 是 → Go（简单）或 Rust（极致性能）</span><br><span class="line">│   └── 否 ↓</span><br><span class="line">├── 面向 Node.js&#x2F;前端开发者？</span><br><span class="line">│   ├── 是 → TypeScript（npm 分发）</span><br><span class="line">│   └── 否 ↓</span><br><span class="line">├── 面向数据&#x2F;AI 开发者？</span><br><span class="line">│   ├── 是 → Python（pip 分发）</span><br><span class="line">│   └── 否 ↓</span><br><span class="line">└── 简单的系统管理脚本？</span><br><span class="line">    └── 是 → Bash&#x2F;Shell</span><br></pre></td></tr></table></figure>
+<h3 id="为什么-ai-coding-agent-多用-typescript"><a class="markdownIt-Anchor" href="#为什么-ai-coding-agent-多用-typescript"></a> 为什么 AI Coding Agent 多用 TypeScript？</h3>
+<p>当前主流的 AI Coding Agent CLI 工具（如 Claude Code、Cursor 等）多选择 TypeScript，原因包括：</p>
+<ol>
+<li><strong>目标用户群体</strong>：开发者群体普遍有 Node.js 环境</li>
+<li><strong>终端 UI 需求</strong>：Ink (React) 提供了最成熟的终端交互框架</li>
+<li><strong>流式处理</strong>：JS 的异步模型天然适合 LLM 流式响应</li>
+<li><strong>快速迭代</strong>：AI 领域变化极快，TS 的开发效率优势明显</li>
+<li><strong>全栈共享</strong>：CLI + VS Code 插件 + Web 界面可以共享大量代码</li>
+</ol>
+<p>但这不是唯一选择。例如 aider（另一个知名 Coding Agent）就是 Python 写的，因为它更偏向 Python 开发者群体。<strong>技术选型永远服务于产品目标和用户群体。</strong></p>
+<hr />
+<h2 id="推荐学习路径"><a class="markdownIt-Anchor" href="#推荐学习路径"></a> 推荐学习路径</h2>
+<p>如果你想深入理解这个项目，建议按以下顺序阅读：</p>
+<table>
+<thead>
+<tr>
+<th>顺序</th>
+<th>文件/目录</th>
+<th>理解目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>entrypoints/cli.tsx</code></td>
+<td>整体入口，理解启动分发</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>query.ts</code></td>
+<td>Agent 循环，理解核心机制</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>Tool.ts</code> + <code>tools.ts</code></td>
+<td>工具系统的抽象设计</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>tools/FileReadTool/</code></td>
+<td>一个简单工具的完整实现</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>tools/BashTool/</code></td>
+<td>最复杂的工具，理解安全设计</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>utils/permissions/</code></td>
+<td>权限系统</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>services/api/</code></td>
+<td>LLM 调用如何实现</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>screens/REPL.tsx</code></td>
+<td>UI 层如何消费 Agent 循环的输出</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>services/mcp/</code></td>
+<td>外部工具扩展机制</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>coordinator/</code></td>
+<td>多 Agent 架构</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>不需要逐行阅读 TypeScript 代码。重点关注<strong>文件之间的调用关系</strong>、<strong>数据如何流动</strong>、<strong>关键接口的定义</strong>。架构理解比语法理解更重要。</p>
+</blockquote>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#目录"><span class="toc-text"> 目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#前言为什么用-typescript-开发-cli-工具"><span class="toc-text"> 前言：为什么用 TypeScript 开发 CLI 工具？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#直接原因npm-是-cli-分发的最佳渠道之一"><span class="toc-text"> 直接原因：npm 是 CLI 分发的最佳渠道之一</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#深层原因typescript-特别适合这类工具"><span class="toc-text"> 深层原因：TypeScript 特别适合这类工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#市面上主流-cli-工具都用-ts-吗"><span class="toc-text"> 市面上主流 CLI 工具都用 TS 吗？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第一章项目全景目录结构与模块划分"><span class="toc-text"> 第一章：项目全景——目录结构与模块划分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-核心骨架必须先理解的部分"><span class="toc-text"> 1.1 核心骨架（必须先理解的部分）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-功能模块"><span class="toc-text"> 1.2 功能模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-基础设施"><span class="toc-text"> 1.3 基础设施</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-扩展能力"><span class="toc-text"> 1.4 扩展能力</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关键设计思想"><span class="toc-text"> 关键设计思想</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二章启动流程从敲下命令到界面就绪"><span class="toc-text"> 第二章：启动流程——从敲下命令到界面就绪</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#21-四阶段启动"><span class="toc-text"> 2.1 四阶段启动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#22-性能优化亮点"><span class="toc-text"> 2.2 性能优化亮点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第三章agent-循环大脑如何思考与行动"><span class="toc-text"> 第三章：Agent 循环——大脑如何思考与行动</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#31-agent-循环是什么"><span class="toc-text"> 3.1 Agent 循环是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#32-核心代码结构queryts"><span class="toc-text"> 3.2 核心代码结构（query.ts）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#33-关键设计异步生成器asyncgenerator"><span class="toc-text"> 3.3 关键设计：异步生成器（AsyncGenerator）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#34-工具执行的并发策略"><span class="toc-text"> 3.4 工具执行的并发策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第四章工具系统agent-的双手"><span class="toc-text"> 第四章：工具系统——Agent 的双手</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#41-工具的定义"><span class="toc-text"> 4.1 工具的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#42-工具目录结构"><span class="toc-text"> 4.2 工具目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#43-工具注册与发现"><span class="toc-text"> 4.3 工具注册与发现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#44-mcp-工具的动态接入"><span class="toc-text"> 4.4 MCP 工具的动态接入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第五章权限与安全信任的边界"><span class="toc-text"> 第五章：权限与安全——信任的边界</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#51-权限模式"><span class="toc-text"> 5.1 权限模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#52-权限判断流程"><span class="toc-text"> 5.2 权限判断流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#53-bashtool-的安全分析"><span class="toc-text"> 5.3 BashTool 的安全分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第六章终端-ui在命令行里做前端"><span class="toc-text"> 第六章：终端 UI——在命令行里做&quot;前端&quot;</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#61-技术选型inkreact-for-terminal"><span class="toc-text"> 6.1 技术选型：Ink（React for Terminal）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#62-组件树结构"><span class="toc-text"> 6.2 组件树结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#63-为什么-repltsx-有-896kb"><span class="toc-text"> 6.3 为什么 REPL.tsx 有 896KB？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第七章配置系统灵活性的来源"><span class="toc-text"> 第七章：配置系统——灵活性的来源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#71-多层配置合并"><span class="toc-text"> 7.1 多层配置合并</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#72-claudemd-记忆系统"><span class="toc-text"> 7.2 CLAUDE.md 记忆系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第八章扩展机制插件-技能与多-agent"><span class="toc-text"> 第八章：扩展机制——插件、技能与多 Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#81-插件系统plugins"><span class="toc-text"> 8.1 插件系统（Plugins）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#82-技能系统skills"><span class="toc-text"> 8.2 技能系统（Skills）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#83-多-agent-协调"><span class="toc-text"> 8.3 多 Agent 协调</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第九章工程实践值得学习的设计模式"><span class="toc-text"> 第九章：工程实践——值得学习的设计模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#91-快速路径分发fast-path"><span class="toc-text"> 9.1 快速路径分发（Fast Path）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#92-并行预取parallel-prefetch"><span class="toc-text"> 9.2 并行预取（Parallel Prefetch）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#93-异步生成器实现流式处理"><span class="toc-text"> 9.3 异步生成器实现流式处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#94-依赖注入提高可测试性"><span class="toc-text"> 9.4 依赖注入提高可测试性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#95-工具即数据tool-as-data"><span class="toc-text"> 9.5 工具即数据（Tool as Data）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#96-深度不可变deepimmutable"><span class="toc-text"> 9.6 深度不可变（DeepImmutable）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#97-构建时特性裁剪dead-code-elimination"><span class="toc-text"> 9.7 构建时特性裁剪（Dead Code Elimination）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#附录关于-cli-工具的技术选型"><span class="toc-text"> 附录：关于 CLI 工具的技术选型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#各语言的典型使用场景"><span class="toc-text"> 各语言的典型使用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#选型决策树"><span class="toc-text"> 选型决策树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#为什么-ai-coding-agent-多用-typescript"><span class="toc-text"> 为什么 AI Coding Agent 多用 TypeScript？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#推荐学习路径"><span class="toc-text"> 推荐学习路径</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/05/09/chapter-09-engineering-patterns/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-09T04:30:00.000Z">2026.05.09</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第九章：工程实践——值得学习的设计模式</strong>
+          </a>
+        
+          <a href="/2026/05/08/chapter-08-extension-mechanisms/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-08T04:30:00.000Z">2026.05.08</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第八章：扩展机制——Plugins、Skills与Multi-Agent</strong>
+          </a>
+        
+          <a href="/2026/05/07/chapter-07-config-system/">
+            <span class="related-notes__meta">
+              <time datetime="2026-05-07T04:30:00.000Z">2026.05.07</time>
+              <span>#Agent · #Claude Code</span>
+            </span>
+            <strong>第七章：配置系统——灵活性的来源</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/05/01/chapter-01-project-overview/"><span>上一篇</span><strong>第一章：项目全景——目录结构与模块划分</strong></a>
+    <a href="/2026/01/01/rag/"><span>下一篇</span><strong>RAG增强方案技术文档</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

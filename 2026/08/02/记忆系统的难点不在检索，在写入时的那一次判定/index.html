@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读 · Quinn</title>
+<meta name="description" content="记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读 三条消息，一个决定 假想一个帮电商卖家做推广视频的 Agent。一月第一周，用户说：&#34;我们品牌调性偏冷，主色用蓝灰，别用红色。&#34;这句话该记下来，没有争议。第三周用户又说：&#34;新…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读 · Quinn" />
+<meta property="og:description" content="记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读 三条消息，一个决定 假想一个帮电商卖家做推广视频的 Agent。一月第一周，用户说：&#34;我们品牌调性偏冷，主色用蓝灰，别用红色。&#34;这句话该记下来，没有争议。第三周用户又说：&#34;新…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2026/08/02/%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%9A%BE%E7%82%B9%E4%B8%8D%E5%9C%A8%E6%A3%80%E7%B4%A2%EF%BC%8C%E5%9C%A8%E5%86%99%E5%85%A5%E6%97%B6%E7%9A%84%E9%82%A3%E4%B8%80%E6%AC%A1%E5%88%A4%E5%AE%9A/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220501212415.jpg" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" />
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        Memory · 2026.08.02
+      
+    </p>
+    <h1>记忆系统的难点不在检索，在写入时的那一次判定：Mem0 论文精读</h1>
+    <div class="article-header__bottom">
+      
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/Memory/">Memory</a>
+  
+  <span class="post-meta__item">14 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/Agent/">#Agent</a>
+      
+        <a href="/tags/Memory/">#Memory</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">#论文阅读</a>
+      
+        <a href="/tags/Mem0/">#Mem0</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<h2 id="三条消息一个决定"><a class="markdownIt-Anchor" href="#三条消息一个决定"></a> 三条消息，一个决定</h2>
+<p>假想一个帮电商卖家做推广视频的 Agent。一月第一周，用户说：&quot;我们品牌调性偏冷，主色用蓝灰，别用红色。&quot;这句话该记下来，没有争议。第三周用户又说：&quot;新品是春节礼盒，这条视频主色要用红。&quot;到这里问题来了：记忆库里那条&quot;别用红色&quot;怎么办？</p>
+<p>把它删掉，下个月做常规款视频时 Agent 会满屏喜庆红。原样保留再加一条&quot;用红&quot;，两条记忆互相打架，检索时哪条都可能被捞出来。把两条合成一条&quot;品牌偏冷色，春节礼盒例外用红&quot;，最合理，但这要求系统能分辨什么是长期偏好、什么是单次任务的例外。什么都不做，等于第三周这句话白说。</p>
+<p>四个选项，对应的正是 Mem0 论文里更新阶段的四个操作：DELETE、ADD、UPDATE、NOOP。这个决定由谁来做、依据什么做、做错了能不能回退，是记忆系统里最不像数据库的那一部分。把东西存下来这件事本身从来不难。</p>
+<p>Mem0 是目前最流行的开源记忆框架之一，配套论文（Chhikara et al., 2025）正文不到十五页，算法上没有多少新意：从对话里抽事实，和旧记忆比对，决定增删改，用的时候按语义相似度取回。它的价值在于把这条最小流水线画得足够干净，并且量化了它相对于&quot;把全部历史塞进上下文&quot;能省多少延迟和 token。本文顺着这条流水线走一遍，重点放在写入那一步；再看图结构版本 Mem0g 多买到了什么；然后带着怀疑读实验数字；最后翻一下开源仓库一年后的代码，看论文里的那次判定去了哪里。</p>
+<h2 id="先把流水线走一遍"><a class="markdownIt-Anchor" href="#先把流水线走一遍"></a> 先把流水线走一遍</h2>
+<p>Mem0 一次写入到底做了什么？处理单元是一对消息 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo stretchy="false">(</mo><msub><mi>m</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo separator="true">,</mo><msub><mi>m</mi><mi>t</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(m_{t-1}, m_t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>，通常是一句用户消息加一句助手回复。每来一对消息，跑两个阶段：提取（extraction）和更新（update）。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260813150522753.png" alt="图 1：Mem0 的提取与更新两阶段（来源：Chhikara et al., Mem0, arXiv 2025, Figure 2）" /></p>
+<h3 id="提取从一对消息里拿出候选事实"><a class="markdownIt-Anchor" href="#提取从一对消息里拿出候选事实"></a> 提取：从一对消息里拿出候选事实</h3>
+<p>提取阶段的输入不只是这对消息。论文把送给 LLM 的完整 prompt 写成</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>P</mi><mo>=</mo><mo stretchy="false">(</mo><mi>S</mi><mo separator="true">,</mo><mtext> </mtext><mo stretchy="false">{</mo><msub><mi>m</mi><mrow><mi>t</mi><mo>−</mo><mi>m</mi></mrow></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>m</mi><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow></msub><mo stretchy="false">}</mo><mo separator="true">,</mo><mtext> </mtext><msub><mi>m</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>m</mi><mi>t</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">P = (S,\ \{m_{t-m}, \ldots, m_{t-2}\},\ m_{t-1},\ m_t)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace"> </span><span class="mopen">{</span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.28055599999999997em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">−</span><span class="mord mathdefault mtight">m</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">2</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mclose">}</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace"> </span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mspace"> </span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span> 是整段对话的摘要，由一个独立的异步模块周期性刷新，提供全局背景；<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo stretchy="false">{</mo><msub><mi>m</mi><mrow><mi>t</mi><mo>−</mo><mi>m</mi></mrow></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>m</mi><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow></msub><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">\{m_{t-m}, \ldots, m_{t-2}\}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.28055599999999997em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">−</span><span class="mord mathdefault mtight">m</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.301108em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">2</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"><span></span></span></span></span></span></span><span class="mclose">}</span></span></span></span> 是最近 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">m</span></span></span></span> 条消息，提供摘要里没来得及合并的局部细节；最后两项是当前消息对。LLM 从中抽出一组候选事实 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Ω</mi><mo>=</mo><mo stretchy="false">{</mo><msub><mi>ω</mi><mn>1</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>ω</mi><mi>n</mi></msub><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">\Omega = \{\omega_1, \ldots, \omega_n\}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord">Ω</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">ω</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">ω</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">}</span></span></span></span>，<strong>只针对新消息对提取，前两项只当上下文</strong>。实验里 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">m = 10</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">m</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord">0</span></span></span></span>。</p>
+<p>这个设计的要点是**“全局摘要 + 局部窗口 + 当前增量&quot;三层上下文**，目的是让抽取时能消解指代。用户第三周说&quot;这条视频主色要用红”，没有前十条消息，LLM 不知道&quot;这条视频&quot;是春节礼盒；没有摘要，不知道这个用户的品牌原本偏冷。抽出来的事实质量，取决于抽取时看到了多少。</p>
+<blockquote>
+<p>顺带一句时间上的谨慎：论文明确说摘要生成是异步的，但没有说整条提取加更新的链路是否异步于用户响应。不能凭这张图断言 Mem0 的写链路不阻塞主请求。</p>
+</blockquote>
+<h3 id="更新每个候选事实过一次判定"><a class="markdownIt-Anchor" href="#更新每个候选事实过一次判定"></a> 更新：每个候选事实过一次判定</h3>
+<p>提取完成后，每个候选事实 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">ω</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 单独走一遍更新：先用向量相似度从记忆库里取 Top-<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">s</span></span></span></span> 条最相似的旧记忆（实验 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">s = 10</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">s</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord">0</span></span></span></span>），把候选事实和这些旧记忆一起交给 LLM，通过函数调用接口让 LLM 在四个操作里选一个：</p>
+<ol>
+<li>ADD：没有语义等价的旧记忆，新建；</li>
+<li>UPDATE：旧记忆相关，候选事实信息更全，用新的替换旧的；</li>
+<li>DELETE：候选事实和旧记忆矛盾，删旧的；</li>
+<li>NOOP：已经有了，或者不相干，什么都不做。</li>
+</ol>
+<p>论文特意说明没有用单独的分类器，就让 LLM 凭候选事实和旧记忆的语义关系直接选。UPDATE 只在新事实的信息量大于旧记忆时才执行，否则视同 NOOP。判定之后由系统执行数据库操作，LLM 不直接碰库。</p>
+<p>这一段是全文的核心，先把它的位置放准。论文自己把相对 RAG 的优势归给抽取：只存最显著的事实，不存原文切块（4.3 节）。我的理解是抽取和更新各管一半。抽取决定什么值得进库，让库比原始对话小一个量级；更新决定新事实进库时怎么对待旧记忆，让库在对话继续时不自相矛盾。RAG 索引的是一份给定的、不会自己变的语料，这两件事都不需要做。更新也不是记忆系统的必选项，后面会看到 Mem0 自己后来就不做了；它是论文版 Mem0 比一个&quot;抽取后直接追加&quot;的最小系统多出来的全部东西。抽取属于记忆的形成（Formation），更新属于演化（Evolution）里的更新（Updating）。</p>
+<h3 id="一个最容易混淆的地方图里的召回不是回答时的召回"><a class="markdownIt-Anchor" href="#一个最容易混淆的地方图里的召回不是回答时的召回"></a> 一个最容易混淆的地方：图里的召回不是回答时的召回</h3>
+<p>Figure 2 里有一个&quot;fetch similar memories&quot;，很容易被读成检索链路，但它不是。这次召回发生在更新阶段，Query是候选新事实，目的是找出可能需要被改的旧记忆，服务的是记忆库的维护。用户提问时的另一次召回，Query是用户问题，目的是找回答需要的证据。两次都叫检索，输入、目的、失败方式完全不同：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>更新时召回</th>
+<th>回答时召回</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查询</td>
+<td>候选新事实</td>
+<td>用户当前问题</td>
+</tr>
+<tr>
+<td>目的</td>
+<td>找出可能被改的旧记忆</td>
+<td>找出回答所需的证据</td>
+</tr>
+<tr>
+<td>漏召回的后果</td>
+<td>冲突记忆并存</td>
+<td>答不上</td>
+</tr>
+<tr>
+<td>误召回的后果</td>
+<td>无关记忆被错改、错删</td>
+<td>噪声进 prompt</td>
+</tr>
+</tbody>
+</table>
+<p>检索回来的记忆带时间戳，回答模型被要求&quot;注意时间戳&quot;、“冲突时优先最新的记忆”、“把’去年’这类相对时间按记忆时间戳换算成具体年份”。把两条链路拼在一起，完整的 Mem0 长这样：</p>
+<div class="mermaid">
+flowchart LR
+    subgraph W["写链路（论文 Figure 2）"]
+        P["消息对 + 摘要 S + 最近 m 条"] --> X["LLM 抽取候选事实 Ω"]
+        X --> R1["每个候选事实<br/>召回 Top-s 相似旧记忆"]
+        R1 --> J["LLM 判定<br/>ADD / UPDATE / DELETE / NOOP"]
+        J --> DB[("记忆库")]
+    end
+    subgraph Q["读链路（论文只给了 prompt）"]
+        U["用户问题"] --> R2["向量检索 Top-k 记忆<br/>（带时间戳）"]
+        DB --> R2
+        R2 --> A["回答 LLM<br/>相对时间换算、冲突取最新"]
+    end
+</div>
+<p>读链路那句&quot;冲突时优先最新&quot;值得记住：写入时已经做过一次冲突判定（DELETE），读的时候又做了一次。两道防线，我读成作者自己也没把宝全押在写入判定上。这个伏笔后面会用到。</p>
+<h3 id="论文没给的-prompt代码里有"><a class="markdownIt-Anchor" href="#论文没给的-prompt代码里有"></a> 论文没给的 prompt，代码里有</h3>
+<p>附录 A 给了 LLM 评审（LLM-as-a-Judge）的 prompt 和回答 prompt，没给抽取 prompt，也没给四操作判定的 prompt。开源仓库补上了这个缺口。我翻了论文发表当月（2025 年 4 月底）的代码，写链路和论文大体对得上，也有几处出入：</p>
+<ol>
+<li>抽取 prompt 把要记的信息分成七类：个人偏好、重要个人信息、计划与意图、活动与服务偏好、健康与饮食、职业信息、其他杂项，附六个 few-shot 例子，要求输出 <code>{&quot;facts&quot;: [...]}</code>。它的选择标准是&quot;关于用户的&quot;，不是&quot;对未来任务有用的&quot;。</li>
+<li>更新 prompt 就是四操作的自然语言版，每个操作配一个例子。UPDATE 的规则写得很具体：记忆里有&quot;喜欢打板球&quot;，新事实是&quot;喜欢和朋友打板球&quot;，更新；记忆里有&quot;喜欢芝士披萨&quot;，新事实是&quot;很喜欢芝士披萨&quot;，不更新，因为信息相同。全靠 LLM 的语感。</li>
+<li>一个防御性细节：召回的旧记忆先把 UUID 映射成 0、1、2 这样的整数再给 LLM，代码注释写明是为了应对 LLM 编造不存在的 UUID。</li>
+<li>当时的开源库里每个候选事实召回 Top-5 而不是论文的 Top-10，而且没有摘要 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span> 和最近 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">m</span></span></span></span> 条消息这两层上下文，抽取只看当前传入的消息。摘要和近因窗口是托管平台的功能。</li>
+</ol>
+<p>第四点意味着论文描述的是平台版本，实验也是在平台上跑的（后面细说）。拿开源库复现论文数字，从架构上就不完全等价。</p>
+<h2 id="mem0g图结构多买到了什么"><a class="markdownIt-Anchor" href="#mem0g图结构多买到了什么"></a> Mem0g：图结构多买到了什么</h2>
+<p>把句子拆成三元组，到底换来了什么？Mem0 的记忆是一条条自然语言句子，&quot;用户住在旧金山&quot;整句存、整句 embedding、整句召回。Mem0g（g 是 graph）把句子拆开，存成有向标记图 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>G</mi><mo>=</mo><mo stretchy="false">(</mo><mi>V</mi><mo separator="true">,</mo><mi>E</mi><mo separator="true">,</mo><mi>L</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">G = (V, E, L)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault">G</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.22222em;">V</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">L</span><span class="mclose">)</span></span></span></span>：节点 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>V</mi></mrow><annotation encoding="application/x-tex">V</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.22222em;">V</span></span></span></span> 是实体（Alice、San Francisco），边 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span></span></span> 是关系（lives_in），标签 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault">L</span></span></span></span> 给节点打类型（Person、City）。每个节点带实体类型、embedding 和创建时间戳，关系存为三元组 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo stretchy="false">(</mo><msub><mi>v</mi><mi>s</mi></msub><mo separator="true">,</mo><mi>r</mi><mo separator="true">,</mo><msub><mi>v</mi><mi>d</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(v_s, r, v_d)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</p>
+<p>同一个用户的三条记忆，Mem0 存三句话：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Memory 1: Alice lives in San Francisco.</span><br><span class="line">Memory 2: Alice prefers vegetarian food.</span><br><span class="line">Memory 3: Alice owns a bicycle.</span><br></pre></td></tr></table></figure>
+<p>Mem0g 存一个节点和三条边：</p>
+<div class="mermaid">
+graph LR
+    Alice["Alice<br/>Person"]
+    SF["San Francisco<br/>City"]
+    Veg["Vegetarian food<br/>Preference"]
+    Bike["Bicycle<br/>Object"]
+    Alice -->|lives_in| SF
+    Alice -->|prefers| Veg
+    Alice -->|owns| Bike
+</div>
+<p>三句话里的 Alice 在 Mem0 里是三个互不相识的字符串，只靠 embedding 相似度间接靠近；在 Mem0g 里是同一个节点，三条关系从它出发。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/image-20260813161013085.png" alt="图 2：Mem0g 的图记忆架构（来源：Chhikara et al., Mem0, arXiv 2025, Figure 3）" /></p>
+<p>写入分两步。实体抽取器先从消息里找实体和类型，关系生成器再在实体对之间判断有没有关系、贴什么标签（lives_in、prefers、owns、happened_on）。新三元组进图时，先对源和目标实体算 embedding，在图里搜相似度超过阈值 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathdefault">t</span></span></span></span> 的已有节点：找到就复用，找不到就新建。这一步就是实体消解（entity resolution），做错了要么同一个人分裂成两个节点，要么两个人被合成一个；论文没给 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathdefault">t</span></span></span></span> 的取值，当时的开源代码里节点合并阈值是 0.9。</p>
+<div class="mermaid">
+flowchart LR
+    X["新三元组的源实体 / 目标实体"] --> EMB["算 embedding"]
+    EMB --> SEARCH["在图里搜相似节点"]
+    SEARCH --> TH{"相似度 > t ?"}
+    TH -->|是| REUSE["复用已有节点"]
+    TH -->|否| NEW["新建节点"]
+    REUSE --> EDGE["建立关系边"]
+    NEW --> EDGE
+</div>
+<p>然后冲突检测器找可能矛盾的旧关系，由 LLM 做的更新解析器决定哪条关系已过时。论文强调过时关系是&quot;标记失效而不是物理删除&quot;，目的是支持时间推理：Alice 先住旧金山后搬纽约，两条 lives_in 边都在，一条标记 invalid，既能答&quot;现在住哪&quot;也能答&quot;以前住哪&quot;。</p>
+<div class="mermaid">
+graph LR
+    Alice["Alice"]
+    SF["San Francisco"]
+    NY["New York"]
+    Alice -.->|"lives_in（invalid）"| SF
+    Alice -->|"lives_in（当前）"| NY
+</div>
+<p>检索有两条路。以实体为中心：先识别问题里的实体，定位到节点，沿出入边扩一个子图，适合&quot;Alice 工作的公司在哪个城市&quot;这种要走两跳的问题。以三元组为中心：把整个问题 embedding，和每条三元组的文本编码比相似度，返回超过阈值的三元组，适合没有明确实体的问题。</p>
+<div class="mermaid">
+flowchart LR
+    Q["用户问题"]
+    subgraph E["以实体为中心"]
+        E1["识别问题里的实体"] --> E2["按相似度定位节点"] --> E3["沿出入边扩子图"]
+    end
+    subgraph T["以三元组为中心"]
+        T1["整句 embedding"] --> T2["与每条三元组的文本编码比相似度"] --> T3["过阈值的三元组按相似度排序"]
+    end
+    Q --> E1
+    Q --> T1
+    E3 --> C["装入回答 prompt"]
+    T3 --> C
+</div>
+<p>&quot;Alice 工作的公司在哪个城市&quot;走实体那条路：定位到 Alice，沿 works_at 到公司，再沿 located_in 到城市，两跳都在子图里。&quot;Alice 最近在学什么&quot;走三元组那条路：没有可锚定的关系名，整句去和三元组比。</p>
+<p>图结构真正买到的是三样东西：关系有方向（A 住在 B 和 B 住在 A 不一样），关系之间能连成路径，关系有生命周期。代价论文也给了：记忆库 token 体积翻倍（7k 到 14k），搜索延迟三倍（p50 从 0.148 秒到 0.476 秒），外加实体消解的错误传播。</p>
+<blockquote>
+<p>再补一条代码层面的观察。&quot;标记失效而不是删除&quot;在论文里是概念描述，没有字段、没有规则、没有 prompt。论文发表当时的开源图记忆模块里，冲突关系的处理是一条 Cypher 语句 <code>MATCH ... DELETE r</code>，物理删除。时间推理靠的不是图上的失效标记，而是记忆本身带的时间戳和回答 prompt 里的换算规则。至少在开源版本，Mem0g 在时间问题上相对 Mem0 的优势，来源要打个问号。</p>
+</blockquote>
+<h2 id="实验结果"><a class="markdownIt-Anchor" href="#实验结果"></a> 实验结果</h2>
+<p>论文用 LoCoMo 评测。LoCoMo（Maharana et al., 2024）是一个专门测长对话记忆的数据集：10 段对话，每段约 600 轮、26k token，跨多个 session，两个真人聊日常；每段配约 200 个问题，分单跳、多跳、时间、开放域四类。原数据集还有一类&quot;不可回答&quot;的对抗问题，论文排除了。指标是 F1、BLEU-1 和 LLM 评审分（跑 10 次取均值），加上检索上下文的 token 数和延迟。</p>
+<p>对手六类：已发表的记忆方法（LoCoMo 自带的方法、ReadAgent、MemoryBank、MemGPT、A-Mem）、开源库 LangMem、不同 chunk 大小和 k 的 RAG、全上下文、OpenAI ChatGPT 的记忆功能、以及 Zep。几个后面会讨论的名字：Zep 是一个商业记忆平台，核心是带时间的知识图谱；LangMem 是 LangChain 出的记忆库；A-Mem 用互相链接的笔记组织记忆，写入时动态更新旧笔记；MemGPT 用操作系统分页的思路让模型自己在上下文和外部存储之间搬数据。</p>
+<p>Table 1 只留评审分（越高越好）：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>单跳</th>
+<th>多跳</th>
+<th>开放域</th>
+<th>时间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A-Mem</td>
+<td>39.79</td>
+<td>18.85</td>
+<td>54.05</td>
+<td>49.91</td>
+</tr>
+<tr>
+<td>LangMem</td>
+<td>62.23</td>
+<td>47.92</td>
+<td>71.12</td>
+<td>23.43</td>
+</tr>
+<tr>
+<td>Zep</td>
+<td>61.70</td>
+<td>41.35</td>
+<td><strong>76.60</strong></td>
+<td>49.31</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td>63.79</td>
+<td>42.92</td>
+<td>62.29</td>
+<td>21.71</td>
+</tr>
+<tr>
+<td>Mem0</td>
+<td><strong>67.13</strong></td>
+<td><strong>51.15</strong></td>
+<td>72.93</td>
+<td>55.51</td>
+</tr>
+<tr>
+<td>Mem0g</td>
+<td>65.71</td>
+<td>47.19</td>
+<td>75.71</td>
+<td><strong>58.13</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Table 2 留 token、延迟和总分：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>检索上下文 token</th>
+<th>搜索 p50 / p95（秒）</th>
+<th>总延迟 p50 / p95（秒）</th>
+<th>总评审分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全上下文</td>
+<td>26031</td>
+<td>–</td>
+<td>9.87 / 17.12</td>
+<td><strong>72.90</strong></td>
+</tr>
+<tr>
+<td>最好的 RAG（k=2，chunk 8192）</td>
+<td>–</td>
+<td>0.29 / 1.12</td>
+<td>2.31 / 9.94</td>
+<td>60.53</td>
+</tr>
+<tr>
+<td>A-Mem</td>
+<td>2520</td>
+<td>0.67 / 1.49</td>
+<td>1.41 / 4.37</td>
+<td>48.38</td>
+</tr>
+<tr>
+<td>LangMem</td>
+<td>127</td>
+<td>17.99 / 59.82</td>
+<td>18.53 / 60.40</td>
+<td>58.10</td>
+</tr>
+<tr>
+<td>Zep</td>
+<td>3911</td>
+<td>0.51 / 0.78</td>
+<td>1.29 / 2.93</td>
+<td>65.99</td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td>4437</td>
+<td>–</td>
+<td>0.47 / 0.89</td>
+<td>52.90</td>
+</tr>
+<tr>
+<td>Mem0</td>
+<td>1764</td>
+<td><strong>0.15 / 0.20</strong></td>
+<td><strong>0.71 / 1.44</strong></td>
+<td>66.88</td>
+</tr>
+<tr>
+<td>Mem0g</td>
+<td>3616</td>
+<td>0.48 / 0.66</td>
+<td>1.09 / 2.59</td>
+<td>68.44</td>
+</tr>
+</tbody>
+</table>
+<p>结果：</p>
+<ol>
+<li>全上下文仍然是质量上限。72.90 对 Mem0g 的 68.44、Mem0 的 66.88，差四到六分。Mem0 卖的不是&quot;更准&quot;，是这笔交易：用四到六分评审分，换 p95 延迟从 17 秒降到 1.4 秒、上下文 token 从 26k 降到 1.8k。摘要里的&quot;91% lower p95 latency&quot;和&quot;90% token 节省&quot;说的就是这个。这是一个产品判断，不是算法胜利，而且它成立的前提是对话真的长到塞不下、或者塞得起但付不起。</li>
+<li>图结构帮的是时间和开放域，不是多跳。直觉上图擅长多跳，结果多跳上 Mem0g（47.19）反而比 Mem0（51.15）低四分，单跳也略低；它赢在时间问题（58.13 对 55.51）和开放域。论文自己的解释是图在多步推理里引入了冗余和开销。我的理解是 LoCoMo 的多跳是&quot;把散在几个 session 里的信息拼起来&quot;，带时间戳的自然语言事实已经足够做这件事，三元组把句子拆碎反而丢了上下文。</li>
+<li>开放域 Zep 更高。Zep 的记忆库有 600k token，论文说是因为每个节点都缓存了一份摘要、事实又重复存在边上，二十倍于原始对话，Mem0 是 7k。论文还记了一笔：往 Zep 写完记忆立刻查经常答不上，隔几小时再查就好了，因为它的图构建有大量异步 LLM 调用。这段读起来有点像抱怨，但它点出了一个真问题：记忆的可用延迟和检索延迟是两个指标。</li>
+<li>RAG 最好也只到 60.5。固定切块检索原始对话，最好的配置是取两个 8192 token 的块，等于把半段对话塞回去，延迟也接近全上下文。这组对照说明的是切块检索原始对话不如抽取后的事实，不是说明 Mem0 的判定机制有效。</li>
+</ol>
+<h3 id="数字没说的事"><a class="markdownIt-Anchor" href="#数字没说的事"></a> 数字没说的事</h3>
+<p>评测脚本 2026 年 6 月从主仓库退役，但 git 历史还在。翻出来看，有几件事论文正文没提，读数字时得放在心里：</p>
+<ol>
+<li>实验跑在托管平台上，不是开源库。脚本用的是平台客户端，每次 add 送两条消息（对应论文的消息对），开图的时候加一个 enable_graph 参数。</li>
+<li>脚本给平台设了一段面向 LoCoMo 的自定义抽取指令：记忆里要写人名不要写&quot;user&quot;、要带具体日期、要覆盖&quot;身份认同与自我接纳、家庭计划与育儿、创意爱好、心理健康&quot;这些主题、每条记忆写成一段有叙事结构的话。这些主题就是 LoCoMo 对话的主题。抽取 prompt 对着评测集调过，论文没有说明。</li>
+<li>LoCoMo 是两个真人的对话，没有&quot;助手&quot;。脚本给每段对话建两个记忆库，一个把 A 当 user、B 当 assistant，另一个反过来；回答时两个库都检索，各取 Top-k（脚本默认 10 条）拼进 prompt。</li>
+<li>时间问题的分数有一部分是读链路挣的。检索回来的记忆按&quot;时间戳: 内容&quot;的格式排列，回答 prompt 明确要求做相对时间换算。记忆结构只需要把时间戳保住，换算由回答模型完成。</li>
+<li>评审很宽松。它的 prompt 原话是&quot;只要和标准答案涉及同一个话题就算正确&quot;，时间问题&quot;只要指向同一个时段就算正确&quot;。</li>
+<li>没有消融，没有失败案例分析。全文没有测抽取的准确率，没有测四操作判定的准确率，没有测 DELETE 误删了多少。所有指标都是端到端问答。</li>
+</ol>
+<p>第六条最要紧。论文的核心机制是写入时的判定，而整篇论文没有一个数字直接衡量这个判定做得对不对。端到端分数高，可能是因为判定准，可能是因为读链路的&quot;冲突取最新&quot;兜住了判定的错误，也可能是因为 LoCoMo 里真正互相矛盾的事实本来就不多。三种情况在数据上无法区分。</p>
+<blockquote>
+<p>这些数字支持的结论是&quot;比全上下文便宜得多、质量损失可控&quot;，不支持&quot;四操作判定是有效的记忆更新机制&quot;。</p>
+</blockquote>
+<h2 id="新版本写链路完全去除了冲突判定"><a class="markdownIt-Anchor" href="#新版本写链路完全去除了冲突判定"></a> 新版本写链路完全去除了冲突判定</h2>
+<p>写这篇的时候我顺手看了开源仓库的主分支（2026 年 8 月）。写链路和论文已经对不上了。2026 年 4 月的一个 PR 把写入流水线换成了 v3，prompt 文件里的注释写着&quot;从平台后端移植&quot;，说明托管平台更早就换了。几个变化：</p>
+<ol>
+<li>抽取 prompt 开头就写着&quot;你唯一的操作是 ADD&quot;。UPDATE 和 DELETE 不再由 LLM 判定，四操作的 prompt 还留在文件里，但主流程不再调用它。</li>
+<li>冲突和变化改在抽取时处理。prompt 专门有一节要求把&quot;转变&quot;写进同一条记忆：不要写&quot;用户喝燕麦奶拿铁&quot;，要写&quot;用户因为对杏仁过敏，从杏仁奶换成了燕麦奶拿铁&quot;。新旧关系被压进了记忆文本本身。prompt 还要求模型给出新记忆关联的旧记忆 ID（同一实体、偏好变化、事件延续、矛盾都算），不过在我读到的开源路径里，这个字段没有被写进记忆记录，真正落库的是实体到记忆的链接。</li>
+<li>抽取范围从&quot;关于用户的事实&quot;扩到了助手消息里的推荐、计划、结论，prompt 明说&quot;拿不准就抽，漏掉比冗余代价大&quot;，重复交给下游的哈希去重。</li>
+<li>读链路从纯向量变成混合检索（hybrid retrieval）：语义召回多取一批，叠 BM25 分和实体加权再排序；记忆可以带过期时间，过期的默认不返回。</li>
+<li>图记忆模块在同一个 PR 里从开源库删掉了，只在托管平台保留。</li>
+</ol>
+<p>PR 没有写动机，下面是我的推断：论文版的判定有三个结构性问题：</p>
+<ol>
+<li>贵：每次写入都要一次带着十条旧记忆的 LLM 调用。</li>
+<li>险：DELETE 是物理删除，判错了没有回退；UPDATE 的&quot;留信息多的那条&quot;会悄悄改写历史。</li>
+<li>盲：判定只看 Top-s 相似的旧记忆，窗口外的冲突根本看不见，所以本来就清不干净。既然清不干净又不可逆，不如不清：写入只追加，把新旧关系写进文本，<strong>冲突留到读的时候</strong>，让回答模型带着时间戳自己判断。（前面那个伏笔在这里兑现了：读链路的&quot;冲突取最新&quot;从第二道防线变成了主要的一道）</li>
+</ol>
+<p>这和 Zep 的&quot;标记失效而不删除&quot;殊途同归，也和上一篇综述里梳理的演进方向一致：早期系统让 LLM 检测冲突后直接替换删除，后来的<strong>系统转向软失效和读时消解</strong>。Mem0 自己走完了这条路，只是论文停在了起点。</p>
+<h2 id="回到春节礼盒"><a class="markdownIt-Anchor" href="#回到春节礼盒"></a> 回到春节礼盒</h2>
+<p>现在可以把开头的问题放回两个版本的 Mem0 里走一遍。</p>
+<ul>
+<li>论文版：第三周的消息抽出候选事实&quot;春节礼盒视频主色用红&quot;，召回旧记忆&quot;品牌偏冷，别用红色&quot;，LLM 判定。四个选项里 NOOP 和 ADD 都留下矛盾，DELETE 毁掉一条仍然有效的长期偏好，只有 UPDATE 成&quot;品牌偏冷色，春节礼盒例外用红&quot;是对的。但这要求判定模型分辨出&quot;这条视频&quot;是任务范围、&quot;品牌调性&quot;是用户范围，而它手里只有十条相似记忆和一段几百字的规则。判对了记忆库最干净，判错了不可逆。</li>
+<li>v3 版：两条都存，抽取时尽量把&quot;这次是春节礼盒的例外&quot;写进文本。下个月做常规款视频，检索会同时捞回&quot;一月：品牌偏冷&quot;和&quot;三月：春节礼盒用红&quot;，由回答模型看着日期和措辞决定用哪条。安全，但判断的成本转嫁到了每一次读取，而且依赖抽取时有没有把&quot;例外&quot;两个字写进去。</li>
+</ul>
+<p>两个版本的差别不是谁更聪明，是把判定放在哪里：<strong>写入时判一次，之后每次读都轻</strong>；或者<strong>写入时不判，每次读都判</strong>。全上下文是后者的极端，什么都不判，让模型每次读完整历史。（Zep 走中间路线，写入时标记、读取时过滤）</p>
+<p>没有免费的位置，只有适合自己负载的位置：<strong>写多读少的系统适合把判定推到读侧，写少读多的系统才值得在写侧判干净。</strong></p>
+<p>最后把论文版的整条写链路放回来看一眼。虚线灰色的部分是 v3 里不再存在的：判定本身和它后面的 UPDATE、DELETE、NOOP 三个分支。相似记忆召回还在，只是挪到了抽取之前，给抽取模型当去重和关联的参考；剩下的提取阶段和数据库，就是今天开源库写链路的骨架。</p>
+<div class="mermaid">
+flowchart LR
+    DB[("记忆库")]
+    MSG["新消息对<br/>当前消息与上一条消息"]
+
+    subgraph EXT["Extraction Phase（提取）"]
+        CTX["输入上下文<br/>全局摘要 S<br/>最近 m 条消息<br/>新消息对"]
+        EXTRACT["LLM 抽取<br/>候选事实"]
+        CAND["候选事实集合 Ω"]
+        CTX --> EXTRACT --> CAND
+    end
+
+    subgraph UPD["Update Phase（更新）"]
+        SIM["召回 Top-s 条<br/>相似旧记忆"]
+        DECIDE["LLM 判定<br/>新事实与旧记忆的关系"]
+        OP{"选择操作"}
+        ADD["ADD<br/>新增记忆"]
+        UPDATE["UPDATE<br/>替换已有记忆"]
+        DELETE["DELETE<br/>删除冲突记忆"]
+        NOOP["NOOP<br/>无需修改"]
+        SIM --> DECIDE --> OP
+        OP --> ADD
+        OP --> UPDATE
+        OP --> DELETE
+        OP --> NOOP
+    end
+
+    SUMGEN["异步摘要生成器"]
+
+    MSG --> CTX
+    DB -->|"读取摘要和最近历史"| CTX
+    DB -->|"读取相似旧记忆"| SIM
+    CAND --> SIM
+    ADD --> WRITE["执行数据库操作"]
+    UPDATE --> WRITE
+    DELETE --> WRITE
+    NOOP --> WRITE
+    WRITE -->|"写回"| DB
+    DB --> SUMGEN
+    SUMGEN -.->|"周期性刷新摘要"| DB
+
+    classDef gone fill:#f4f4f4,stroke:#999,stroke-dasharray:5 5,color:#888
+    class DECIDE,OP,UPDATE,DELETE,NOOP gone
+</div>
+<p>最后强调三点：</p>
+<ol>
+<li>更新时召回和回答时召回是两个组件。用一套配置、一套指标去管，两个都管不好。</li>
+<li>不要让 LLM 的一次判定触发物理删除。标记、链接、过期时间，都比删除便宜，而且能回退。</li>
+<li>端到端问答分数衡量不了写入判定。要知道自己的记忆系统有没有在&quot;改&quot;这件事上做对，得单独测抽取准确率、操作判定准确率和误删率。论文没测，不代表可以不测。</li>
+</ol>
+<p>Mem0 论文最有用的地方，是把&quot;记忆系统在写入时要做一个决定&quot;这件事讲得足够清楚；它最诚实的地方，是一年后的代码承认了这个决定有多难做。</p>
+<h2 id="参考"><a class="markdownIt-Anchor" href="#参考"></a> 参考</h2>
+<ul>
+<li>Chhikara, P., Khant, D., Aryan, S., Singh, T., &amp; Yadav, D. (2025). <em>Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory</em>. <a href="https://arxiv.org/abs/2504.19413" target="_blank" rel="noopener">arXiv:2504.19413</a></li>
+<li>Maharana, A. et al. (2024). <em>Evaluating Very Long-Term Conversational Memory of LLM Agents</em>（LoCoMo）. ACL 2024.</li>
+<li>Rasmussen, P. et al. (2025). <em>Zep: A Temporal Knowledge Graph Architecture for Agent Memory</em>. <a href="https://arxiv.org/abs/2501.13956" target="_blank" rel="noopener">arXiv:2501.13956</a></li>
+<li>Mem0 开源仓库：<a href="https://github.com/mem0ai/mem0" target="_blank" rel="noopener">github.com/mem0ai/mem0</a>。文中的代码观察基于主分支两个时间点：2025-04-29（论文发表当月）与 2026-08-12。</li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#三条消息一个决定"><span class="toc-text"> 三条消息，一个决定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#先把流水线走一遍"><span class="toc-text"> 先把流水线走一遍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#提取从一对消息里拿出候选事实"><span class="toc-text"> 提取：从一对消息里拿出候选事实</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更新每个候选事实过一次判定"><span class="toc-text"> 更新：每个候选事实过一次判定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一个最容易混淆的地方图里的召回不是回答时的召回"><span class="toc-text"> 一个最容易混淆的地方：图里的召回不是回答时的召回</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#论文没给的-prompt代码里有"><span class="toc-text"> 论文没给的 prompt，代码里有</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mem0g图结构多买到了什么"><span class="toc-text"> Mem0g：图结构多买到了什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实验结果"><span class="toc-text"> 实验结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数字没说的事"><span class="toc-text"> 数字没说的事</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#新版本写链路完全去除了冲突判定"><span class="toc-text"> 新版本写链路完全去除了冲突判定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#回到春节礼盒"><span class="toc-text"> 回到春节礼盒</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text"> 参考</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2026/08/01/%E4%B8%BA%E4%BB%80%E4%B9%88%20long%20short-term%20%E4%BA%8C%E5%88%86%E6%B3%95%E5%A4%B1%E6%95%88%E4%BA%86/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-01T14:57:27.000Z">2026.08.01</time>
+              <span>#Agent · #Memory · #论文阅读</span>
+            </span>
+            <strong>为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读</strong>
+          </a>
+        
+          <a href="/2026/08/30/DeerMem%20%E5%AE%B9%E9%87%8F%E6%B7%98%E6%B1%B0%EF%BC%9A%E9%97%AE%E9%A2%98%E3%80%81%E4%BF%AE%E5%A4%8D%E4%B8%8E%E5%8F%AF%E5%A4%8D%E7%8E%B0%E8%AF%84%E6%B5%8B/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-30T04:40:50.000Z">2026.08.30</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>一个 Memory 系统该忘掉什么：DeerMem 容量淘汰的问题、修复与可复现评测</strong>
+          </a>
+        
+          <a href="/2026/08/04/%E3%80%8C%E7%BA%AF%E5%B9%B2%E8%B4%A7%E3%80%8D%E5%87%A0%E4%B8%87%E5%AD%97%E9%83%BD%E8%AE%B2%E4%B8%8D%E6%98%8E%E7%99%BD%E7%9A%84Memory%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%9D%E8%80%83/">
+            <span class="related-notes__meta">
+              <time datetime="2026-08-04T09:23:38.000Z">2026.08.04</time>
+              <span>#Agent · #Memory</span>
+            </span>
+            <strong>【好文分享】「纯干货」几万字都讲不明白的Memory架构与思考</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2026/08/03/TencentDB-Agent-Memory%E7%9A%84%E8%AE%B0%E5%BF%86%E8%AE%BE%E8%AE%A1/"><span>上一篇</span><strong>TencentDB-Agent-Memory的记忆设计</strong></a>
+    <a href="/2026/08/01/%E4%B8%BA%E4%BB%80%E4%B9%88%20long%20short-term%20%E4%BA%8C%E5%88%86%E6%B3%95%E5%A4%B1%E6%95%88%E4%BA%86/"><span>下一篇</span><strong>为什么 long/short-term 二分法失效了：107 页 Agent Memory 综述精读</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>

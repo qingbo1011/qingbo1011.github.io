@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    
+
+
+
+
+
+
+
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>RabbitMQ · Quinn</title>
+<meta name="description" content="RabbitMQ RabbitMQ官网 RabbitMQ Tutorials RabbitMQ is the most widely deployed open source message broker. RabbitMQ 是部署最广泛的…" />
+
+  <link rel="icon" href="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/qingbo-lab-favicon-v5.png" />
+
+<link rel="canonical" href="https://www.qingbo1011.top/2022/06/22/RabbitMQ/" />
+
+  <link rel="alternate" type="application/atom+xml" title="Quinn · RSS" href="/atom.xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="RabbitMQ · Quinn" />
+<meta property="og:description" content="RabbitMQ RabbitMQ官网 RabbitMQ Tutorials RabbitMQ is the most widely deployed open source message broker. RabbitMQ 是部署最广泛的…" />
+<meta property="og:url" content="https://www.qingbo1011.top/2022/06/22/RabbitMQ/" />
+<meta property="og:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220725182354.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:image" content="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220725182354.png" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('quinn-theme-mode');
+      var mode = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+    } catch (_) {}
+  })();
+</script>
+
+
+  <link rel="stylesheet" href="/css/tokens.css" />
+
+  <link rel="stylesheet" href="/css/base.css" />
+
+  <link rel="stylesheet" href="/css/layout.css" />
+
+  <link rel="stylesheet" href="/css/content.css" />
+
+  <link rel="stylesheet" href="/css/callouts.css" />
+
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <link rel="stylesheet" href="/css/media-viewer.css" />
+
+
+  <meta name="generator" content="Hexo 4.2.1"></head>
+  <body class="page-post" data-mermaid-src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Quinn 首页">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span><strong>Quinn</strong><small>Lab Notes</small></span>
+    </a>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      
+        <a href="/archives/">Archive</a>
+      
+        <a href="/topics/">Topics</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="icon-button search-button" type="button" aria-label="搜索文章">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        </button>
+      
+      <button class="icon-button mode-button" type="button" aria-label="切换亮暗模式">
+        <svg class="mode-icon mode-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8a8.5 8.5 0 1 0 11.4 11.4Z"></path></svg>
+        <svg class="mode-icon mode-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </button>
+      <button class="icon-button menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+    
+
+<main class="article-shell" id="main-content">
+  <header class="article-header">
+    <p class="article-kicker">
+      
+        MQ · 2022.06.22
+      
+    </p>
+    <h1>RabbitMQ</h1>
+    <div class="article-header__bottom">
+      <p class="article-deck">“RabbitMQ 是部署最广泛的开源消息代理。”</p>
+      
+
+
+<div class="post-meta">
+  
+    <a class="post-meta__item" href="/categories/MQ/">MQ</a>
+  
+  <span class="post-meta__item">15 min</span>
+  
+    <span class="post-tags" aria-label="文章标签">
+      
+        <a href="/tags/MQ/">#MQ</a>
+      
+        <a href="/tags/RabbitMQ/">#RabbitMQ</a>
+      
+      
+    </span>
+  
+</div>
+
+    </div>
+  </header>
+  <div class="article-layout has-toc">
+    <article class="article-content">
+<p><strong><a href="https://www.rabbitmq.com/" target="_blank" rel="noopener">RabbitMQ官网</a></strong></p>
+<ul>
+<li><strong><a href="https://www.rabbitmq.com/getstarted.html" target="_blank" rel="noopener">RabbitMQ Tutorials</a></strong></li>
+</ul>
+<p>RabbitMQ is the most widely deployed open source message broker.</p>
+
+<ul>
+<li><a href="https://www.youtube.com/watch?v=7rkeORD4jSw" target="_blank" rel="noopener">What is RabbitMQ?</a></li>
+<li><strong><a href="https://www.youtube.com/watch?v=hfUIWe1tK8E" target="_blank" rel="noopener">RabbitMQ : Message Queues for beginners</a></strong></li>
+<li><a href="https://developer.aliyun.com/article/769883" target="_blank" rel="noopener">超详细的RabbitMQ入门，看这篇就够了！</a></li>
+<li><a href="https://www.cnblogs.com/ZhuChangwu/p/14093107.html" target="_blank" rel="noopener">保姆级别的RabbitMQ教程！一看就懂！</a></li>
+<li><strong><a href="https://haicoder.net/rabbitmq/rabbitmq-tutorial.html" target="_blank" rel="noopener">RabbitMQ教程</a></strong></li>
+</ul>
+<h1 id="消息队列概述"><a class="markdownIt-Anchor" href="#消息队列概述"></a> 消息队列概述</h1>
+<p>消息队列概述可以参考视频<a href="https://www.youtube.com/watch?v=7rkeORD4jSw" target="_blank" rel="noopener">What is RabbitMQ?</a>和**<a href="https://www.youtube.com/watch?v=hfUIWe1tK8E" target="_blank" rel="noopener">RabbitMQ : Message Queues for beginners</a>**。</p>
+<h2 id="什么是消息队列"><a class="markdownIt-Anchor" href="#什么是消息队列"></a> 什么是消息队列</h2>
+<p>消息(message)指的是两个应用间传递的数据。数据的类型有很多种形式，可能只包含文本字符串，也可能包含嵌入对象。</p>
+<p><strong>“消息队列(Message Queue)”是在消息的传输过程中保存消息的容器</strong>。在消息队列中，通常有生产者和消费者两个角色。生产者只负责发送数据到消息队列，谁从消息队列中取出数据处理，他不管。消费者只负责从消息队列中取出数据处理，他不管这是谁发送的数据。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220721183146.png" alt="" /></p>
+<h2 id="为什么使用消息队列"><a class="markdownIt-Anchor" href="#为什么使用消息队列"></a> 为什么使用消息队列</h2>
+<p>主要有三个作用：</p>
+<ol>
+<li>
+<p><strong>解耦</strong>。如下图所示。假设有系统B、C、D都需要系统A的数据，于是系统A调用三个方法发送数据到B、C、D。这时，系统D不需要了，那就需要在系统A把相关的代码删掉。假设这时有个新的系统E需要数据，这时系统A又要增加调用系统E的代码。为了降低这种强耦合，就可以使用MQ，<strong>系统A只需要把数据发送到MQ，其他系统如果需要数据，则从MQ中获取即可</strong>。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220721183451.png" alt="" /></p>
+</li>
+<li>
+<p><strong>异步</strong>。如下图所示。一个客户端请求发送进来，系统A会调用系统B、C、D三个系统，同步请求的话，响应时间就是系统A、B、C、D的总和，也就是800ms。<strong>如果使用MQ，系统A发送数据到MQ，然后就可以返回响应给客户端，不需要再等待系统B、C、D的响应，可以大大地提高性能</strong>。对于一些非必要的业务，比如发送短信，发送邮件等等，就可以采用MQ。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220721183549.png" alt="" /></p>
+</li>
+<li>
+<p><strong>削峰</strong>。如下图所示。这其实是MQ一个很重要的应用。假设系统A在某一段时间请求数暴增，有5000个请求发送过来，系统A这时就会发送5000条SQL进入MySQL进行执行，MySQL对于如此庞大的请求当然处理不过来，MySQL就会崩溃，导致系统瘫痪。<strong>如果使用MQ，系统A不再是直接发送SQL到数据库，而是把数据发送到MQ，MQ短时间积压数据是可以接受的，然后由消费者每次拉取2000条进行处理，防止在请求峰值时期大量的请求直接发送到MySQL导致系统崩溃</strong>。</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220721183907.png" alt="" /></p>
+</li>
+</ol>
+<h2 id="rabbitmq的特点"><a class="markdownIt-Anchor" href="#rabbitmq的特点"></a> RabbitMQ的特点</h2>
+<blockquote>
+<p>RabbitMQ是由Erlang语言开发的AMQP的开源实现。</p>
+</blockquote>
+<p><strong>AMQP：Advanced Message Queue，高级消息队列协议</strong>。它是<strong>应用层</strong>协议的一个开放标准，为面向消息的中间件设计，基于此协议的客户端与消息中间件可传递消息，并不受产品、开发语言等条件的限制。</p>
+<p>RabbitMQ特点：</p>
+<ul>
+<li>可靠性(Reliablity)：使用了一些机制来保证可靠性，比如持久化、传输确认、发布确认。</li>
+<li>灵活的路由(Flexible Routing)：在消息进入队列之前，通过Exchange来路由消息。对于典型的路由功能，Rabbit已经提供了一些内置的Exchange来实现。针对更复杂的路由功能，可以将多个Exchange绑定在一起，也通过插件机制实现自己的Exchange。</li>
+<li>消息集群(Clustering)：多个RabbitMQ服务器可以组成一个集群，形成一个逻辑Broker。</li>
+<li>高可用(Highly Avaliable Queues)：队列可以在集群中的机器上进行镜像，使得在部分节点出问题的情况下队列仍然可用。</li>
+<li>多种协议(Multi-protocol)：支持多种消息队列协议，如STOMP、MQTT等。</li>
+<li>多种语言客户端(Many Clients)：几乎支持所有常用语言，比如<code>Java</code>、<code>.NET</code>、<code>Ruby</code>、<code>Go</code>等。</li>
+<li>管理界面(Management UI)：提供了易用的用户界面，使得用户可以监控和管理消息Broker的许多方面。</li>
+<li>跟踪机制(Tracing)：如果消息异常，RabbitMQ提供了消息的跟踪机制，使用者可以找出发生了什么。</li>
+<li>插件机制(Plugin System)：提供了许多插件，来从多方面进行扩展，也可以编辑自己的插件。</li>
+</ul>
+<h2 id="常见消息队列对比"><a class="markdownIt-Anchor" href="#常见消息队列对比"></a> 常见消息队列对比</h2>
+<ul>
+<li><a href="https://www.upsolver.com/blog/kafka-versus-rabbitmq-architecture-performance-use-case" target="_blank" rel="noopener">Kafka vs. RabbitMQ: Architecture, Performance &amp; Use Cases</a></li>
+<li><a href="https://cloud.tencent.com/developer/article/1841508" target="_blank" rel="noopener">大数据开发：常用的四种消息队列对比</a></li>
+<li><strong><a href="https://boilingfrog.github.io/2021/12/10/%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E5%AF%B9%E6%AF%94/" target="_blank" rel="noopener">RabbitMQ，RocketMQ，Kafka，Pulsar 几种消息队列的对比</a></strong></li>
+<li><strong><a href="https://haicoder.net/rabbitmq/rabbitmq-rocketmq-kafka.html" target="_blank" rel="noopener">常见MQ对比</a></strong></li>
+</ul>
+<p>当前市面上mq的产品很多，比如RabbitMQ、Kafka、ActiveMQ、ZeroMQ和阿里巴巴捐献给Apache的RocketMQ。甚至连redis这种NoSQL都支持MQ的功能。</p>
+<ul>
+<li><code>ActiveMQ</code>：基于JMS，Apache</li>
+<li><code>RocketMQ</code>：（Rocket，火箭）阿里巴巴的产品，基于JMS，目前由Apache维护</li>
+<li>Kafka：分布式消息系统，亮点：吞吐量超级高，每秒数十万的并发。</li>
+<li><code>RabbitMQ</code>：（Rabbit，兔子）由erlang语言开发，基于AMQP协议，在erlang语言特性的加持下，RabbitMQ稳定性要比其他的MQ产品好一些，而且erlang语言本身是面向高并发的编程的语言，所以RabbitMQ速度也非常快。且它基于AMQP协议，对分布式、微服务更友好。</li>
+</ul>
+<p>MQ的选择：</p>
+<ul>
+<li>一般的业务系统要引入 MQ，最早大家都用 <s>ActiveMQ</s>，但是现在确实大家用的不多了，没经过大规模吞吐量场景的验证，社区也不是很活跃，不推荐使用；</li>
+<li>后来大家开始用 RabbitMQ，但是确实 erlang 语言阻止了大量的 Java 工程师去深入研究和掌控它，对公司而言，几乎处于不可控的状态，但是确实人家是开源的，比较稳定的支持，活跃度也高；</li>
+<li>不过现在确实越来越多的公司会去用 RocketMQ，确实很不错，毕竟是阿里出品，但社区可能有突然黄掉的风险（目前 RocketMQ 已捐给 Apache，但 GitHub 上的活跃度其实不算高）对自己公司技术实力有绝对自信的，推荐用 RocketMQ，否则回去老老实实用 RabbitMQ 吧，人家有活跃的开源社区，绝对不会黄。</li>
+<li>所以中小型公司，技术实力较为一般，技术挑战不是特别高，用 RabbitMQ 是不错的选择；大型公司，基础架构研发实力较强，用 RocketMQ 是很好的选择。</li>
+<li>如果是大数据领域的实时计算、日志采集等场景，用 Kafka 是业内标准的，绝对没问题，社区活跃度很高，绝对不会黄，何况几乎是全世界这个领域的事实性规范。</li>
+</ul>
+<h1 id="docker安装rabbitmq"><a class="markdownIt-Anchor" href="#docker安装rabbitmq"></a> Docker安装RabbitMQ</h1>
+<ul>
+<li><a href="https://www.cnblogs.com/yufeng218/p/9452621.html" target="_blank" rel="noopener">博客园：docker 安装rabbitMQ</a></li>
+<li><a href="https://juejin.cn/post/6844903970545090574" target="_blank" rel="noopener">掘金：docker安装RabbitMq</a></li>
+<li><a href="https://learnku.com/articles/37157" target="_blank" rel="noopener">RabbitMQ 安装及简单使用（基于 docker｜白小纯版）</a></li>
+</ul>
+<p>这里我们以安装rabbitmq 3.8-management版本为例。</p>
+<blockquote>
+<p>带有mangement的版本<strong>包含web管理页面</strong>。</p>
+</blockquote>
+<p>首先<code>docker pull</code>拉取镜像：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull rabbitmq:3.8-management</span><br></pre></td></tr></table></figure>
+<p>接下来<code>docker run</code>启动容器：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name rabbitmq3.8 \</span><br><span class="line">-p 5672:5672 -p 15672:15672 \</span><br><span class="line">-v /home/root/dockerVolumes/rabbit/rabbit3.8/data:/var/lib/rabbitmq \</span><br><span class="line">--hostname myrabbit \</span><br><span class="line">-e RABBITMQ_DEFAULT_VHOST=my_vhost \</span><br><span class="line">-e RABBITMQ_DEFAULT_USER=admin \</span><br><span class="line">-e RABBITMQ_DEFAULT_PASS=admin \</span><br><span class="line">rabbitmq:3.8-management</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数说明：</p>
+<ul>
+<li><code>-d</code>：后台运行容器，并返回容器ID</li>
+<li><code>--name rabbitmq3.8</code>：为该容器指定名称为rabbitmq3.8</li>
+<li><code>-p 5672:5672 -p 15672:15672</code>：端口映射（主机(宿主)端口:容器端口）
+<ul>
+<li>5672：应用访问端口</li>
+<li>15672：控制台Web端口号</li>
+</ul>
+</li>
+<li><code>-v /home/root/dockerVolumes/rabbit/rabbit3.8/data:/var/lib/rabbitmq</code>：绑定数据卷（/宿主机绝对路径目录:/容器内目录），将容器内的<code>/var/lib/rabbitmq</code>挂载到宿主机的<code>/home/root/dockerVolumes/rabbit/rabbit3.8/data</code>文件夹下</li>
+<li><code>--hostname myrabbit</code>：指定主机名（RabbitMQ的一个重要注意事项是它根据所谓的<strong>节点名称</strong>存储数据，默认为主机名）</li>
+<li><code>-e</code>设置环境变量：
+<ul>
+<li><code>-e RABBITMQ_DEFAULT_VHOST=my_vhost</code>：默认虚拟机名为my_vhost</li>
+<li><code>-e RABBITMQ_DEFAULT_USER=admin</code>：默认用户名为admin</li>
+<li><code>-e RABBITMQ_DEFAULT_PASS=admin</code>：默认用户admin的密码为admin</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>进入rabbit容器内：<code>docker exec -it rabbitmq3.8 bash</code>。</p>
+<p>运行后访问<code>http://ip:15672/</code>，进入rabbit的web管理界面。</p>
+<h1 id="rabbitmq相关概念"><a class="markdownIt-Anchor" href="#rabbitmq相关概念"></a> Rabbitmq相关概念</h1>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220722000405.png" alt="" /></p>
+<blockquote>
+<p>“P” is our producer and “C” is our consumer. The box in the middle is a queue - a message buffer that RabbitMQ keeps on behalf of the consumer.</p>
+</blockquote>
+<p>所有MQ产品从模型抽象来说，都是一样的过程：</p>
+<ul>
+<li>消费者(consumer)订阅某个队列。</li>
+<li>生产者(producter)创建消息，然后发布到队列中(queue)，最终将消息发送到监听的消费者。</li>
+</ul>
+<blockquote>
+<p>当然这只是最简单抽象的描述，具体到RabbitMQ则有更详细的概念需要解释。</p>
+<p>（参考：<a href="https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9CRabbitMQ/RabbitMQ%E4%BB%8B%E7%BB%8D.html" target="_blank" rel="noopener">RabbitMQ介绍 · Go语言中文文档</a>）</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220722145428.png" alt="" /></p>
+</blockquote>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220722123501.png" alt="" /></p>
+<ul>
+<li><code>Broker</code>：标识消息队列服务器实体。</li>
+<li><code>Virtual Host</code>：虚拟主机。标识一批交换机、消息队列和相关对象。虚拟主机是共享相同的身份认证和加密环境的独立服务器域。每个vhost本质上就是一个mini版的RabbitMQ服务器，拥有自己的队列、交换器、绑定和权限机制。<strong>vhost是AMQP概念的基础，必须在链接时指定</strong>，RabbitMQ默认的vhost是 <code>/</code>。</li>
+<li><code>Exchange</code>：交换器，用来接收生产者发送的消息并将这些消息路由给服务器中的队列。</li>
+<li><code>Queue</code>：消息队列，用来保存消息直到发送给消费者。它是消息的容器，也是消息的终点。一个消息可投入一个或多个队列。消息一直在队列里面，等待消费者连接到这个队列将其取走。</li>
+<li><code>Banding</code>：绑定，用于消息队列和交换机之间的关联。一个绑定就是基于路由键将交换机和消息队列连接起来的路由规则，所以可以将交换器理解成一个由绑定构成的路由表。</li>
+<li><code>Channel</code>：信道，多路复用连接中的一条独立的双向数据流通道。信道是建立在真实的TCP连接内的虚拟链接，<strong>AMQP命令都是通过信道发出去的</strong>，不管是<strong>发布消息、订阅队列还是接收消息，这些动作都是通过Channel完成</strong>。因为<strong>对于操作系统来说，建立和销毁TCP都是非常昂贵的开销，所以引入了信道的概念，以复用一条TCP连接。</strong></li>
+<li><code>Connection</code>：网络连接，比如一个TCP连接。</li>
+<li><code>Publisher</code>：消息的生产者，也是一个向交换器发布消息的客户端应用程序。</li>
+<li><code>Consumer</code>：消息的消费者，表示一个从一个消息队列中取得消息的客户端应用程序。</li>
+<li><code>Message</code>：消息，消息是不具名的，它是由消息头和消息体组成。消息体是不透明的，而消息头则是由一系列的可选属性组成，这些属性包括routing-key(路由键)、priority(优先级)、delivery-mode(消息可能需要持久性存储[消息的路由模式])等。</li>
+</ul>
+<h1 id="rabbitmq的六种工作模式"><a class="markdownIt-Anchor" href="#rabbitmq的六种工作模式"></a> RabbitMQ的六种工作模式</h1>
+<p><a href="https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9CRabbitMQ/RabbitMQ%E4%BB%8B%E7%BB%8D.html#rabbitmq%E7%9A%84%E5%85%AD%E7%A7%8D%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F" target="_blank" rel="noopener">RabbitMQ的六种工作模式</a></p>
+<blockquote>
+<p>具体要多看官网：<a href="https://www.rabbitmq.com/getstarted.html" target="_blank" rel="noopener">RabbitMQ Tutorials</a></p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220722150201.png" alt="" /></p>
+</blockquote>
+<h2 id="simple"><a class="markdownIt-Anchor" href="#simple"></a> Simple</h2>
+<p><a href="https://www.rabbitmq.com/tutorials/tutorial-one-go.html" target="_blank" rel="noopener">RabbitMQ tutorial - “Hello world!”</a></p>
+<p>simple简单模式：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220722000405.png" alt="" /></p>
+<ul>
+<li>生产者(producter)将消息放入队列(queen)</li>
+<li>消费者(consumer) 监听(while) 消息队列，如果队列中有消息，就消费掉。消息被拿走后，自动从队列中删除(隐患：消息可能没有被消费者正确处理，已经从队列中消失了，造成消息的丢失)。应用场景：聊天(中间有一个过度的服务器;p端,c端)</li>
+</ul>
+<p>做simple简单模式之前首先我们新建一个<code>Virtual Host</code>并且给他分配一个用户名，用来隔离数据，根据自己需要自行创建。</p>
+<blockquote>
+<p><strong>在web管理页面上具体操作步骤参考：<a href="https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9CRabbitMQ/Simple%E6%A8%A1%E5%BC%8F.html" target="_blank" rel="noopener">Simple模式</a></strong></p>
+</blockquote>
+<h2 id="work-queues"><a class="markdownIt-Anchor" href="#work-queues"></a> Work queues</h2>
+<p><a href="https://www.rabbitmq.com/tutorials/tutorial-two-go.html" target="_blank" rel="noopener">RabbitMQ tutorial - Work Queues</a></p>
+<p>Work queues（工作队列模式）：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220722155931.png" alt="" /></p>
+<p>在 Work queues 工作模式中，不需要设置交换器（RabbitMQ 会使用内部默认交换器进行消息转换），需要指定唯一的消息队列进行消息传递，并且可以有多个消息消费者。在这种模式下，多个消息消费者通过轮询的方式依次接收消息队列中存储的消息，一旦消息被某一个消费者接收，消息队列会将消息移除，而接收并处理消息的消费者必须在消费完一条消息后再准备接收下一条消息。</p>
+<blockquote>
+<p>Work queues 工作模式适用于那些较为繁重，并且可以进行拆分处理的业务，这种情况下可以分派给多个消费者轮流处理业务。</p>
+</blockquote>
+<p>特点：</p>
+<ul>
+<li>一条消息只会被一个消费端接收</li>
+<li>队列采用轮询的方式将消息是平均发送给消费者的</li>
+<li>消费者在处理完某条消息后，才会收到下一条消息</li>
+</ul>
+<p>消生产者将消息放入队列，消费者可以有多个：消费者1、消费者2同时监听同一个队列，C1、C2共同争抢当前的消息队列内容，谁先拿到谁负责消费消息（隐患：高并发情况下，默认会产生某一个消息被多个消费者共同使用，可以设置一个开关(syncronize,与同步锁的性能不一样) 保证一条消息只能被一个消费者使用）</p>
+<p>应用场景：</p>
+<ul>
+<li>红包</li>
+<li>大项目中的资源调度（任务分配系统不需知道哪一个任务执行系统在空闲，直接将任务扔到消息队列中，空闲的系统自动争抢）</li>
+</ul>
+<h2 id="publishsubscribe"><a class="markdownIt-Anchor" href="#publishsubscribe"></a> Publish/Subscribe</h2>
+<p><a href="https://www.rabbitmq.com/tutorials/tutorial-three-go.html" target="_blank" rel="noopener">RabbitMQ tutorial - Publish/Subscribe</a></p>
+<p>Publish/Subscribe（发布订阅模式）：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220725163803.png" alt="" /></p>
+<p>在 Publish/Subscribe 工作模式中，必须先配置一个 fanout 类型的交换器，不需要指定对应的路由键（Routing key），同时会将消息路由到每一个消息队列上，然后每个消息队列都可以对相同的消息进行接收存储，进而由各自消息队列关联的消费者进行消费。</p>
+<blockquote>
+<p>Publish/Subscribe 工作模式适用于进行相同业务功能处理的场合。例如，用户注册成功后，需要同时发送邮件通知和短信通知，那么邮件服务消费者和短信服务消费者需要共同消费 “用户注册成功” 这一条消息。</p>
+</blockquote>
+<p>特点：</p>
+<ul>
+<li>每个消费者监听自己的队列</li>
+<li>生产者将消息发给 broker，由交换机将消息转发到绑定此交换机的每个队列，每个绑定交换机的队列都将接收到消息</li>
+</ul>
+<p>X代表交换机（rabbitMQ内部组件），生产者将消息放入交换机，交换机发布订阅把消息发送到所有消息队列中，对应消息队列的消费者拿到消息进行消费。</p>
+<p>应用场景：</p>
+<ul>
+<li>邮件群发</li>
+<li>群聊天</li>
+<li>广播(广告)</li>
+</ul>
+<h2 id="routing"><a class="markdownIt-Anchor" href="#routing"></a> Routing</h2>
+<p><a href="https://www.rabbitmq.com/tutorials/tutorial-four-go.html" target="_blank" rel="noopener">RabbitMQ tutorial - Routing</a></p>
+<p>Routing（路由模式）：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220725180549.png" alt="" /></p>
+<p>在 Routing 工作模式中，必须先配置一个 direct 类型的交换器，并指定不同的路由键值（Routing key）将对应的消息从交换器路由到不同的消息队列进行存储，由消费者进行各自消费。</p>
+<blockquote>
+<p>Routing 工作模式适用于进行不同类型消息分类处理的场合。例如，日志收集处理，用户可以配置不同的路由键值分别对不同级别的日志信息进行分类处理。</p>
+</blockquote>
+<p>特点：</p>
+<ul>
+<li>每个消费者监听自己的队列，并且设置 routingkey</li>
+<li>生产者将消息发给交换机，由交换机根据routingkey来转发消息到指定的队列</li>
+</ul>
+<p>生产者将消息发送给交换机，按照路由判断（路由是字符串(info) ），当前产生的消息携带路由字符(对象的方法)，交换机根据路由的key，只有匹配上路由key对应的消息队列，对应的消费者才能消费消息。</p>
+<p>特点：</p>
+<ul>
+<li>每个消费者监听自己的队列，并且设置 routingkey</li>
+<li>生产者将消息发给交换机，由交换机根据routingkey来转发消息到指定的队列</li>
+</ul>
+<h2 id="topics"><a class="markdownIt-Anchor" href="#topics"></a> Topics</h2>
+<p><a href="https://www.rabbitmq.com/tutorials/tutorial-five-go.html" target="_blank" rel="noopener">RabbitMQ tutorial - Topics</a></p>
+<p>Topics（通配符模式）：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220725180508.png" alt="" /></p>
+<p>在 Topics 工作模式中，必须先配置一个 topic 类型的交换器，并指定不同的路由键值（Routing key）将对应的消息从交换器路由到不同的消息队列进行存储，然后由消费者进行各自消费。</p>
+<p>Topics 模式与 Routing 模式的主要不同在于：Topics 模式设置的路由键是包含通配符的，其中，<code>#</code> 匹配多个字符，<code>*</code> 匹配一个字符，然后与其他字符一起使用<code>.</code>进行连接，从而组成动态路由键，在发送消息时可以根据需求设置不同的路由键从而将消息路由到不同的消息队列。</p>
+<blockquote>
+<p>Topics 工作模式适用于根据不同需求动态传递处理业务的场合。例如，一些订阅客户喜欢只接收邮件消息，一些订阅客户只喜欢接收短信消息，而有些订阅可以都接收，那么可以根据客户需求进行动态路由匹配，从而将订阅消息分发到不同的消息队列中。</p>
+</blockquote>
+<p>特点：</p>
+<ol>
+<li>每个消费者监听自己的队列，并且设置带统配符的 routingkey</li>
+<li>生产者将消息发给 broker，由交换机根据 routingkey 来转发消息到指定的队列</li>
+</ol>
+<h2 id="rpc"><a class="markdownIt-Anchor" href="#rpc"></a> RPC</h2>
+<p><a href="https://www.rabbitmq.com/tutorials/tutorial-six-go.html" target="_blank" rel="noopener">RabbitMQ tutorial - Remote procedure call (RPC)</a></p>
+<p>RPC：</p>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220725180447.png" alt="" /></p>
+<p>RPC 工作模式与 Work queues 工作模式主体流程相似，都不需要设置交换器，需要指定唯一的消息队列进行消息传递。</p>
+<p>RPC 模式与 Work queues 模式的主要不同在于：RPC 模式是一个回环结构，主要针对分布式架构的消息传递业务，客户端 Client 先发送消息到消息队列，远程服务端 Server 获取消息，然后再写入另一个消息队列，向原始客户端 Client 响应消息处理结果。</p>
+<blockquote>
+<p>RPC 工作模式适用于远程服务调用的业务处理场合。例如，在分布式架构中必须考虑的分布式事务管理问题。</p>
+</blockquote>
+<h1 id="rabbitmq消息流"><a class="markdownIt-Anchor" href="#rabbitmq消息流"></a> RabbitMQ消息流</h1>
+<p><a href="https://haicoder.net/rabbitmq/rabbitmq-msg-flow.html" target="_blank" rel="noopener">RabbitMQ消息流</a></p>
+<h2 id="amqp"><a class="markdownIt-Anchor" href="#amqp"></a> AMQP</h2>
+<p>AMQP 一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。AMQP 是一个二进制协议，拥有一些现代化特点：多信道、协商式，异步，安全，扩平台，中立，高效。</p>
+<p>RabbitMQ是AMQP协议的Erlang的实现。</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连接 Connection</td>
+<td>一个网络连接，比如 <strong>TCP/IP</strong> 套接字连接。</td>
+</tr>
+<tr>
+<td>会话 Session</td>
+<td>端点之间的命名对话。在一个会话上下文中，保证 “恰好传递一次”。</td>
+</tr>
+<tr>
+<td>信道 Channel</td>
+<td>多路复用连接中的一条独立的双向数据流通道。为会话提供物理传输介质。</td>
+</tr>
+<tr>
+<td>客户端 Client</td>
+<td>AMQP 连接或者会话的发起者。AMQP 是非对称的，客户端生产和消费消息，服务器存储和路由这些消息。</td>
+</tr>
+<tr>
+<td>服务节点 Broker</td>
+<td>消息中间件的服务节点；一般情况下可以将一个 RabbitMQ Broker 看作一台 RabbitMQ 服务器。</td>
+</tr>
+<tr>
+<td>端点</td>
+<td>AMQP 对话的任意一方。一个AMQP连接包括两个端点（一个是客户端，一个是服务器）。</td>
+</tr>
+<tr>
+<td>消费者 Consumer</td>
+<td>一个从消息队列里请求消息的客户端程序。</td>
+</tr>
+<tr>
+<td>生产者 Producer</td>
+<td>一个向交换机发布消息的客户端应用程序。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="rabbitmq运转流程"><a class="markdownIt-Anchor" href="#rabbitmq运转流程"></a> RabbitMQ运转流程</h2>
+<p><img src="https://img-qingbo.oss-cn-beijing.aliyuncs.com/img/20220725181210.png" alt="" /></p>
+<p>生产者发送消息：</p>
+<ol>
+<li>生产者创建连接（Connection），开启一个信道（Channel），连接到 RabbitMQ Broker</li>
+<li>声明队列并设置属性；如是否排它，是否持久化，是否自动删除</li>
+<li>将路由键（空字符串）与队列绑定起来</li>
+<li>发送消息至 RabbitMQ Broker</li>
+<li>关闭信道</li>
+<li>关闭连接</li>
+</ol>
+<p>消费者接收消息：</p>
+<ol>
+<li>消费者创建连接（Connection），开启一个信道（Channel），连接到 RabbitMQ Broker</li>
+<li>向 Broker 请求消费相应队列中的消息，设置相应的回调函数</li>
+<li>等待 Broker 回应闭关投递响应队列中的消息，消费者接收消息</li>
+<li>确认（ack，自动确认）接收到的消息</li>
+<li>RabbitMQ 从队列中删除相应已经被确认的消息</li>
+<li>关闭信道</li>
+<li>关闭连接</li>
+</ol>
+<blockquote>
+<p><strong>生产者流转过程说明：</strong></p>
+<ol>
+<li>客户端与代理服务器 Broker 建立连接。会调用 newConnection() 方法，这个方法会进一步封装 Protocol Header 0-9-1 的报文头发送给 Broker ，以此通知 Broker 本次交互采用的是 AMQPO-9-1 协议，紧接着 Broker 返回 Connection.Start 来建立连接，在连接的过程中涉及 Connection.Start/.Start-OK 、Connection.Tune/.Tune-Ok ，Connection.Open/.Open-Ok 这 6 个命令的交互。</li>
+<li>客户端调用 connection.createChannel 方法。此方法开启信道，其包装的 channel.open 命令发送给 Broker，等待 channel.basicPublish 方法，对应的 AMQP 命令为 Basic.Publish，这个命令包含了 content Header 和 content Body()。content Header 包含了消息体的属性，例如:投递模式，优先级等，content Body 包含了消息体本身。</li>
+<li>客户端发送完消息需要关闭资源时，涉及到 Channel.Close 和 Channl.Close-Ok 与 Connetion.Close 和 Connection.Close-Ok 的命令交互。</li>
+</ol>
+<p><strong>消费者流转过程说明：</strong></p>
+<ol>
+<li>消费者客户端与代理服务器 Broker 建立连接。会调用 newConnection() 方法，这个方法会进一步封装 Protocol Header 0-9-1 的报文头发送给 Broker，以此通知 Broker 本次交互采用的是 AMQPO-9-1 协议，紧接着 Broker 返回 Connection.Start 来建立连接，在连接的过程中涉及 Connection.Start/.Start-OK 、Connection.Tune/.Tune-Ok ，Connection.Open/.Open-Ok 这 6 个命令的交互。</li>
+<li>消费者客户端调用 connection.createChannel 方法。和生产者客户端一样，协议涉及 Channel.Open/Open-Ok 命令。</li>
+<li>在真正消费之前，消费者客户端需要向 Broker 发送 Basic.Consume 命令(即调用 channel.basicConsume 方法〉将 Channel 置为接收模式，之后 Broker 回执 Basic.Consume-Ok 以告诉消费者客户端准备好消费消息。</li>
+<li>Broker 向消费者客户端推送(Push) 消息，即 Basic.Deliver 命令，这个命令和 Basic.Publish 命令一样会携带 Content Header 和 Content Body。</li>
+<li>消费者接收到消息并正确消费之后，向 Broker 发送确认， 即Basic.Ack 命令。</li>
+<li>客户端发送完消息需要关闭资源时，涉及到 Channel.Close 和 Channl.Close-Ok 与 Connetion.Close 和 Connection.Close-Ok 的命令交互。</li>
+</ol>
+</blockquote>
+<h1 id="rabbitmq常用命令"><a class="markdownIt-Anchor" href="#rabbitmq常用命令"></a> RabbitMQ常用命令</h1>
+<p><a href="https://haicoder.net/rabbitmq/rabbitmq-cmd.html" target="_blank" rel="noopener">RabbitMQ常用命令</a></p>
+<p>插件管理：</p>
+<ul>
+<li>查看插件打开情况：<code>rabbitmq-plugins list</code></li>
+<li>启动监控管理器：<code>rabbitmq-plugins enable rabbitmq_management</code></li>
+<li>关闭监控管理器：<code>rabbitmq-plugins disable rabbitmq_management</code></li>
+</ul>
+<p>服务器管理：</p>
+<ul>
+<li>服务器启动：<code>service rabbitmq-server start</code></li>
+<li>服务器关闭：<code>service rabbitmq-server stop</code></li>
+<li>服务器重启：<code>service rabbitmq-server restart</code></li>
+</ul>
+<p>服务管理：</p>
+<ul>
+<li>启动rabbitmq：<code>rabbitmq-service start</code></li>
+<li>关闭rabbitmq：<code>rabbitmq-service stop</code></li>
+</ul>
+<p>应用管理：</p>
+<ul>
+<li>关闭应用：<code>rabbitmqctl stop_app</code></li>
+<li>启动应用：<code>rabbitmqctl start_app</code></li>
+<li>查看状态：<code>rabbitmqctl status</code></li>
+<li>多应用使用：<code>rabbitmqctl -n rabbit_ceilometer</code></li>
+</ul>
+<p>队列管理：</p>
+<ul>
+<li>查看所有的队列：<code>rabbitmqctl list_queues</code></li>
+<li>清除所有的队列：<code>rabbitmqctl reset</code></li>
+</ul>
+<p>用户管理：</p>
+<ul>
+<li>新增用户：<code>rabbitmqctl add_user admin admin</code></li>
+<li>删除用户：<code>rabbitmqctl delete_user admin</code></li>
+<li>修改用户：<code>rabbitmqctl change_password admin admin123</code></li>
+<li>查看用户列表：<code>rabbitmqctl list_users</code></li>
+<li>设置用户角色：<code>rabbitmqctl set_user_tags admin administrator monitoring policymaker management</code></li>
+</ul>
+<p>权限管理：</p>
+<ul>
+<li>设置用户权限：<code>rabbitmqctl set_permissions -p VHostPath admin ConfP WriteP ReadP</code></li>
+<li>查询所有权限：<code>rabbitmqctl list_permissions [-p VHostPath]</code></li>
+<li>指定用户权限：<code>rabbitmqctl list_user_permissions admin</code></li>
+<li>清除用户权限：<code>rabbitmqctl clear_permissions [-p VHostPath] admin</code></li>
+</ul>
+<p>集群管理：</p>
+<ul>
+<li>加入集群：有host1 和 host2，在 host2 上操作：
+<ul>
+<li>先停止：<code>rabbitmqctl -n rabbit stop_app</code></li>
+<li>加入：<code>rabbitmqctl -n rabbit join_cluster rabbit@$rabbit_hostname1</code></li>
+<li>再启动：<code>rabbitmqctl -n rabbit start_app</code></li>
+</ul>
+</li>
+<li>查看集群状态：<code>rabbitmqctl cluster_status</code></li>
+</ul>
+<h1 id="rabbitmq添加用户"><a class="markdownIt-Anchor" href="#rabbitmq添加用户"></a> RabbitMQ添加用户</h1>
+<p><strong>在web管理页面上新建一个qingbo用户参考：<a href="https://www.topgoer.com/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C/go%E6%93%8D%E4%BD%9CRabbitMQ/Simple%E6%A8%A1%E5%BC%8F.html" target="_blank" rel="noopener">Simple模式</a></strong></p>
+<p><a href="https://haicoder.net/rabbitmq/rabbitmq-adduser.html" target="_blank" rel="noopener">RabbitMQ添加用户</a></p>
+<h2 id="角色说明"><a class="markdownIt-Anchor" href="#角色说明"></a> 角色说明</h2>
+<p>RabbitMQ中的角色有如下几种：</p>
+<ol>
+<li>超级管理员(<code>administrator</code>)：可登陆管理控制台，可查看所有的信息，并且可以对用户，策略(policy)进行操作。</li>
+<li>监控者(<code>monitoring</code>)：可登陆管理控制台，同时可以查看 rabbitmq 节点的相关信息(进程数，内存使用情况，磁盘使用情况等)。</li>
+<li>策略制定者(<code>policymaker</code>)：可登陆管理控制台, 同时可以对 policy 进行管理。但无法查看节点的相关信息。</li>
+<li>普通管理者(<code>management</code>)：仅可登陆管理控制台，无法看到节点信息，也无法对策略进行管理。</li>
+<li>其他：无法登陆管理控制台，通常就是普通的生产者和消费者。</li>
+</ol>
+<h2 id="virtual-hosts"><a class="markdownIt-Anchor" href="#virtual-hosts"></a> Virtual Hosts</h2>
+<p>就像Mysql拥有数据库的概念并且可以指定用户对库和表等操作的权限，RabbitMQ也有类似的权限管理。</p>
+<p>在 RabbitMQ中可以虚拟消息服务器Virtual Host，<strong>每个Virtual Hosts相当于一个相对独立的RabbitMQ服务器，每个Virtual Host之间是相互隔离的</strong>。exchange、queue、message 不能互通。 相当于mysql的db。Virtual Name 一般以 <code>/</code> 开头。</p>
+<h1 id="rabbitmq高级"><a class="markdownIt-Anchor" href="#rabbitmq高级"></a> RabbitMQ高级</h1>
+<ul>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-ack.html" target="_blank" rel="noopener">RabbitMQ消息确认机制</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-confirm.html" target="_blank" rel="noopener">RabbitMQ Confirm</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-msg-nolose.html" target="_blank" rel="noopener">RabbitMQ确保消息不丢失</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-limit.html" target="_blank" rel="noopener">RabbitMQ限流</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-ttl.html" target="_blank" rel="noopener">RabbitMQ TTL</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-dead-exchange.html" target="_blank" rel="noopener">RabbitMQ死信队列</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-delay.html" target="_blank" rel="noopener">RabbitMQ延迟队列</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-msg-trace.html" target="_blank" rel="noopener">RabbitMQ消息追踪</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-msg-compensation.html" target="_blank" rel="noopener">RabbitMQ消息补偿</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-msg-idempotency.html" target="_blank" rel="noopener">RabbitMQ消息幂等性</a></li>
+<li><a href="https://haicoder.net/rabbitmq/rabbitmq-cluster.html" target="_blank" rel="noopener">RabbitMQ集群搭建</a></li>
+</ul>
+</article>
+    
+      <aside class="toc-panel" id="article-toc" aria-label="文章目录">
+        <header class="toc-panel__header">
+          <p class="toc-panel__title">On this page</p>
+          <button class="toc-panel__close" type="button" aria-label="关闭目录"></button>
+        </header>
+        <nav class="toc-nav" aria-label="文章目录"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是消息队列"><span class="toc-text"> 什么是消息队列</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么使用消息队列"><span class="toc-text"> 为什么使用消息队列</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rabbitmq的特点"><span class="toc-text"> RabbitMQ的特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#常见消息队列对比"><span class="toc-text"> 常见消息队列对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#simple"><span class="toc-text"> Simple</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#work-queues"><span class="toc-text"> Work queues</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#publishsubscribe"><span class="toc-text"> Publish&#x2F;Subscribe</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#routing"><span class="toc-text"> Routing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#topics"><span class="toc-text"> Topics</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rpc"><span class="toc-text"> RPC</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#amqp"><span class="toc-text"> AMQP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rabbitmq运转流程"><span class="toc-text"> RabbitMQ运转流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#角色说明"><span class="toc-text"> 角色说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#virtual-hosts"><span class="toc-text"> Virtual Hosts</span></a></li></ol></nav>
+      </aside>
+    
+  </div>
+  
+    <button class="toc-toggle" type="button" aria-controls="article-toc" aria-expanded="false"><span>目录</span><small data-current-section>—</small></button>
+    <button class="toc-scrim" type="button" aria-label="关闭目录并返回文章" tabindex="-1"></button>
+  
+  
+    <section class="related-notes" id="related-notes" aria-labelledby="related-notes-title">
+      <header class="related-notes__header">
+        <div>
+          <p class="mono-label">Connected signals</p>
+          <h2 id="related-notes-title">沿着这些标签继续</h2>
+        </div>
+        <p>根据共同标签连接的相关笔记。</p>
+      </header>
+      <div class="related-notes__grid">
+        
+          <a href="/2022/06/23/Go%E6%93%8D%E4%BD%9CRabbitMQ/">
+            <span class="related-notes__meta">
+              <time datetime="2022-06-23T00:47:03.000Z">2022.06.23</time>
+              <span>#MQ · #RabbitMQ</span>
+            </span>
+            <strong>Go操作RabbitMQ</strong>
+          </a>
+        
+          <a href="/2022/05/31/go%E5%95%86%E5%9F%8E%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F/">
+            <span class="related-notes__meta">
+              <time datetime="2022-05-31T00:47:03.000Z">2022.05.31</time>
+              <span>#RabbitMQ</span>
+            </span>
+            <strong>Go商城秒杀系统</strong>
+          </a>
+        
+      </div>
+    </section>
+  
+  <nav class="post-navigation" aria-label="相邻文章">
+    <a href="/2022/06/23/Go%E6%93%8D%E4%BD%9CRabbitMQ/"><span>上一篇</span><strong>Go操作RabbitMQ</strong></a>
+    <a href="/2022/06/21/Go%E6%93%8D%E4%BD%9CElasticSearch/"><span>下一篇</span><strong>Go操作Elasticsearch</strong></a>
+  </nav>
+</main>
+
+    <footer class="site-footer">
+  <p>© 2026 Quinn · Built as a long-running research log.</p>
+  <p>
+    
+    
+      
+      <a href="https://github.com/qingbo1011" target=&#34;_blank&#34; rel=&#34;noopener&#34;>GitHub</a>
+    
+      <span aria-hidden="true"> · </span>
+      <a href="mailto:qingbo1011@163.com">Email</a>
+    
+    
+      <span aria-hidden="true"> · </span>
+      <a href="/atom.xml" type="application/atom+xml">RSS</a>
+    
+  </p>
+</footer>
+
+    
+  <dialog class="search-dialog" id="search-dialog" data-search-path="/search.json" aria-labelledby="search-label">
+    <div class="search-dialog__surface">
+      <header>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>
+        <label class="sr-only" for="search-input" id="search-label">搜索文章</label>
+        <input id="search-input" type="search" placeholder="搜索标题、标签或正文" autocomplete="off" />
+        <button class="search-dialog__close" type="button" aria-label="关闭搜索">ESC</button>
+      </header>
+      <div class="search-dialog__state">
+        <p class="search-dialog__status" aria-live="polite">输入关键词开始搜索</p>
+        <button class="search-dialog__retry" type="button" hidden>重新加载</button>
+      </div>
+      <div class="search-results"></div>
+    </div>
+  </dialog>
+
+
+    <dialog class="media-viewer" data-media-viewer aria-label="媒体查看器">
+  <section class="media-viewer__surface">
+    <p class="media-viewer__identity" aria-live="polite">
+      <span data-media-kind>Image</span>
+      <span aria-hidden="true">/</span>
+      <span data-media-position>01</span>
+    </p>
+    <div class="media-viewer__corner-actions" role="toolbar" aria-label="媒体操作">
+      <a data-media-action="download" aria-label="下载 Mermaid SVG" title="下载 SVG" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg>
+      </a>
+      <button type="button" data-media-action="close" aria-label="关闭查看器" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <div class="media-viewer__stage" data-media-stage tabindex="0" aria-label="媒体画布，可拖动和缩放">
+      <div class="media-viewer__canvas" data-media-canvas></div>
+    </div>
+    <div class="media-viewer__zoom" role="toolbar" aria-label="缩放控制">
+      <button type="button" data-media-action="zoom-out" aria-label="缩小">−</button>
+      <button class="media-viewer__scale" type="button" data-media-action="reset" aria-label="适合屏幕" title="适合屏幕"><span data-media-scale>100%</span></button>
+      <button type="button" data-media-action="zoom-in" aria-label="放大">＋</button>
+    </div>
+    <p class="media-viewer__caption" data-media-caption></p>
+    <p class="media-viewer__hint">滚轮或双指缩放 · 拖动查看 · 双击复位 · Esc 关闭</p>
+  </section>
+</dialog>
+
+    
+      <script src="/js/theme-mode.js" defer></script>
+    
+      <script src="/js/navigation.js" defer></script>
+    
+      <script src="/js/toc.js" defer></script>
+    
+      <script src="/js/copy-code.js" defer></script>
+    
+      <script src="/js/search.js" defer></script>
+    
+      <script src="/js/mermaid.js" defer></script>
+    
+      <script src="/js/media-viewer.js" defer></script>
+    
+  </body>
+</html>
